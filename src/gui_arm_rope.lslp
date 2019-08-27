@@ -1,3 +1,5 @@
+$import Modules.GuiTools.lslm();
+
 string self;
 //string restraint;    // JSON object
 
@@ -17,17 +19,14 @@ vector color = COLOR_WHITE;
 list colors = ["White", "Brown"];
 list colorVals = [COLOR_WHITE, COLOR_BROWN];
 
-
 // GUI variables
 key guiUserID;
 list guiButtons;
 integer guiChannel;
-integer guiID;
 integer guiScreen;
 integer guiScreenLast;
 string guiText;
 integer guiTimeout = 30;
-integer multipageIndex = 0;
 
 string getSelf() {
     if (self != "") return self;
@@ -68,11 +67,11 @@ gui(integer prmScreen) {
     if (prmScreen == 0) {    
         btn3 = "<<Color>>";
         if (armsBound != "free") { btn4 = "Untie"; }
-    
+
         //btn10 = "Sides";
         btn11 = "Front";
         btn12 = "F+Sides";
-    
+
         btn7 = "Back";        
         //btn8 = "B+Elbow";
         btn9 = "B+Sides";
@@ -96,40 +95,6 @@ gui(integer prmScreen) {
     if (llGetListLength(mpButtons)) { guiButtons += mpButtons; }
 
     llDialog(guiUserID, guiText, guiButtons, guiChannel);
-}
-
-list multipageGui(list prmButtons, integer prmRows, integer prmPage) {
-    list mpGui = [];
-    integer buttonCount = llGetListLength(prmButtons);
-    integer multipage = FALSE;
-
-    if (buttonCount > 3 * prmRows) {
-        multipage = TRUE;
-        mpGui += ["<< Previous", " ", "Next >>"];
-        
-        if (prmPage * prmRows * 3 > buttonCount) { prmPage = 0; }
-        else if (prmPage < 0) { prmPage = llFloor(buttonCount / (3 * prmRows - multipage)); }
-        
-        multipageIndex = prmPage;
-    }
-    
-    integer mpIndex = 0;
-    for (mpIndex; mpIndex < buttonCount; mpIndex++) {
-        if (mpIndex >= prmPage * prmRows * (3 - multipage)) {
-            mpGui += llList2String(prmButtons, mpIndex);
-        }
-        if (llGetListLength(mpGui) == prmRows * 3) { mpIndex = buttonCount; }
-    }    
-    
-    return mpGui;
-}
-
-exit(string prmReason) {
-    llListenRemove(guiID);
-    llSetTimerEvent(0.0);
-    multipageIndex = 0;
-    
-    if (prmReason) { simpleRequest("resetGUI", prmReason); }
 }
 
 // ===== Main Functions =====
@@ -257,14 +222,6 @@ simpleAttachedRequest(string prmFunction, string prmValue) {
     request = llJsonSetValue(request, ["value"], prmValue);
     llRegionSayTo(llGetOwner(), CHANNEL_ATTACHMENT, request);
 }
-
-simpleRequest(string prmFunction, string prmValue) {
-    string request = "";
-    request = llJsonSetValue(request, ["function"], prmFunction);
-    request = llJsonSetValue(request, ["value"], prmValue);
-    llMessageLinked(LINK_THIS, 0, request, NULL_KEY);
-}
-
 
 // ===== Event Controls =====
 

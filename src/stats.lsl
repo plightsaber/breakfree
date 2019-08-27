@@ -1,5 +1,5 @@
 // src.stats.lslp 
-// 2019-08-25 10:50:40 - LSLForge (0.1.9.6) generated
+// 2019-08-26 23:56:38 - LSLForge (0.1.9.6) generated
 // ===== Variables =====
 integer dex = 1;
 integer str = 1;
@@ -151,4 +151,4 @@ default {
   }
 }
 // src.stats.lslp 
-// 2019-08-25 10:50:40 - LSLForge (0.1.9.6) generated
+// 2019-08-26 23:56:38 - LSLForge (0.1.9.6) generated

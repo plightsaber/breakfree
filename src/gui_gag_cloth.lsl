@@ -1,5 +1,9 @@
 // src.gui_gag_cloth.lslp 
-// 2019-08-25 10:50:40 - LSLForge (0.1.9.6) generated
+// 2019-08-26 23:56:38 - LSLForge (0.1.9.6) generated
+
+integer guiID;
+integer multipageIndex = 0;
+
 // ===== Variables =====
 string self;
 string restraint;
@@ -13,12 +17,10 @@ string gender = "female";
 key guiUserID;
 list guiButtons;
 integer guiChannel;
-integer guiID;
 integer guiScreen;
 integer guiScreenLast;
 string guiText;
 integer guiTimeout = 30;
-integer multipageIndex = 0;
 
 // Colors
 vector COLOR_BROWN = <0.5,0.25,0.0>;
@@ -40,6 +42,48 @@ integer gagStuff = FALSE;
 integer gagCleave = FALSE;
 integer gagOTN = FALSE;
 list attachments = [];
+
+exit(string prmReason){
+  llListenRemove(guiID);
+  llSetTimerEvent(0.0);
+  if (prmReason) {
+    simpleRequest("resetGUI",prmReason);
+  }
+}
+
+list multipageGui(list prmButtons,integer prmRows,integer prmPage){
+  list mpGui = [];
+  integer buttonCount = llGetListLength(prmButtons);
+  integer multipage = FALSE;
+  if ((buttonCount > (3 * prmRows))) {
+    (multipage = TRUE);
+    (mpGui += ["<< Previous"," ","Next >>"]);
+    if ((((prmPage * prmRows) * 3) > buttonCount)) {
+      (prmPage = 0);
+    }
+    else  if ((prmPage < 0)) {
+      (prmPage = llFloor((buttonCount / ((3 * prmRows) - multipage))));
+    }
+    (multipageIndex = prmPage);
+  }
+  integer mpIndex = 0;
+  for (mpIndex; (mpIndex < buttonCount); (mpIndex++)) {
+    if ((mpIndex >= ((prmPage * prmRows) * (3 - multipage)))) {
+      (mpGui += llList2String(prmButtons,mpIndex));
+    }
+    if ((llGetListLength(mpGui) == (prmRows * 3))) {
+      (mpIndex = buttonCount);
+    }
+  }
+  return mpGui;
+}
+
+simpleRequest(string prmFunction,string prmValue){
+  string request = "";
+  (request = llJsonSetValue(request,["function"],prmFunction));
+  (request = llJsonSetValue(request,["value"],prmValue));
+  llMessageLinked(LINK_THIS,0,request,NULL_KEY);
+}
 
 string getSelf(){
   if ((self != "")) return self;
@@ -113,41 +157,6 @@ gui(integer prmScreen){
     (guiButtons += mpButtons);
   }
   llDialog(guiUserID,guiText,guiButtons,guiChannel);
-}
-
-list multipageGui(list prmButtons,integer prmRows,integer prmPage){
-  list mpGui = [];
-  integer buttonCount = llGetListLength(prmButtons);
-  integer multipage = FALSE;
-  if ((buttonCount > (3 * prmRows))) {
-    (multipage = TRUE);
-    (mpGui += ["<< Previous"," ","Next >>"]);
-    if ((((prmPage * prmRows) * 3) > buttonCount)) {
-      (prmPage = 0);
-    }
-    else  if ((prmPage < 0)) {
-      (prmPage = llFloor((buttonCount / ((3 * prmRows) - multipage))));
-    }
-    (multipageIndex = prmPage);
-  }
-  integer mpIndex = 0;
-  for (mpIndex; (mpIndex < buttonCount); (mpIndex++)) {
-    if ((mpIndex >= ((prmPage * prmRows) * (3 - multipage)))) {
-      (mpGui += llList2String(prmButtons,mpIndex));
-    }
-    if ((llGetListLength(mpGui) == (prmRows * 3))) {
-      (mpIndex = buttonCount);
-    }
-  }
-  return mpGui;
-}
-
-exit(string prmReason){
-  llListenRemove(guiID);
-  llSetTimerEvent(0.0);
-  if (prmReason) {
-    simpleRequest("resetGUI",prmReason);
-  }
 }
 
 // ===== Main Functions =====
@@ -316,14 +325,6 @@ simpleAttachedRequest(string prmFunction,string prmValue){
   llRegionSayTo(llGetOwner(),CHANNEL_ATTACHMENT,request);
 }
 
-simpleRequest(string prmFunction,string prmValue){
-  string request = "";
-  (request = llJsonSetValue(request,["function"],prmFunction));
-  (request = llJsonSetValue(request,["value"],prmValue));
-  llMessageLinked(LINK_THIS,0,request,NULL_KEY);
-}
-
-
 // ===== Event Controls =====
 
 default {
@@ -415,4 +416,4 @@ default {
   }
 }
 // src.gui_gag_cloth.lslp 
-// 2019-08-25 10:50:40 - LSLForge (0.1.9.6) generated
+// 2019-08-26 23:56:38 - LSLForge (0.1.9.6) generated
