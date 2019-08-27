@@ -31,19 +31,18 @@ string DEFAULT_USER(key prmID) {
 init() {
   if (listenID) { llListenRemove(listenID); }
   llListen(CHANNEL_API, "", NULL_KEY, "");
-  
+
   if (self == "") { self = DEFAULT_USER(llGetOwner()); }
 }
-
 
 // ===== Primary Functions ====
 api(string prmJson) {
 
   string function = llJsonGetValue(prmJson, ["function"]);
   key apiTargetID = (key)llJsonGetValue(prmJson, ["apiTargetID"]);
-  key senderID = (key)llJsonGetValue(prmJson, ["userID"]);        
+  key senderID = (key)llJsonGetValue(prmJson, ["userID"]);
 
-  // Validate        
+  // Validate
   if (apiTargetID != llGetOwner()) { return; }
 
   // Execute API Call
@@ -69,7 +68,6 @@ send(key prmTargetID, string prmFunction, string prmJson) {
   llRegionSayTo(prmTargetID, CHANNEL_API, prmJson);
 }
 
-
 // ===== Helper Functions =====
 debug(string prmString) {
   llOwnerSay(prmString);
@@ -82,7 +80,7 @@ string getGender(key prmUserID) {
   float gender = llList2Float(details, 0);
   if (gender < 0.0)   return "object";
   if (gender > 0.5)   return "male";
-  return "female"; 
+  return "female";
 }
 
 simpleRequest(string prmFunction, string prmValue) {
@@ -99,7 +97,7 @@ default {
     init();
   }
   state_entry() {
-    init(); 
+    init();
   }
 
   link_message(integer prmLink, integer prmValue, string prmText, key prmID) {
