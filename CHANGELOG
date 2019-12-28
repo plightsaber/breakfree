@@ -6,6 +6,10 @@
 - Cloth gags can be textured
 - Cloth gag stuffing can be colored
 
+### Changed
+- Escaping from restraints with free hands made significantly easier
+- Escaping from restraints with free hands gives 66% less experience
+
 ## 3.0.2
 ### Added
 - Earn experience though escapes!
@@ -13,16 +17,16 @@
 - Stats can affect struggle-out functionality
 - Hogtie for leg ropes
 - Villains can select a pose for their victims
-### Fixes
+### Fixed
 - Fix issue where being gagged not considered as bound
 - Fix silent message spamming of attach/detach calls to null lists
 
 ## 3.0.1
-### Changes
+### Changed
 - Mistakes in the escape game now cause you to lose struggle progress
 - Decrease binding difficulties to balance with the new mistake mechanic
 - Struggle status moved to the dialog box
-### Fixes
+### Fixed
 - You no longer capture yourself when touching someone else's bindings
 - Corrected pose-side animations to prevent grotesque head angles
 - Set walk animation override to help AO priority conflicts
