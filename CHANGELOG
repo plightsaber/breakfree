@@ -1,6 +1,6 @@
 # Changelog
 
-## [unreleased]
+## [3.0.3] - 2019-12-27
 ### Added
 - Bento heads now open their mouths with stuffed gags
 - Cloth gags can be textured
@@ -9,6 +9,7 @@
 ### Changed
 - Escaping from restraints with free hands made significantly easier
 - Escaping from restraints with free hands gives 66% less experience
+- Swapped out cloth gags with improved meshes
 
 ## 3.0.2
 ### Added
