@@ -4,6 +4,9 @@ $import Modules.GuiTools.lslm();
 key ownerID;
 key villainID;
 
+// Settings
+
+
 // Stats
 integer userExp = 0;
 integer userStr = 1;
@@ -17,6 +20,11 @@ string self;
 integer armsBound = FALSE;
 integer legsBound = FALSE;
 integer gagBound = FALSE;
+
+// GUI screens
+integer GUI_HOME = 0;
+integer GUI_STATS = 10;
+integer GUI_OPTIONS = 20;
 
 init() {
 	ownerID = llGetOwner();
@@ -44,14 +52,14 @@ gui(integer prmScreen) {
 	guiText = " ";
 		
 	// GUI: Main
-	if (prmScreen == 0) {
+	if (prmScreen == GUI_HOME) {
 		if ((!armsBound && !legsBound && !gagBound) || villainID == ownerID) { btn4 = "Bind"; }
 		if (armsBound || legsBound || gagBound) { btn5 = "Escape"; }
 		btn3 = "Stats";
+		btn1 = "Options";
 	}
-		
 	// GUI: Stats 
-	else if (prmScreen == 10) {
+	else if (prmScreen == GUI_STATS) {
 		guiText = "Level: " + (string)getUserLevel() + "\n";
 		guiText += "Experience: " + (string)userExp + "/" + (string)getNextLevelExp() + "\n";
 		guiText += "STR: " + (string)userStr + "\tDEX: " + (string)userDex + "\tINT: " + (string)userInt;
@@ -63,7 +71,7 @@ gui(integer prmScreen) {
 		}
 
 		btn1 = "<<Back>>";
-}
+	}
 
 	if (prmScreen != guiScreen) { guiScreenLast = guiScreen; }		
 	guiScreen = prmScreen;
@@ -143,11 +151,12 @@ default {
 			else if (prmText == "<<Back>>") { gui(guiScreenLast); }
 			else if (prmText == " ") { gui(guiScreen); }
 
-			if (guiScreen == 0) {
+			if (guiScreen == GUI_HOME) {
 				if (prmText == "Bind") { guiRequest("gui_bind", FALSE, guiUserID, 0); return; }
 				else if (prmText == "Escape") { guiRequest("gui_escape", FALSE, guiUserID, 0); return; }
-				else if (prmText == "Stats") { gui(10); }
-			} else if (guiScreen == 10) {
+				else if (prmText == "Stats") { gui(GUI_STATS); }
+				else if (prmText == "Options") { gui(GUI_OPTIONS); }
+			} else if (guiScreen == GUI_STATS) {
 				if (prmText == "STR ↑") { userStr++; simpleRequest("addStr", "1"); }
 				if (prmText == "DEX ↑") { userDex++; simpleRequest("addDex", "1"); }
 				if (prmText == "INT ↑") { userInt++; simpleRequest("addInt", "1"); }
