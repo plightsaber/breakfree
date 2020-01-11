@@ -30,7 +30,7 @@ bindArms(string prmInfo) {
   if (animation_arm_success) { llStopAnimation(animation_arm_success); }
   if (animation_arm_failure) { llStopAnimation(animation_arm_failure); }
 
-  if (prmInfo == "free") {
+  if (prmInfo == "free" || prmInfo == "external") {
     animation_arm_base = "";
     return;
   }
