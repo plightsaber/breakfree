@@ -1,5 +1,10 @@
 # Changelog
 
+## [3.1.1] - 2020-01-11
+### Added
+- RP Mode - Enable to complete skip the struggle mini-game to facilitate better RPs.
+- RealRestraint Plugin - Add to a RealRestraint arm restraint to tell BreakFree your arms are restrained and to behave accordingly.
+
 ## [3.1.0] - 2019-12-27
 ### Added
 - Bento heads now open their mouths with stuffed gags
