@@ -5,7 +5,7 @@ key ownerID;
 key villainID;
 
 // Settings
-
+integer rpMode = FALSE;
 
 // Stats
 integer userExp = 0;
@@ -53,10 +53,13 @@ gui(integer prmScreen) {
 		
 	// GUI: Main
 	if (prmScreen == GUI_HOME) {
-		if ((!armsBound && !legsBound && !gagBound) || villainID == ownerID) { btn4 = "Bind"; }
+		if (rpMode || (!armsBound && !legsBound && !gagBound) || villainID == ownerID) {
+			btn1 = "Options";
+			btn4 = "Bind";
+		}
+
 		if (armsBound || legsBound || gagBound) { btn5 = "Escape"; }
 		btn3 = "Stats";
-		btn1 = "Options";
 	}
 	// GUI: Stats 
 	else if (prmScreen == GUI_STATS) {
@@ -71,6 +74,12 @@ gui(integer prmScreen) {
 		}
 
 		btn1 = "<<Back>>";
+	}
+	else if (prmScreen == GUI_OPTIONS) {
+		guiText = "User Settings" + "\n";
+		guiText = "Please reference the included README for details.";
+		if (rpMode) { btn4 = "☑ RP Mode"; }
+		else { btn4 = "☒ RP Mode"; }
 	}
 
 	if (prmScreen != guiScreen) { guiScreenLast = guiScreen; }		
@@ -160,6 +169,10 @@ default {
 				if (prmText == "STR ↑") { userStr++; simpleRequest("addStr", "1"); }
 				if (prmText == "DEX ↑") { userDex++; simpleRequest("addDex", "1"); }
 				if (prmText == "INT ↑") { userInt++; simpleRequest("addInt", "1"); }
+				gui(guiScreen);
+			} else if (guiScreen == GUI_OPTIONS) {
+				if (prmText == "☒ RP Mode") { rpMode = TRUE; simpleRequest("setRPMode", "1"); }
+				else if (prmText == "☑ RP Mode") { rpMode = FALSE; simpleRequest("setRPMode", "0"); }
 				gui(guiScreen);
 			}
 		}
