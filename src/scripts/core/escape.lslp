@@ -52,6 +52,11 @@ list struggle_puzzle;
 integer struggle_progress;
 string actionmsg;
 
+// Other
+integer armBoundExternal = FALSE;
+key configQueryID;
+string jsonSettings;
+
 init(key prmID, integer prmScreen) {
 	guiUserID = prmID;
 
@@ -243,12 +248,20 @@ gui(integer prmScreen) {
 	// Reset Busy Clock
 	llSetTimerEvent(guiTimeout);
 
-	string btn10 = " "; string btn11 = " ";				string btn12 = " ";
-	string btn7 = " ";	string btn8 = " ";				 string btn9 = " ";
-	string btn4 = " ";	string btn5 = " ";				 string btn6 = " ";
+	string btn10 = " ";	string btn11 = " ";			string btn12 = " ";
+	string btn7 = " ";	string btn8 = " ";			string btn9 = " ";
+	string btn4 = " ";	string btn5 = " ";			string btn6 = " ";
 	string btn1 = " ";	string btn2 = "<<Done>>";	string btn3 = " ";
 
 	guiText = " ";
+
+	if (prmScreen == 0 && ((integer)llJsonGetValue(jsonSettings, ["gagOnly"]))) {
+		getGui("gag");
+		return;
+	}
+
+	if (prmScreen != guiScreen) { guiScreenLast = guiScreen; }
+	if (btn1 == " " && (prmScreen != 0)) { btn1 = "<<Back>>"; };
 
 	// GUI: Main
 	if (prmScreen == 0) {
@@ -288,10 +301,11 @@ gui(integer prmScreen) {
 		guiText += "\nTightness: " + displayTightness(activePart);
 		// TODO: Show suggestion based on INT
 		if (actionmsg) { guiText += "\n" + actionmsg; }
+		
+		if (guiUserID != llGetOwner() && (integer)llJsonGetValue(jsonSettings, ["gagOnly"])) {
+			btn1 = " ";
+		}
 	}
-
-	if (prmScreen != guiScreen) { guiScreenLast = guiScreen; }
-	if (btn1 == " " && (prmScreen != 0)) { btn1 = "<<Back>>"; };
 
 	guiScreen = prmScreen;
 	guiButtons = [btn1, btn2, btn3];
@@ -325,15 +339,19 @@ string getOwnerPronoun(string prmPlaceholder) {
 }
 
 integer isArmsBound() {
-	return arm_tightness > 0;
+	return armBoundExternal || (arm_tightness > 0);
 }
 
 // ===== Sets =====
 bindArms(string prmInfo) {
 	if (prmInfo == "free") {
 		arm_tightness = 0;
-		// TODO: remove settings? (May not be necessary)
+		armBoundExternal = FALSE;
 		return;
+	}
+
+	if (prmInfo == "external") {
+		armBoundExternal = TRUE;
 	}
 
 	arm_canCut = (integer)llJsonGetValue(prmInfo, ["canCut"]);
@@ -441,10 +459,31 @@ string ToTitle(string src) {
 // ===== Event Controls =====
 
 default {
+	state_entry() {
+		configQueryID = llGetNotecardLine(".config", 0);	// Load config.
+	}
+
+	on_rez(integer prmStart) {
+		configQueryID = llGetNotecardLine(".config", 0);	// Load config.
+	}
+
+	dataserver(key queryID, string configData) {
+		if (queryID == configQueryID) {
+			jsonSettings = configData;
+		}
+	}
+
 	listen(integer prmChannel, string prmName, key prmID, string prmText) {
 		if (prmChannel = guiChannel) {
 			if (prmText == "<<Done>>") { exit("done"); return; }
 			else if (prmText == " ") { gui(guiScreen); return; }
+			else if (prmText == "<<Back>>"
+				&& guiScreen != 0
+				&& (integer)llJsonGetValue(jsonSettings, ["gagOnly"])
+			) {
+				guiRequest("gui_owner", FALSE, guiUserID, 0);
+				return;
+			}
 			else if (guiScreen !=0 && prmText == "<<Back>>") { gui(guiScreenLast); return; }
 
 			if (guiScreen == 0) {

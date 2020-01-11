@@ -21,10 +21,17 @@ list armRestraints;
 list legRestraints;
 list gagRestraints;
 
+// Other
+integer armBoundExternal = FALSE;
+key configQueryID;
+string jsonSettings;
+
 init() {
   armRestraints = ["Unbound"];
   legRestraints = ["Unbound"];
   gagRestraints = ["Unbound"];
+
+  configQueryID = llGetNotecardLine(".config",0);	// Load config.
 
   simpleRequest("getAvailableRestraints", "all");
 }
@@ -55,6 +62,14 @@ gui(integer prmScreen) {
 
   guiText = " ";
 
+	// Handle Gag-only path
+	if ((integer)llJsonGetValue(jsonSettings, ["gagOnly"]) && prmScreen == 0) {
+		prmScreen = 30;
+	}
+
+	if (prmScreen != guiScreen) { guiScreenLast = guiScreen; }
+	if (btn1 == " " && (prmScreen != 0)) { btn1 = "<<Back>>"; };
+
   // GUI: Main
   if (prmScreen == 0) {
     // reset previous screen
@@ -63,12 +78,13 @@ gui(integer prmScreen) {
     if (armsTetherable) { btn7 = "Tether Arms"; }
     if (legsTetherable) { btn7 = "Tether Legs"; }
 
-    btn4 = "Bind Arms";
+	if (!armBoundExternal) { btn4 = "Bind Arms"; }
     btn5 = "Bind Legs";
     btn6 = "Gag";
 
     if (llGetListLength(getAvailablePoses()) > 1) { btn3 = "Position"; }
 
+	btn1 = " ";	// Unset <<BACK>> for first menu
     // TODO: Get quick release options
   }
 
@@ -88,6 +104,11 @@ gui(integer prmScreen) {
   if (prmScreen == 30) {
     guiText = "What do you want to gag " + getName() + " with?";
     mpButtons = multipageGui(gagRestraints, 3, multipageIndex);
+
+		// Unset <<BACK>> for gagOnly mode
+		if (guiUserID != llGetOwner() && (integer)llJsonGetValue(jsonSettings, ["gagOnly"])) {
+			btn1 = " ";
+		}
   }
 
   // GUI: Position
@@ -95,9 +116,6 @@ gui(integer prmScreen) {
     guiText = "How do you want to pose " + getName() + "?";
     mpButtons = multipageGui(getAvailablePoses(), 3, multipageIndex);
   }
-
-  if (prmScreen != guiScreen) { guiScreenLast = guiScreen; }
-  if (btn1 == " " && (prmScreen != 0)) { btn1 = "<<Back>>"; };
 
   guiScreen = prmScreen;
   guiButtons = [btn1, btn2, btn3];
@@ -151,7 +169,8 @@ setAvailablePoses(string prmPoses) {
 }
 
 bindArms(string prmInfo) {
-  if (prmInfo == "free") { armsBound = FALSE; armsTetherable = FALSE; }
+  if (prmInfo == "free") { armsBound = FALSE; armsTetherable = FALSE; armBoundExternal = FALSE; }
+  else if (prmInfo == "external") { armsBound = TRUE; armsTetherable = FALSE; armBoundExternal = TRUE; }
   else {
     armsBound = TRUE;
     armsTetherable = llJsonGetValue(prmInfo, ["canTether"]) == "1";
@@ -184,10 +203,23 @@ default {
     init();
   }
 
+	dataserver(key queryID, string configData) {
+		if (queryID == configQueryID) {
+			jsonSettings = configData;
+		}
+	}
+
   listen(integer prmChannel, string prmName, key prmID, string prmText) {
     if (prmChannel = guiChannel) {
       if (prmText == "<<Done>>") { exit("done"); return; }
       else if (prmText == " ") { gui(guiScreen); }
+		else if (prmText == "<<Back>>"
+			&& guiScreen == 30
+			&& (integer)llJsonGetValue(jsonSettings, ["gagOnly"])
+		) {
+			guiRequest("gui_owner", FALSE, guiUserID, 0);
+			return;
+		}
       else if (guiScreen !=0 && prmText == "<<Back>>") { gui(guiScreenLast); return; }
 
       else if (prmText == "Next >>") { multipageIndex ++; gui(guiScreen); return; }

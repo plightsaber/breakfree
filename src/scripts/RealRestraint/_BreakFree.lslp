@@ -42,10 +42,9 @@ integer CHANNEL_API = -9999274;
 
 
 ////////////////////////////////////////////////////////////////////////////////
-apiCall(string prmFunction, string prmValue) {
+apiCall(string prmFunction, string prmJson) {
   string request = "";
-  request = llJsonSetValue(request, ["function"], prmFunction);
-  request = llJsonSetValue(request, ["value"], prmValue);
+  request = llJsonSetValue(prmJson, ["function"], prmFunction);
   request = llJsonSetValue(request, ["apiTargetID"], (string)llGetOwner());
   llRegionSayTo(llGetOwner(), CHANNEL_API, request);
 }
@@ -204,7 +203,9 @@ default {
                 nLock = 0;
                 kHolder = NULL_KEY;
                 // BF BEGIN
-                apiCall("bindArms", "free");
+                string apiJson = "";
+                apiJson = llJsonSetValue(apiJson, ["value"], "free");
+                apiCall("bindArms", apiJson);
                 // BF END
             }
             else if (num > 0) { // lock
@@ -213,7 +214,10 @@ default {
                 nLock = num;
                 kHolder = id;
                 // BF BEGIN
-                apiCall("bindArms", "external");
+                string apiJson = "";
+                apiJson = llJsonSetValue(apiJson, ["tightness"], "1");
+                apiJson = llJsonSetValue(apiJson, ["value"], "external");
+                apiCall("bindArms", apiJson);
                 // BF END
             }
             else if (num == -21) { // periodical report from Lockable

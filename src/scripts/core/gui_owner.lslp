@@ -95,7 +95,7 @@ gui(integer prmScreen) {
 
 // ===== Gets & Sets =====
 bindArms(string prmInfo) {
-	if (prmInfo == "free") { armsBound = FALSE; }
+	if (prmInfo == "free" || "external" == prmInfo) { armsBound = FALSE; }
 	else { armsBound = TRUE; }
 }
 
