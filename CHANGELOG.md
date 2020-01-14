@@ -1,5 +1,13 @@
 # Changelog
 
+## [Unreleased]
+### Added
+- Tape gags
+
+### Changed
+- Gag API overhauled to accommodate mixing and matching gag types.
+- Slight adjustments to garbler to better accommodate the new gag types.
+
 ## [3.1.1] - 2020-01-11
 ### Added
 - RP Mode - Enable to complete skip the struggle mini-game to facilitate better RPs.

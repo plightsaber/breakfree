@@ -58,13 +58,23 @@ bindLegs(string prmInfo) {
 
 bindGag(string prmInfo) {
 	list bindfolders = [];
-	string attachments = llJsonGetValue(prmInfo, ["attachments"]);
-	if (attachments != JSON_INVALID) { bindfolders = llJson2List(attachments); }
+	list preventFolders = [];
+
+	list liAttachments;
+	list liBindFolders;
+	list liGags;
+
+	liGags = llJson2List(prmInfo);
+	integer index;
+	for (index = 0; index < llGetListLength(liGags); ++index) {
+		string gag = llList2String(liGags, index);
+		bindfolders += llJson2List(llJsonGetValue(gag, ["attachments"]));
+		preventFolders += llJson2List(llJsonGetValue(gag, ["preventAttach"]));
+	}
+	bindfolders = ListXnotY(bindfolders, preventFolders);
 
 	list addfolders = ListXnotY(bindfolders, gagfolders);
 	list remfolders = ListXnotY(gagfolders, bindfolders);
-
-	integer index;
 
 	// Add Folders
 	for (index = 0; index < llGetListLength(addfolders); index++) {
@@ -72,7 +82,6 @@ bindGag(string prmInfo) {
 	}
 
 	// Detatch Folders
-
 	for (index = 0; index < llGetListLength(remfolders); index++) {
 		llOwnerSay("@detachall:BreakFree/bf_" + llList2String(remfolders, index) + "=force");
 	}

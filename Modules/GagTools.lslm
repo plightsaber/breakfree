@@ -1,0 +1,55 @@
+$module ()
+$import Modules.GuiTools.lslm();
+
+// ===== Variables =====
+string self;
+string restraint;	// Current restraint
+string restraints;	// JSON list of all restraints
+
+// ===== Main Functions =====
+addRestraint(string prmRestraint) {
+	restraint = prmRestraint;
+	restraints = llJsonSetValue(restraints, [llJsonGetValue(prmRestraint, ["gagSlot"])], prmRestraint);
+	bindGag(restraints, TRUE);
+}
+
+removeGag() {
+	integer gagSlot = (integer)llJsonGetValue(restraint, ["gagSlot"]);
+	restraints = llJsonSetValue(restraints, [(string)gagSlot], JSON_DELETE);
+	
+	restraint = getTopRestraint();
+
+	if (restraint == "") { bindGag("free", TRUE); }
+	else { bindGag(restraints, TRUE); }
+}
+
+bindGag(string prmGags, integer prmSend) {
+	if (prmGags == "free") {
+		restraint = "";
+		restraints = "";
+		if (prmSend) { simpleRequest("bindGag", "free"); }
+		return;
+	} 
+
+	if (prmSend) {
+		simpleRequest("bindGag", restraints);
+	}
+	
+	restraints = prmGags;
+	restraint = getTopRestraint();
+}
+
+string getTopRestraint() {
+	list liRestraints = llJson2List(restraints);
+	return llList2String(liRestraints, -1); 
+}
+
+integer isMouthOpen() {
+	integer gagSlot = (integer)llJsonGetValue(restraint, ["gagSlot"]);
+	integer index = 0;
+	do {
+		++index;
+		if ("1" == llJsonGetValue(restraints, [(string)gagSlot, "mouthOpen"])) { return TRUE; }
+	} while (index < gagSlot);
+	return FALSE;
+}

@@ -62,8 +62,15 @@ bindLegs(string prmInfo) {
 }
 
 bindGag(string prmInfo) {
+	list liGags = llJson2List(prmInfo);
+	integer index;
+	mouthOpen = FALSE;
+	for (index = 0; index < llGetListLength(liGags); ++index) {
+		if ("1" == llJsonGetValue(llList2String(liGags, index), ["mouthOpen"])) {
+			mouthOpen = TRUE;
+		}
+	}
   llRequestPermissions(llGetOwner(), PERMISSION_TRIGGER_ANIMATION);
-  mouthOpen = llJsonGetValue(prmInfo, ["mouthOpen"]) == "1";
 
   if (mouthOpen) {
     llStartAnimation("express_open_mouth");

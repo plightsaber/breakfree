@@ -207,6 +207,8 @@ default {
         guiRequest("gui_bind", TRUE, guiUserID, 0);
         return;
       }
+			else if (prmText == "Next >>") { multipageIndex ++; gui(guiScreen); return; }
+			else if (prmText == "<< Previous") { multipageIndex --; gui(guiScreen); return; }
 
       if (prmText == "Untie") {
         bindArms("free", TRUE);
