@@ -3,10 +3,15 @@
 ## [Unreleased]
 ### Added
 - Tape gags
+- Ball gag
 
 ### Changed
 - Gag API overhauled to accommodate mixing and matching gag types.
 - Slight adjustments to garbler to better accommodate the new gag types.
+- Garbler now garbles quoted emotes.
+
+### Fixed
+- When using the RealRestraint plugin, villains are no longer blocked from accessing BreakFree if they secure the RealRestraint first.
 
 ## [3.1.1] - 2020-01-11
 ### Added

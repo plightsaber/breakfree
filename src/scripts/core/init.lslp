@@ -110,7 +110,7 @@ touchUser(string prmUserObj) {
 	}
 }
 
-bindArms(string prmInfo) { armsBound = prmInfo != "free"; }
+bindArms(string prmInfo) { armsBound = prmInfo != "free" && prmInfo != "external"; }
 bindLegs(string prmInfo) { legsBound = prmInfo != "free"; }
 bindGag(string prmInfo) { gagBound = prmInfo != "free"; }
 
