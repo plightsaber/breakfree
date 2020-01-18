@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [3.2.0] - 2020-01-18
 ### Added
 - Tape gags
 - Ball gag
@@ -11,7 +11,7 @@
 - Garbler now garbles quoted emotes.
 
 ### Fixed
-- When using the RealRestraint plugin, villains are no longer blocked from accessing BreakFree if they secure the RealRestraint first.
+- When using the RealRestraint plug-in, villains are no longer blocked from accessing BreakFree if they secure the RealRestraint first.
 
 ## [3.1.1] - 2020-01-11
 ### Added
