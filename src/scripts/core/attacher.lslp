@@ -1,93 +1,53 @@
+$import Modules.RestraintTools.lslm();
+
 string self;	// JSON object
 
 // Global Variables
-list armfolders = [];
-list legfolders = [];
-list gagfolders = [];
+list _attachedFolders = [];
 
-init() {
-}
-
-bindArms(string prmInfo) {
-	list bindfolders = [];
-	string attachments = llJsonGetValue(prmInfo, ["attachments"]);
-	if (attachments != JSON_INVALID) { bindfolders = llJson2List(attachments); }
-
-	list addfolders = ListXnotY(bindfolders, armfolders);
-	list remfolders = ListXnotY(armfolders, bindfolders);
-
-	integer index;
-
-	// Add Folders
-	for (index = 0; index < llGetListLength(addfolders); index++) {
-		llOwnerSay("@attachover:BreakFree/bf_" + llList2String(addfolders, index) + "=force");
-	}
-
-	// Detatch Folders
-	for (index = 0; index < llGetListLength(remfolders); index++) {
-		llOwnerSay("@detachall:BreakFree/bf_" + llList2String(remfolders, index) + "=force");
-	}
-
-	// Save setting
-	armfolders = bindfolders;
-}
-
-bindLegs(string prmInfo) {
-	list bindfolders = [];
-	string attachments = llJsonGetValue(prmInfo, ["attachments"]);
-	if (attachments != JSON_INVALID) { bindfolders = llJson2List(attachments); }
-
-	list addfolders = ListXnotY(bindfolders, legfolders);
-	list remfolders = ListXnotY(legfolders, bindfolders);
-
-	integer index;
-
-	// Add Folders
-	for (index = 0; index < llGetListLength(addfolders); index++) {
-		llOwnerSay("@attachover:BreakFree/bf_" + llList2String(addfolders, index) + "=force");
-	}
-
-	// Detatch Folders
-	for (index = 0; index < llGetListLength(remfolders); index++) {
-		llOwnerSay("@detachall:BreakFree/bf_" + llList2String(remfolders, index) + "=force");
-	}
-
-	// Save setting
-	legfolders = bindfolders;
-}
-
-bindGag(string prmInfo) {
-	list bindfolders = [];
+setRestraints(string prmJson) {
+	list bindFolders = [];
 	list preventFolders = [];
-
-	list liAttachments;
-	list liBindFolders;
-	list liGags;
-
-	liGags = llJson2List(prmInfo);
+	string restraint;
 	integer index;
-	for (index = 0; index < llGetListLength(liGags); ++index) {
-		string gag = llList2String(liGags, index);
-		bindfolders += llJson2List(llJsonGetValue(gag, ["attachments"]));
-		preventFolders += llJson2List(llJsonGetValue(gag, ["preventAttach"]));
+	
+	// Arm loop.
+	restraint = llJsonGetValue(prmJson, ["arm"]);
+	if (restraint != JSON_INVALID) { 
+		bindFolders += get_restraint_list(restraint, "attachments");
+		preventFolders += get_restraint_list(restraint, "preventAttach");
 	}
-	bindfolders = ListXnotY(bindfolders, preventFolders);
-
-	list addfolders = ListXnotY(bindfolders, gagfolders);
-	list remfolders = ListXnotY(gagfolders, bindfolders);
-
-	// Add Folders
-	for (index = 0; index < llGetListLength(addfolders); index++) {
-		llOwnerSay("@attachover:BreakFree/bf_" + llList2String(addfolders, index) + "=force");
+	
+	// Leg Loop.
+	restraint = llJsonGetValue(prmJson, ["leg"]);
+	if (restraint != JSON_INVALID) { 
+		bindFolders += get_restraint_list(restraint, "attachments");
+		preventFolders += get_restraint_list(restraint, "preventAttach");
+	}
+	
+	// Gag Loop.
+	restraint = llJsonGetValue(prmJson, ["gag"]);
+	if (restraint != JSON_INVALID) { 
+		bindFolders += get_restraint_list(restraint, "attachments");
+		preventFolders += get_restraint_list(restraint, "preventAttach");
+	}
+	
+	bindFolders = ListXnotY(bindFolders, preventFolders);
+	list addFolders = ListXnotY(bindFolders, _attachedFolders);
+	list remFolders = ListXnotY(_attachedFolders, bindFolders);
+	
+	// Add Folders.
+	for (index = 0; index < llGetListLength(addFolders); index++) {
+		llOwnerSay("@attachover:BreakFree/bf_" + llList2String(addFolders, index) + "=force");
 	}
 
-	// Detatch Folders
-	for (index = 0; index < llGetListLength(remfolders); index++) {
-		llOwnerSay("@detachall:BreakFree/bf_" + llList2String(remfolders, index) + "=force");
+	// Detatch Folders.
+	for (index = 0; index < llGetListLength(remFolders); index++) {
+		llOwnerSay("@detachall:BreakFree/bf_" + llList2String(remFolders, index) + "=force");
 	}
-
+	
 	// Save setting
-	gagfolders = bindfolders;
+	_attachedFolders = bindFolders;
 }
 
 // ===== User-Defined Functions ======
@@ -119,8 +79,6 @@ default {
 		}
 		value = llJsonGetValue(prmText, ["value"]);
 
-			 if (function == "bindArms") { bindArms(value);}
-		else if (function == "bindLegs") { bindLegs(value); }
-		else if (function == "bindGag") { bindGag(value); }
+		if (function == "setRestraints") { setRestraints(value); }
 	}
 }

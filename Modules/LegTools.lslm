@@ -1,0 +1,20 @@
+$module ()
+
+// ===== Required Leg Variables =====
+integer _slot;	// Current slot of restraint.
+string _self;
+string _restraints;	// JSON list of all restraints
+string _resumeFunction;
+
+// ===== Main Functions =====
+set_restraints(string prmJson) {
+	_slot = 0;
+	_restraints = prmJson;
+	string legRestraints = llJsonGetValue(prmJson, ["leg"]);
+	if (JSON_NULL == legRestraints) return;
+
+	list liLegRestraints = llJson2List(legRestraints);
+	string legRestraint = llList2String(liLegRestraints, -1);
+
+	_slot = (integer)llJsonGetValue(legRestraint, ["slot"]);
+}

@@ -34,6 +34,7 @@ bindGag(string prmInfo) {
 
 	if (prmInfo == "free") {
 		llOwnerSay("@redirchat:" + (string)CHANNEL_GAGCHAT + "=rem");
+		llOwnerSay("@rediremote:" + (string)CHANNEL_GAGEMOTE + "=rem");
 		llListenControl(gagChatID, FALSE);
 		return;
 	}

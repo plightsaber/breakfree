@@ -22,6 +22,7 @@ Better documentation is coming later.  For now, after attaching BreakFree, click
 ### User Settings
 You can customize how your BreakFree set behaves. While unbound, you will have an "Options" button when touching your BreakFree object.
 * RP Mode - When enabled, the escape game is disabled and any avi has full access to your restraints.
+* RLV - When enabled, BreakFree will activate RLV locks when you are bound.
 
 ### RealRestraints plug-in
 If you want to use BreakFree along with a RealRestraints product, we recommend you install the included script into the main RealRestraint attachment (the one that attaches to (r forearm). No other action is required, just drag-and-drop!

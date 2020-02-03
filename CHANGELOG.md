@@ -1,5 +1,22 @@
 # Changelog
 
+## [3.2.1] - 2020-02-03
+
+### Added
+- RLV Mode - New setting to enable/disable the use of RLV locks when bound.
+
+### Changed
+- Active touch user can now reinitialize dialog before timeout.
+- Free-handed escapes made faster, requiring just one successful action per tightness.
+- Multi-layer gags need to be escaped from one layer at a time.
+
+### Fixed
+- Binding yourself now keeps you in control of your bindings.
+- Emotes whispers no longer persist after gag is removed.
+- Free-handed escapes now give less experience than bound-handed escapes instead of more.
+- Gag escape difficulty properly set - no longer set to zero, making it either too easy or impossible to escape from.
+- You can now return to the Main menu from the Options menu.
+
 ## [3.2.0] - 2020-01-18
 ### Added
 - Tape gags

@@ -204,8 +204,8 @@ default {
                 kHolder = NULL_KEY;
                 // BF BEGIN
                 string apiJson = "";
-                apiJson = llJsonSetValue(apiJson, ["value"], "free");
-                apiCall("bindArms", apiJson);
+                apiJson = llJsonSetValue(apiJson, ["type"], "arm");
+                apiCall("releaseRestraint", apiJson);
                 // BF END
             }
             else if (num > 0) { // lock
@@ -215,9 +215,9 @@ default {
                 kHolder = id;
                 // BF BEGIN
                 string apiJson = "";
-                apiJson = llJsonSetValue(apiJson, ["tightness"], "1");
-                apiJson = llJsonSetValue(apiJson, ["value"], "external");
-                apiCall("bindArms", apiJson);
+                apiJson = llJsonSetValue(apiJson, ["type"], "arm");
+                apiJson = llJsonSetValue(apiJson, ["restraint"], "{\"type\":\"external\"}");
+                apiCall("overrideRestraint", apiJson);
                 // BF END
             }
             else if (num == -21) { // periodical report from Lockable

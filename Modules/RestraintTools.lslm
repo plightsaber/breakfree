@@ -1,0 +1,34 @@
+$module ()
+string _restraints;
+
+list get_restraint_list(string prmRestraint, string prmList) {
+	list liValues = [];
+	list slots = llJson2List(prmRestraint);
+	integer index = 0;
+	for (index = 0; index < llGetListLength(slots); ++index) {
+		string attachments = llJsonGetValue(llList2String(slots, index), [prmList]);
+		if (JSON_INVALID != attachments) {
+			list restraintAttachments = llJson2List(attachments);
+			liValues += restraintAttachments;
+		}
+	}
+	return liValues;
+}
+
+string get_top_restraint(string prmType) {
+	string typeJson = llJsonGetValue(_restraints, [prmType]);
+	list liRestraints = llJson2List(typeJson);
+	return llList2String(liRestraints, -1);
+}
+
+integer search_restraint(string prmType, string prmParameter, string prmValue) {
+	list liRestraints = llJson2List(llJsonGetValue(_restraints, [prmType]));
+	integer index;
+	for (index = 0; index < llGetListLength(liRestraints); ++index) {
+		if (llJsonGetValue(llList2String(liRestraints, index), [prmParameter]) == prmValue) {
+			return TRUE;
+		}
+	}
+	
+	return FALSE;
+}

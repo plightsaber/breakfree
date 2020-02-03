@@ -1,4 +1,6 @@
+$import Modules.GeneralTools.lslm();
 $import Modules.GagTools.lslm();
+$import Modules.GuiTools.lslm();
 
 // ===== Variables =====
 // General Settings
@@ -23,18 +25,18 @@ list colorVals = [COLOR_WHITE, COLOR_SILVER, COLOR_BLACK, COLOR_PURPLE, COLOR_RE
 //list textures = ["Smooth", "Duct"];
 //list textureVals = [TEXTURE_BLANK, "duct"];
 
-
 string getSelf() {
-	if (self != "") return self;
+	if (_self != "") return _self;
 
-	self = llJsonSetValue(self, ["name"], "Tape");
-	self = llJsonSetValue(self, ["part"], "gag");
-	self = llJsonSetValue(self, ["hasColor"], "1");
-	return self;
+	_self = llJsonSetValue(_self, ["name"], "Tape");
+	_self = llJsonSetValue(_self, ["part"], "gag");
+	_self = llJsonSetValue(_self, ["hasColor"], "1");
+	return _self;
 }
 
-// ===== Initializer =====
 
+
+// ===== Initializer =====
 initGUI(key prmID, integer prmScreen) {
 	guiUserID = prmID;
 
@@ -63,13 +65,12 @@ gui(integer prmScreen) {
 
 	// GUI: Main
 	if (prmScreen == 0) {
-		integer slot = (integer)llJsonGetValue(restraint, ["gagSlot"]);
 		btn3 = "<<Style>>";
-		if (slot) { mpButtons += "Ungag"; }
+		if (_slot) { mpButtons += "Ungag"; }
 		else { mpButtons += "Stuff"; }
 
-		if (slot < 2) { mpButtons += "Simple"; }
-		if (slot == 2) { mpButtons += "Heavy"; }
+		if (_slot < 2) { mpButtons += "Simple"; }
+		if (_slot == 2) { mpButtons += "Heavy"; }
 		mpButtons = multipageGui(mpButtons, 2, multipageIndex);
 	}
 	// GUI: Colorize
@@ -112,7 +113,7 @@ addGag(string prmName) {
 	gag = llJsonSetValue(gag, ["name"], prmName);
 	if (prmName == "Stuff") {
 		gag = llJsonSetValue(gag, ["garble", "garbled"], "1");
-		gag = llJsonSetValue(gag, ["gagSlot"], "1");
+		gag = llJsonSetValue(gag, ["slot"], "1");
 		gag = llJsonSetValue(gag, ["canCut"], "0");
 		gag = llJsonSetValue(gag, ["canEscape"], "1");
 		gag = llJsonSetValue(gag, ["mouthOpen"], "1");
@@ -122,17 +123,17 @@ addGag(string prmName) {
 		gag = llJsonSetValue(gag, ["attachments", JSON_APPEND], "gStuff");
 	} else if (prmName == "Simple") {
 		gag = llJsonSetValue(gag, ["garble", "sealed"], "1");
-		gag = llJsonSetValue(gag, ["gagSlot"], "2");
+		gag = llJsonSetValue(gag, ["slot"], "2");
 		gag = llJsonSetValue(gag, ["canCut"], "1");
 		gag = llJsonSetValue(gag, ["canEscape"], "1");
 		gag = llJsonSetValue(gag, ["type"], "tape");
 		gag = llJsonSetValue(gag, ["difficulty"], "9");
 		gag = llJsonSetValue(gag, ["tightness"], "3");
-		if (isMouthOpen()) { gag = llJsonSetValue(gag, ["attachments", JSON_APPEND], "gTapeStuffed"); }
+		if (is_mouth_open()) { gag = llJsonSetValue(gag, ["attachments", JSON_APPEND], "gTapeStuffed"); }
 		else { gag = llJsonSetValue(gag, ["attachments", JSON_APPEND], "gTapeSimple"); }
 	} else if (prmName == "Heavy") {
 		gag = llJsonSetValue(gag, ["garble", "sealed"], "1");
-		gag = llJsonSetValue(gag, ["gagSlot"], "3");
+		gag = llJsonSetValue(gag, ["slot"], "3");
 		gag = llJsonSetValue(gag, ["canCut"], "1");
 		gag = llJsonSetValue(gag, ["canEscape"], "1");
 		gag = llJsonSetValue(gag, ["type"], "knot");
@@ -143,7 +144,10 @@ addGag(string prmName) {
 		gag = llJsonSetValue(gag, ["preventAttach", JSON_APPEND], "gTapeStuffed");
 	}
 
-	addRestraint(gag);
+	string restraint;
+	restraint = llJsonSetValue(restraint, ["type"], "gag");
+	restraint = llJsonSetValue(restraint, ["restraint"], gag);
+	simple_request("addRestraint", restraint);
 }
 
 // Color Functions
@@ -182,6 +186,32 @@ setTexture(string prmTexture, string prmComponent) {
 }
 */
 
+execute_function(string prmFunction, string prmJson) {
+	string value = llJsonGetValue(prmJson, ["value"]);
+	if (JSON_INVALID == value) {
+		//return;		// TODO: Rewrite all linked calls to send in JSON
+	}
+
+	if (prmFunction == "setGender") { setGender(value); }
+	else if (prmFunction == "setRestraints") { set_restraints(value); }
+	else if (prmFunction == "getAvailableRestraints") { sendAvailabilityInfo(); }
+	else if (prmFunction == "requestColor") {
+		if (llJsonGetValue(prmJson, ["attachment"]) != "gag") { return; }
+		if (llJsonGetValue(prmJson, ["name"]) != "tape") { return; }
+		string component = llJsonGetValue(prmJson, ["component"]);
+		if ("" == component) { component = "tape"; }
+		setColor(color, component);
+	}
+	else if (prmFunction == "gui_gag_tape") {
+		key userkey = (key)llJsonGetValue(prmJson, ["userkey"]);
+		integer screen = 0;
+		if ((integer)llJsonGetValue(prmJson, ["restorescreen"]) && guiScreenLast) { screen = guiScreenLast;}
+		initGUI(userkey, screen);
+	} else if (prmFunction == "resetGUI") {
+		exit("");
+	}
+}
+
 // ===== Gets =====
 string getName() {
 	return llGetDisplayName(llGetOwner());
@@ -192,14 +222,7 @@ setGender(string prmGender) {
 	gender = prmGender;
 }
 
-// ===== Other Functions =====
-debug(string output) {
-	// TODO: global enable/disable?
-	llOwnerSay(output);
-}
-
 // ===== Event Controls =====
-
 default {
 	listen(integer prmChannel, string prmName, key prmID, string prmText) {
 		if (prmChannel = guiChannel) {
@@ -212,11 +235,11 @@ default {
 				return;
 			}
 			else if (prmText == "Next >>") { multipageIndex ++; gui(guiScreen); return; }
-      		else if (prmText == "<< Previous") { multipageIndex --; gui(guiScreen); return; }
+			else if (prmText == "<< Previous") { multipageIndex --; gui(guiScreen); return; }
 
 			if (prmText == "Ungag") {
-				removeGag();
-				gui(guiScreen);
+				simple_request("remRestraint", "gag");
+				_resumeFunction = "setRestraints";
 				return;
 			}
 
@@ -225,7 +248,8 @@ default {
 					gui(100);
 				} else {
 					addGag(prmText);
-					gui(guiScreen);
+					_resumeFunction = "setRestraints";
+					return;
 				}
 				return;
 			} else if (guiScreen == 100) {
@@ -248,32 +272,17 @@ default {
 	}
 
 	link_message(integer prmLink, integer prmValue, string prmText, key prmID) {
-		string function;
-		string value;
-
-		if ((function = llJsonGetValue(prmText, ["function"])) == JSON_INVALID) {
+		string function = llJsonGetValue(prmText, ["function"]);
+		if (JSON_INVALID == function) {
 			debug(prmText);
 			return;
 		}
-		value = llJsonGetValue(prmText, ["value"]);
 
-		if (function == "setGender") { setGender(value); }
-		else if (function == "bindGag") { bindGag(value, FALSE); }
-		else if (function == "getAvailableRestraints") { sendAvailabilityInfo(); }
-		else if (function == "requestColor") {
-			if (llJsonGetValue(value, ["attachment"]) != "gag") { return; }
-			if (llJsonGetValue(value, ["name"]) != "tape") { return; }
-			string component = llJsonGetValue(value, ["component"]);
-			if ("" == component) { component = "tape"; }
-			setColor(color, component);
-		}
-		else if (function == "gui_gag_tape") {
-			key userkey = (key)llJsonGetValue(prmText, ["userkey"]);
-			integer screen = 0;
-			if ((integer)llJsonGetValue(prmText, ["restorescreen"]) && guiScreenLast) { screen = guiScreenLast;}
-			initGUI(userkey, screen);
-		} else if (function == "resetGUI") {
-			exit("");
+		execute_function(function, prmText);
+
+		if (function == _resumeFunction) {
+			_resumeFunction = "";
+			initGUI(guiUserID, guiScreen);
 		}
 	}
 

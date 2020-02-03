@@ -46,19 +46,11 @@ api(string prmJson) {
 	if (apiTargetID != llGetOwner()) { return; }
 
 	// Execute API Call
-	if (function == "touch") {
-		simpleRequest("touch", prmJson);
-	} else if (function == "touchUser") {
-		simpleRequest("touchUser", prmJson);
-	} else if (function == "getTouchInfo") {
+	if (function == "getTouchInfo") {
 		// Check arm bound status
 		send(senderID, "touchUser", self);
-	} else if (function == "touchUser") {
-		simpleRequest("touchUser", prmJson);
-	} else if (function == "requestColor") {
-		simpleRequest("requestColor", prmJson);
-	} else if ("bindArms" == function) {
-		simpleRequest("bindArms", llJsonGetValue(prmJson, ["value"]));
+	} else {
+		simpleRequest(function, prmJson);
 	}
 }
 

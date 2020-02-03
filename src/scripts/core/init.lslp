@@ -44,10 +44,7 @@ init(key prmID) {
 	ownerID = llGetOwner();
 
 	// Don't start GUI if requesting user does not have control priority
-	if (activeUser != NULL_KEY) {
-
-		if (activeUser == prmID) { return; }
-
+	if (activeUser != NULL_KEY && activeUser != prmID) {
 		if (prmID != ownerID) {
 			if (activeUser == villainID) {
 				llRegionSayTo(prmID, 0, "You cannot do anything because " + llGetDisplayName(ownerID) + " is being controlled by " + llGetDisplayName(activeUser) + ".");

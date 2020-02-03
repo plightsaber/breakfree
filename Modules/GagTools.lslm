@@ -1,55 +1,31 @@
 $module ()
-$import Modules.GuiTools.lslm();
 
-// ===== Variables =====
-string self;
-string restraint;	// Current restraint
-string restraints;	// JSON list of all restraints
+// ===== Required Gag Variables =====
+integer _slot;	// Current slot of top-gag.
+string _self;
+string _restraints;	// JSON list of all restraints
+string _resumeFunction;
 
 // ===== Main Functions =====
-addRestraint(string prmRestraint) {
-	restraint = prmRestraint;
-	restraints = llJsonSetValue(restraints, [llJsonGetValue(prmRestraint, ["gagSlot"])], prmRestraint);
-	bindGag(restraints, TRUE);
-}
-
-removeGag() {
-	integer gagSlot = (integer)llJsonGetValue(restraint, ["gagSlot"]);
-	restraints = llJsonSetValue(restraints, [(string)gagSlot], JSON_DELETE);
-	
-	restraint = getTopRestraint();
-
-	if (restraint == "") { bindGag("free", TRUE); }
-	else { bindGag(restraints, TRUE); }
-}
-
-bindGag(string prmGags, integer prmSend) {
-	if (prmGags == "free") {
-		restraint = "";
-		restraints = "";
-		if (prmSend) { simpleRequest("bindGag", "free"); }
-		return;
-	} 
-
-	if (prmSend) {
-		simpleRequest("bindGag", restraints);
+integer is_mouth_open() {
+	integer index;
+	list liGags = llJson2List(llJsonGetValue(_restraints,["gag"]));
+	for (index = 0; index < llGetListLength(liGags); ++index) {
+		if ("1" == llJsonGetValue(llList2String(liGags, index), ["mouthOpen"])) {
+			return TRUE;
+		}
 	}
-	
-	restraints = prmGags;
-	restraint = getTopRestraint();
-}
-
-string getTopRestraint() {
-	list liRestraints = llJson2List(restraints);
-	return llList2String(liRestraints, -1); 
-}
-
-integer isMouthOpen() {
-	integer gagSlot = (integer)llJsonGetValue(restraint, ["gagSlot"]);
-	integer index = 0;
-	do {
-		++index;
-		if ("1" == llJsonGetValue(restraints, [(string)gagSlot, "mouthOpen"])) { return TRUE; }
-	} while (index < gagSlot);
 	return FALSE;
+}
+
+set_restraints(string prmJson) {
+	_slot = 0;
+	_restraints = prmJson;
+	string gags = llJsonGetValue(prmJson, ["gag"]);
+	if (JSON_NULL == gags) return;
+
+	list liGags = llJson2List(gags);
+	string gag = llList2String(liGags, -1);
+
+	_slot = (integer)llJsonGetValue(gag, ["slot"]);
 }

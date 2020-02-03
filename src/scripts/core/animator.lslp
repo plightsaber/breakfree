@@ -1,162 +1,186 @@
-string self;  // JSON object
+$import Modules.GeneralTools.lslm();
+$import Modules.RestraintTools.lslm();
+
+string _self;  // JSON object
 
 // Global Variables
-string animation_arm_base;
-string animation_arm_success;
-string animation_arm_failure;
+string _animation_arm_base;
+string _animation_arm_success;
+string _animation_arm_failure;
 
-integer mouthOpen = FALSE;
+integer _mouthOpen = FALSE;
 
-list poses;
-string pose;
+list _poses;
+string _pose;
 
-string animation_mover_current; // The mover should only be able to use one animation at a time.  The previous animation is always stopped first.
+string _animation_mover_current; // The mover should only be able to use one animation at a time.  The previous animation is always stopped first.
 
 init() {
-  llRequestPermissions(llGetOwner(), PERMISSION_TRIGGER_ANIMATION);
-  if (animation_arm_base) { llStartAnimation(animation_arm_base); }
-  if (llJsonGetValue(pose, ["animBase"]) != JSON_INVALID) { llStartAnimation(llJsonGetValue(pose, ["animBase"])); }
-  if (mouthOpen) {
-    llStartAnimation("express_open_mouth");
-    llStartAnimation("animOpenMouthBento");
-    llSetTimerEvent(0.2);
-  }
+	llRequestPermissions(llGetOwner(), PERMISSION_TRIGGER_ANIMATION);
+	if (_animation_arm_base) { llStartAnimation(_animation_arm_base); }
+	if (llJsonGetValue(_pose, ["animBase"]) != JSON_INVALID) { llStartAnimation(llJsonGetValue(_pose, ["animBase"])); }
+	if (_mouthOpen) {
+		llStartAnimation("express_open_mouth");
+		llStartAnimation("animOpenMouthBento");
+		llSetTimerEvent(0.2);
+	}
 }
 
-bindArms(string prmInfo) {
-  llRequestPermissions(llGetOwner(), PERMISSION_TRIGGER_ANIMATION);
+setRestraints(string prmJson) {
+	_restraints = prmJson;
 
-  if (animation_arm_base) { llStopAnimation(animation_arm_base); }
-  if (animation_arm_success) { llStopAnimation(animation_arm_success); }
-  if (animation_arm_failure) { llStopAnimation(animation_arm_failure); }
+	string armJson = llJsonGetValue(prmJson, ["arm"]);
+	if (JSON_INVALID == armJson || (integer)llJsonGetValue(prmJson, ["isArmBoundExternal"])) {
+		bindArms("free");
+	} else {
+		bindArms(armJson);
+	}
 
-  if (prmInfo == "free" || prmInfo == "external") {
-    animation_arm_base = "";
-    return;
-  }
+	string legJson = llJsonGetValue(prmJson, ["leg"]);
+	if (JSON_INVALID == legJson) {
+		bindLegs("free");
+	} else {
+		bindLegs(legJson);
+	}
 
-  animation_arm_base = llJsonGetValue(prmInfo, ["animation_base"]);
-  animation_arm_success = llJsonGetValue(prmInfo, ["animation_success"]);
-  animation_arm_failure = llJsonGetValue(prmInfo, ["animation_failure"]);
-
-  llStartAnimation(animation_arm_base);
+	string gagJson = llJsonGetValue(prmJson, ["gag"]);
+	if (JSON_INVALID == gagJson) {
+		bindGag("free");
+	} else {
+		bindGag(gagJson);
+	}
 }
 
-bindLegs(string prmInfo) {
-  llRequestPermissions(llGetOwner(), PERMISSION_TRIGGER_ANIMATION | PERMISSION_OVERRIDE_ANIMATIONS);
-  if (prmInfo == "free") {
-    string animation_leg_base = getAnimation("leg_base");
-    if (animation_leg_base) { llStopAnimation(animation_leg_base); }
+bindArms(string prmJson) {
+	llRequestPermissions(llGetOwner(), PERMISSION_TRIGGER_ANIMATION);
 
-    pose = "";
+	if (_animation_arm_base) { llStopAnimation(_animation_arm_base); }
+	if (_animation_arm_success) { llStopAnimation(_animation_arm_success); }
+	if (_animation_arm_failure) { llStopAnimation(_animation_arm_failure); }
 
-    // Stop animations?
-    llResetAnimationOverride("Walking");
-    return;
-  }
+	if (prmJson == "free" || prmJson == "external") {
+		_animation_arm_base = "";
+		return;
+	}
 
-  poses = llJson2List(llJsonGetValue(prmInfo, ["poses"]));
-  string poseName = llJsonGetValue(pose, ["name"]);
-  if (poseName == JSON_INVALID) { setPoseIndex(0); }
-  else { setPoseIndex(getPoseIndexFromName(poseName)); }
+	string restraint = get_top_restraint("arm");
+
+	_animation_arm_base = llJsonGetValue(restraint, ["animation_base"]);
+	_animation_arm_success = llJsonGetValue(restraint, ["animation_success"]);
+	_animation_arm_failure = llJsonGetValue(restraint, ["animation_failure"]);
+
+	llStartAnimation(_animation_arm_base);
+}
+
+setPoses(string prmPoses) {
+	_poses = llJson2List(prmPoses);
+	string poseName = llJsonGetValue(_pose, ["name"]);
+	if (poseName == JSON_INVALID) { setPoseIndex(0); }
+	else {setPoseIndex(getPoseIndexFromName(poseName)); }
+}
+
+bindLegs(string prmJson) {
+	llRequestPermissions(llGetOwner(), PERMISSION_TRIGGER_ANIMATION | PERMISSION_OVERRIDE_ANIMATIONS);
+	if (prmJson == "free") {
+		string animation_leg_base = getAnimation("leg_base");
+		if (animation_leg_base != "" && JSON_INVALID != animation_leg_base) {
+			llStopAnimation(animation_leg_base);
+		}
+		_pose = "";
+
+		// Stop animations?
+		llResetAnimationOverride("Walking");
+		return;
+	}
+
 }
 
 bindGag(string prmInfo) {
-	list liGags = llJson2List(prmInfo);
-	integer index;
-	mouthOpen = FALSE;
-	for (index = 0; index < llGetListLength(liGags); ++index) {
-		if ("1" == llJsonGetValue(llList2String(liGags, index), ["mouthOpen"])) {
-			mouthOpen = TRUE;
-		}
+	_mouthOpen = FALSE;
+	if (prmInfo != "free") {
+		_mouthOpen = search_restraint("gag", "mouthOpen", "1");
 	}
-  llRequestPermissions(llGetOwner(), PERMISSION_TRIGGER_ANIMATION);
+	llRequestPermissions(llGetOwner(), PERMISSION_TRIGGER_ANIMATION);
 
-  if (mouthOpen) {
-    llStartAnimation("express_open_mouth");
-    llStartAnimation("animOpenMouthBento");
-    llSetTimerEvent(0.2);
-  } else {
-    llSetTimerEvent(0.0);
-    llStopAnimation("express_open_mouth");
-    llStopAnimation("animOpenMouthBento");
-  }
+	if (_mouthOpen) {
+		llStartAnimation("express_open_mouth");
+		llStartAnimation("animOpenMouthBento");
+		llSetTimerEvent(0.2);
+	} else {
+		llSetTimerEvent(0.0);
+		llStopAnimation("express_open_mouth");
+		llStopAnimation("animOpenMouthBento");
+	}
 }
 
 // ===== Main Functions =====
 animate(string prmAnimation) {
-  llRequestPermissions(llGetOwner(), PERMISSION_TRIGGER_ANIMATION);
-  string animation;
+	llRequestPermissions(llGetOwner(), PERMISSION_TRIGGER_ANIMATION);
+	string animation;
 
-  if (prmAnimation == "animation_arm_success") { animation = animation_arm_success; }
-  else if (prmAnimation == "animation_arm_failure") { animation = animation_arm_failure; }
-  else if (prmAnimation == "animation_leg_success") { animation = getAnimation("leg_success"); }
-  else if (prmAnimation == "animation_leg_failure") { animation = getAnimation("leg_fail"); }
+	if (prmAnimation == "animation_arm_success") { animation = _animation_arm_success; }
+	else if (prmAnimation == "animation_arm_failure") { animation = _animation_arm_failure; }
+	else if (prmAnimation == "animation_leg_success") { animation = getAnimation("leg_success"); }
+	else if (prmAnimation == "animation_leg_failure") { animation = getAnimation("leg_fail"); }
 
-  if (animation) { llStartAnimation(animation); }
+	if (animation) { llStartAnimation(animation); }
 }
 
 animate_mover(string prmAnimation) {
-  llRequestPermissions(llGetOwner(), PERMISSION_TRIGGER_ANIMATION | PERMISSION_OVERRIDE_ANIMATIONS);
+	llRequestPermissions(llGetOwner(), PERMISSION_TRIGGER_ANIMATION | PERMISSION_OVERRIDE_ANIMATIONS);
 
-  // Override walking animation
-  if (llGetAnimationOverride("Walking") != getAnimation("walk_forward")) {
-    llSetAnimationOverride("Walking", getAnimation("walk_forward"));
-  }
+	// Override walking animation
+	if (llGetAnimationOverride("Walking") != getAnimation("walk_forward")) {
+		llSetAnimationOverride("Walking", getAnimation("walk_forward"));
+	}
 
-  if (animation_mover_current) { llStopAnimation(animation_mover_current); }
+	if (_animation_mover_current) { llStopAnimation(_animation_mover_current); }
 
-  if (prmAnimation == "animation_walk_forward") { animation_mover_current = getAnimation("walk_forward"); }
-  else { animation_mover_current = ""; }
+	if (prmAnimation == "animation_walk_forward") { _animation_mover_current = getAnimation("walk_forward"); }
+	else { _animation_mover_current = ""; }
 
-  if (animation_mover_current) { llStartAnimation(animation_mover_current); }
+	if (_animation_mover_current) { llStartAnimation(_animation_mover_current); }
 }
 
 string getAnimation(string prmAnimation) {
-  if (prmAnimation == "leg_base") { return llJsonGetValue(pose, ["animBase"]); }
-  else if (prmAnimation == "leg_fail") { return llJsonGetValue(pose, ["animFail"]); }
-  else if (prmAnimation == "leg_success") { return llJsonGetValue(pose, ["animSuccess"]); }
-  else if (prmAnimation == "walk_forward") { return llJsonGetValue(pose, ["animWalkFwd"]); }
+	if (prmAnimation == "leg_base") { return llJsonGetValue(_pose, ["animBase"]); }
+	else if (prmAnimation == "leg_fail") { return llJsonGetValue(_pose, ["animFail"]); }
+	else if (prmAnimation == "leg_success") { return llJsonGetValue(_pose, ["animSuccess"]); }
+	else if (prmAnimation == "walk_forward") { return llJsonGetValue(_pose, ["animWalkFwd"]); }
 
-  return "";
+	return "";
 }
 
 // Pose Functions
 integer getPoseIndexFromName(string prmName) {
-  integer index;
-  for (index = 0; index < llGetListLength(poses); index++) {
-    if (llJsonGetValue(llList2String(poses, index), ["name"]) == prmName) {
-      return index;
-    }
-  }
-  return -1;
+	integer index;
+	for (index = 0; index < llGetListLength(_poses); index++) {
+		if (llJsonGetValue(llList2String(_poses, index), ["name"]) == prmName) {
+			return index;
+		}
+	}
+	return -1;
 }
 
 setPoseIndex(integer prmIndex) {
-  string oldAnim = llJsonGetValue(pose, ["animBase"]);
-  pose = llList2String(poses, prmIndex);
-  string newAnim = llJsonGetValue(pose, ["animBase"]);
+	string oldAnim = llJsonGetValue(_pose, ["animBase"]);
+	_pose = llList2String(_poses, prmIndex);
+	string newAnim = llJsonGetValue(_pose, ["animBase"]);
 
-  if (oldAnim != newAnim) {
-    llRequestPermissions(llGetOwner(), PERMISSION_TRIGGER_ANIMATION);
-    if (oldAnim != JSON_INVALID) { llStopAnimation(oldAnim); }
-    if (newAnim != JSON_INVALID) { llStartAnimation(newAnim); }
-  }
+	if (oldAnim != newAnim) {
+		llRequestPermissions(llGetOwner(), PERMISSION_TRIGGER_ANIMATION);
+		if (oldAnim != JSON_INVALID) { llStopAnimation(oldAnim); }
+		if (newAnim != JSON_INVALID) { llStartAnimation(newAnim); }
+	}
 }
 
 setPose(string prmPoseName) {
-  integer index = getPoseIndexFromName(prmPoseName);
-  if (index == -1) {
-    return;
-  }
+	integer index = getPoseIndexFromName(prmPoseName);
+	if (index == -1) {
+		return;
+	}
 
-  setPoseIndex(index);
-}
-
-// ===== Other Functions =====
-debug(string output) {
-  // TODO: global enable/disable?
-  llOwnerSay(output);
+	setPoseIndex(index);
 }
 
 // ===== Event Controls =====
@@ -174,16 +198,15 @@ default {
     }
     value = llJsonGetValue(prmText, ["value"]);
 
-         if (function == "bindArms") { bindArms(value);}
-    else if (function == "bindLegs") { bindLegs(value); }
-    else if (function == "bindGag") { bindGag(value); }
+	if (function == "setRestraints") { setRestraints(value); }
     else if (function == "animate") { animate(value); }
     else if (function == "animate_mover") { animate_mover(value); }
     else if (function == "setPose") { setPose(value); }
+    else if (function == "setPoses") { setPoses(value); }
   }
 
   timer() {
-    if (mouthOpen) {
+    if (_mouthOpen) {
       llRequestPermissions(llGetOwner(), PERMISSION_TRIGGER_ANIMATION);
       llStartAnimation("express_open_mouth");
     }

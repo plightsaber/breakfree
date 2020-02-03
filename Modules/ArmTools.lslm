@@ -1,0 +1,20 @@
+$module ()
+
+// ===== Required Arm Variables =====
+integer _slot;	// Current slot of restraint.
+string _self;
+string _restraints;	// JSON list of all restraints
+string _resumeFunction;
+
+// ===== Main Functions =====
+set_restraints(string prmJson) {
+	_slot = 0;
+	_restraints = prmJson;
+	string armRestraints = llJsonGetValue(prmJson, ["arm"]);
+	if (JSON_NULL == armRestraints) return;
+
+	list liArmRestraints = llJson2List(armRestraints);
+	string armRestraint = llList2String(liArmRestraints, -1);
+
+	_slot = (integer)llJsonGetValue(armRestraint, ["slot"]);
+}

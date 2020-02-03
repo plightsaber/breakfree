@@ -1,3 +1,5 @@
+$import Modules.RestraintTools.lslm();
+
 string activePart;
 
 // Avi Settings
@@ -48,16 +50,18 @@ integer gag_tightness;
 string gag_type;
 
 // Escape Vars
-list struggle_puzzle;
-integer struggle_progress;
-string actionmsg;
+list _struggle_puzzle;
+integer _struggle_progress;
+string _actionmsg;
 
 // Other
 integer armBoundExternal = FALSE;
 key configQueryID;
 string jsonSettings;
+integer _handsFree;
+string _resumeFunction;
 
-init(key prmID, integer prmScreen) {
+init_gui(key prmID, integer prmScreen) {
 	guiUserID = prmID;
 
 	if (guiID) { llListenRemove(guiID); }
@@ -69,10 +73,45 @@ init(key prmID, integer prmScreen) {
 // ===== Main Functions =====
 integer assisted() { return guiUserID != llGetOwner(); }
 
-escape(string prmVerb) {
+loosen_restraint() {
+	// Progress based on strength
+	// TODO: and energy?
+	integer tmpProgress = roll(1, llFloor(STR/2));
+	if (!assisted()) {
+		llOwnerSay("Your restraints have loosened.");
+
+		// Earn experience!
+		integer expEarned = 0;
+		if (activePart == "arm") { expEarned = arm_difficulty; }
+		if (activePart == "leg") { expEarned = leg_difficulty; }
+		if (activePart == "gag") { expEarned = gag_difficulty; }
+		if (!isArmsBound()) {
+			expEarned = llFloor(expEarned/3);
+		}
+		simpleRequest("addExp", (string)gag_difficulty);
+	}
+
+	_struggle_puzzle = newPuzzle(activePart);
+
+	if (activePart == "arm") { arm_tightness -= tmpProgress; }
+	else if (activePart == "leg") { leg_tightness -= tmpProgress; }
+	else if (activePart == "gag") { gag_tightness -= tmpProgress; }
+}
+
+update_progress() {
+	_actionmsg ="You think you've made some progress.";
+
+	_struggle_progress += 1;
+	if (assisted()) { _struggle_progress += 1; }	// TODO: Do this better?
+
+	if (_handsFree || _struggle_progress >= llGetListLength(_struggle_puzzle)) {
+		loosen_restraint();
+	}
+}
+
+escape_action(string prmVerb) {
 	string tmpAction;
 	string tmpMessage = "";
-	integer tmpSuccess = FALSE;
 
 	if (prmVerb == "Twist") { tmpAction = "1"; }
 	else if (prmVerb == "Squirm") { tmpAction = "2"; }
@@ -85,75 +124,46 @@ escape(string prmVerb) {
 	else if (prmVerb == "Yank") { tmpAction = "4";}
 
 	// Execute action
-	if (tmpAction == llList2String(struggle_puzzle, struggle_progress)) {
-		actionmsg ="You think you've made some progress.";
-		tmpSuccess = TRUE;
-		if (assisted() || !isArmsBound()) { struggle_progress += 5;	}	 // TODO: Do this better?
-		else { struggle_progress++; }
-
-		if (struggle_progress >= llGetListLength(struggle_puzzle)) {
-			// Progress based on strength
-			// TODO: and energy?
-			integer tmpProgress = roll(1, llFloor(STR/2));
-			if (!assisted()) {
-				llOwnerSay("Your restraints have loosened.");
-
-				// Earn experience!
-				integer expEarned = 0;
-				if (activePart == "arm") { expEarned = arm_difficulty; }
-				if (activePart == "leg") { expEarned = leg_difficulty; }
-				if (activePart == "gag") { expEarned = gag_difficulty; }
-				if (isArmsBound()) {
-					expEarned = llFloor(expEarned/3);
-				}
-				simpleRequest("addExp", (string)gag_difficulty);
-			}
-
-			struggle_puzzle = newPuzzle(activePart);
-
-			if (activePart == "arm") { arm_tightness -= tmpProgress; }
-			else if (activePart == "leg") { leg_tightness -= tmpProgress; }
-			else if (activePart == "gag") { gag_tightness -= tmpProgress; }
-		} else {
-			// TODO: Reset progress based on Dex/Energy?
-		}
+	integer success = (tmpAction == llList2String(_struggle_puzzle, _struggle_progress));
+	if (success) {
+		update_progress();
 	} else {
-		actionmsg = "Your " + prmVerb + " didn't help.";
-		if (!assisted() && struggle_progress > 0) { struggle_progress--; }
+		_actionmsg = "Your " + prmVerb + " didn't help.";
+		if (!assisted() && _struggle_progress > 0) { _struggle_progress--; }
 	}
 
 	// Animate
 	if (!assisted()) {
-		if (tmpSuccess) { simpleRequest("animate", "animation_" + activePart + "_success"); }
+		if (success) { simpleRequest("animate", "animation_" + activePart + "_success"); }
 		else { simpleRequest("animate", "animation_" + activePart + "_failure"); }
 	}
 
 	if (restraintFreed()) {
-		gui(0);
-	} else {
-		gui(guiScreen);
+		return;
 	}
+
+	gui(guiScreen);
 }
 
 integer restraintFreed() {
 	if (activePart == "arm" && arm_tightness <= 0) {
 		llWhisper(0, getOwnerName() + " is freed from " + getOwnerPronoun("her") +"	arm restraints.");
-		bindArms("free");
-		simpleRequest("bindArms", "free");
+		simpleRequest("remRestraint", "arm");
+		_resumeFunction = "setRestraints";
 		return TRUE;
 	}
 
 	else if (activePart == "leg" && leg_tightness <= 0) {
 		llWhisper(0, getOwnerName() + " is freed from " + getOwnerPronoun("her") +"	leg restraints.");
-		bindLegs("free");
-		simpleRequest("bindLegs", "free");
+		simpleRequest("remRestraint", "leg");
+		_resumeFunction = "setRestraints";
 		return TRUE;
 	}
 
 	else if (activePart == "gag" && gag_tightness <= 0) {
 		llWhisper(0, getOwnerName() + " is freed from " + getOwnerPronoun("her") +" gag.");
-		bindGag("free");
-		simpleRequest("bindGag", "free");
+		simpleRequest("remRestraint", "gag");
+		_resumeFunction = "setRestraints";
 		return TRUE;
 	}
 	return FALSE;
@@ -161,7 +171,7 @@ integer restraintFreed() {
 
 list newPuzzle(string prmRestraint) {
 	integer tmpDifficulty;
-	struggle_progress = 0;
+	_struggle_progress = 0;
 	if (prmRestraint == "arm") { tmpDifficulty = arm_difficulty; }
 	if (prmRestraint == "leg") { tmpDifficulty = leg_difficulty; }
 	if (prmRestraint == "gag") { tmpDifficulty = gag_difficulty; }
@@ -224,21 +234,23 @@ string displayTightness(string prmRestraint) {
 }
 
 // ===== GUI =====
-getGui(string prmPart) {
+get_gui(string prmPart) {
 	string tmpType;
 	activePart = prmPart;
-	actionmsg = "";
+	_actionmsg = "";
 
 	if (activePart == "arm") { tmpType = arm_type; }
 	else if (activePart == "leg") { tmpType = leg_type; }
 	else if (activePart == "gag") { tmpType = gag_type; }
 
-	struggle_puzzle = newPuzzle(activePart);
+	_struggle_puzzle = newPuzzle(activePart);
 
 	if (guiUserID == llGetOwner() && isArmsBound()) {
+		_handsFree = FALSE;
 		gui(10);
 		return;
 	} else {
+		_handsFree = TRUE;
 		gui(20);
 		return;
 	}
@@ -256,7 +268,7 @@ gui(integer prmScreen) {
 	guiText = " ";
 
 	if (prmScreen == 0 && ((integer)llJsonGetValue(jsonSettings, ["gagOnly"]))) {
-		getGui("gag");
+		get_gui("gag");
 		return;
 	}
 
@@ -287,7 +299,7 @@ gui(integer prmScreen) {
 		guiText = "Restraint: " + ToTitle(activePart);	// TODO: Get full name of restraint
 		guiText += "\nTightness: " + displayTightness(activePart);
 		// TODO: Show suggestion based on INT
-		if (actionmsg) { guiText += "\n" + actionmsg; }
+		if (_actionmsg) { guiText += "\n" + _actionmsg; }
 	}
 
 	// GUI Assisted Escape
@@ -300,7 +312,7 @@ gui(integer prmScreen) {
 		guiText = "Restraint: " + ToTitle(activePart);	// TODO: Get full name of restraint
 		guiText += "\nTightness: " + displayTightness(activePart);
 		// TODO: Show suggestion based on INT
-		if (actionmsg) { guiText += "\n" + actionmsg; }
+		if (_actionmsg) { guiText += "\n" + _actionmsg; }
 		
 		if (guiUserID != llGetOwner() && (integer)llJsonGetValue(jsonSettings, ["gagOnly"])) {
 			btn1 = " ";
@@ -342,60 +354,47 @@ integer isArmsBound() {
 	return armBoundExternal || (arm_tightness > 0);
 }
 
+integer is_bound() {
+	return (arm_tightness + leg_tightness + gag_tightness) > 0;
+}
+
 // ===== Sets =====
-bindArms(string prmInfo) {
-	if (prmInfo == "free") {
+setRestraints(string prmInfo) {
+	_restraints = prmInfo;
+
+	string armJson = get_top_restraint("arm");
+	if (JSON_NULL == armJson || JSON_INVALID == armJson) {
 		arm_tightness = 0;
 		armBoundExternal = FALSE;
-		return;
+	} else {
+		arm_canCut = (integer)llJsonGetValue(armJson, ["canCut"]);
+		arm_canEscape = (integer)llJsonGetValue(armJson, ["canEscape"]);
+		arm_difficulty = (integer)llJsonGetValue(armJson, ["difficulty"]);
+		arm_tightness = (integer)llJsonGetValue(armJson, ["tightness"]);
+		arm_type = llJsonGetValue(armJson, ["type"]);
 	}
 
-	if (prmInfo == "external") {
-		armBoundExternal = TRUE;
-	}
-
-	arm_canCut = (integer)llJsonGetValue(prmInfo, ["canCut"]);
-	arm_canEscape = (integer)llJsonGetValue(prmInfo, ["canEscape"]);
-	arm_difficulty = (integer)llJsonGetValue(prmInfo, ["difficulty"]);
-	arm_tightness = (integer)llJsonGetValue(prmInfo, ["tightness"]);
-	arm_type = llJsonGetValue(prmInfo, ["type"]);
-	// TODO: Tensile strength?
-
-	string type = llJsonGetValue(prmInfo, ["value"]);
-}
-
-bindLegs(string prmInfo) {
-	if (prmInfo == "free") {
+	string legJson = get_top_restraint("leg");
+	if (JSON_NULL == legJson || JSON_INVALID == legJson) {
 		leg_tightness = 0;
-		// TODO: remove settings? (May not be necessary)
-		return;
+	} else {
+		leg_canCut = (integer)llJsonGetValue(legJson, ["canCut"]);
+		leg_canEscape = (integer)llJsonGetValue(legJson, ["canEscape"]);
+		leg_difficulty = (integer)llJsonGetValue(legJson, ["difficulty"]);
+		leg_tightness = (integer)llJsonGetValue(legJson, ["tightness"]);
+		leg_type = llJsonGetValue(legJson, ["type"]);
 	}
 
-	leg_canCut = (integer)llJsonGetValue(prmInfo, ["canCut"]);
-	leg_canEscape = (integer)llJsonGetValue(prmInfo, ["canEscape"]);
-	leg_difficulty = (integer)llJsonGetValue(prmInfo, ["difficulty"]);
-	leg_tightness = (integer)llJsonGetValue(prmInfo, ["tightness"]);
-	leg_type = llJsonGetValue(prmInfo, ["type"]);
-	// TODO: Tensile strength?
-
-	string type = llJsonGetValue(prmInfo, ["value"]);
-}
-
-bindGag(string prmInfo) {
-	if (prmInfo == "free") {
+	string gagJson = get_top_restraint("gag");
+	if (JSON_NULL == gagJson || JSON_INVALID == gagJson) {
 		gag_tightness = 0;
-		// TODO: remove settings? (May not be necessary)
-		return;
+	} else {
+		gag_canCut = (integer)llJsonGetValue(gagJson, ["canCut"]);
+		gag_canEscape = (integer)llJsonGetValue(gagJson, ["canEscape"]);
+		gag_difficulty = (integer)llJsonGetValue(gagJson, ["difficulty"]);
+		gag_tightness = (integer)llJsonGetValue(gagJson, ["tightness"]);
+		gag_type = llJsonGetValue(gagJson, ["type"]);
 	}
-
-	gag_canCut = (integer)llJsonGetValue(prmInfo, ["canCut"]);
-	gag_canEscape = (integer)llJsonGetValue(prmInfo, ["canEscape"]);
-	gag_difficulty = (integer)llJsonGetValue(prmInfo, ["difficulty"]);
-	gag_tightness = (integer)llJsonGetValue(prmInfo, ["tightness"]);
-	gag_type = llJsonGetValue(prmInfo, ["type"]);
-	// TODO: Tensile strength?
-
-	string type = llJsonGetValue(prmInfo, ["value"]);
 }
 
 setGender(string prmGender) {
@@ -432,7 +431,7 @@ simpleRequest(string prmFunction, string prmValue) {
 	llMessageLinked(LINK_THIS, 0, request, NULL_KEY);
 }
 
-integer roll (integer dice, integer sides) {
+integer roll(integer dice, integer sides) {
 	integer result = 1;
 	integer i;
 	for (i = 0; i < dice; i++) {
@@ -457,6 +456,24 @@ string ToTitle(string src) {
 
 
 // ===== Event Controls =====
+execute_function(string prmFunction, string prmJson) {
+	string value = llJsonGetValue(prmJson, ["value"]);
+	if (JSON_INVALID == value) {
+		//return;		// TODO: Rewrite all linked calls to send in JSON
+	}
+
+	if (prmFunction == "setGender") { setGender(value); }
+	else if (prmFunction == "setStats") { setStats(value); }
+	else if (prmFunction == "setRestraints") { setRestraints(value); }
+	else if (prmFunction == "gui_escape") {
+		key userkey = (key)llJsonGetValue(prmJson, ["userkey"]);
+		integer screen = 0;
+		if ((integer)llJsonGetValue(prmJson, ["restorescreen"]) && guiScreen) { screen = guiScreen;}
+		init_gui(userkey, screen);
+	} else if (prmFunction == "resetGUI") {
+		exit("");
+	}
+}
 
 default {
 	state_entry() {
@@ -487,18 +504,18 @@ default {
 			else if (guiScreen !=0 && prmText == "<<Back>>") { gui(guiScreenLast); return; }
 
 			if (guiScreen == 0) {
-					 if (prmText == "Free Arms") { getGui("arm"); }
-				else if (prmText == "Free Legs") { getGui("leg"); }
-				else if (prmText == "Free Gag") { getGui("gag"); }
+					 if (prmText == "Free Arms") { get_gui("arm"); }
+				else if (prmText == "Free Legs") { get_gui("leg"); }
+				else if (prmText == "Free Gag") { get_gui("gag"); }
 				else if (prmText == "<<Back>>") {
 					guiRequest("gui_owner", TRUE, guiUserID, 0);
 					return;
 				}
 			}
 			else if (guiScreen == 10) {
-				escape(prmText);
+				escape_action(prmText);
 			} else if (guiScreen == 20) {
-				escape(prmText);
+				escape_action(prmText);
 			}
 		}
 	}
@@ -511,20 +528,14 @@ default {
 			debug(prmText);
 			return;
 		}
-		value = llJsonGetValue(prmText, ["value"]);
+		execute_function(function, prmText);
 
-		if (function == "setGender") { setGender(value); }
-		else if (function == "setStats") { setStats(value); }
-		else if (function == "bindArms") { bindArms(value); }
-		else if (function == "bindLegs") { bindLegs(value); }
-		else if (function == "bindGag") { bindGag(value); }
-		else if (function == "gui_escape") {
-			key userkey = (key)llJsonGetValue(prmText, ["userkey"]);
-			integer screen = 0;
-			if ((integer)llJsonGetValue(prmText, ["restorescreen"]) && guiScreen) { screen = guiScreen;}
-			init(userkey, screen);
-		} else if (function == "resetGUI") {
-			exit("");
+		if (function == _resumeFunction) {
+			_resumeFunction = "";
+			if (!is_bound()) {
+				return;
+			}
+			init_gui(guiUserID, 0);
 		}
 	}
 

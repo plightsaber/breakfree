@@ -1,0 +1,14 @@
+$module ()
+
+integer debugging = TRUE;
+
+debug(string output){
+	if (debugging) llOwnerSay(output);
+}
+
+simple_request(string prmFunction, string prmValue) {
+	string request = "";
+	request = llJsonSetValue(request, ["function"], prmFunction);
+	request = llJsonSetValue(request, ["value"], prmValue);
+	llMessageLinked(LINK_THIS, 0, request, NULL_KEY);
+}

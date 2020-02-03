@@ -1,8 +1,10 @@
+$import Modules.GeneralTools.lslm();
 $import Modules.GagTools.lslm();
+$import Modules.GuiTools.lslm();
 
 // ===== Variables =====
 // General Settings
-string gender = "female";
+string _gender = "female";
 
 // Colors
 vector COLOR_BROWN = <0.5, 0.25, 0.0>;
@@ -15,20 +17,20 @@ vector COLOR_PINK = <1.0, 0.5, 0.5>;
 vector COLOR_YELLOW = <0.88, 0.68, 0.15>;
 vector COLOR_PURPLE = <0.5, 0.0, 0.5>;
 
-vector color = COLOR_WHITE;
-list colors = ["White", "Black", "Purple", "Red", "Blue", "Green", "Pink", "Yellow", "Brown"];
-list colorVals = [COLOR_WHITE, COLOR_BLACK, COLOR_PURPLE, COLOR_RED, COLOR_BLUE, COLOR_GREEN, COLOR_PINK, COLOR_YELLOW, COLOR_BROWN];
+vector _color = COLOR_WHITE;
+list _colors = ["White", "Black", "Purple", "Red", "Blue", "Green", "Pink", "Yellow", "Brown"];
+list _colorVals = [COLOR_WHITE, COLOR_BLACK, COLOR_PURPLE, COLOR_RED, COLOR_BLUE, COLOR_GREEN, COLOR_PINK, COLOR_YELLOW, COLOR_BROWN];
 
-list textures = ["Smooth", "Linen", "Bandana"];
-list textureVals = [TEXTURE_BLANK, "linen", "bandana"];
+list _textures = ["Smooth", "Linen", "Bandana"];
+list _textureVals = [TEXTURE_BLANK, "linen", "bandana"];
 
 string getSelf() {
-	if (self != "") return self;
+	if (_self != "") return _self;
 
-	self = llJsonSetValue(self, ["name"], "Cloth");
-	self = llJsonSetValue(self, ["part"], "gag");
-	self = llJsonSetValue(self, ["hasColor"], "1");
-	return self;
+	_self = llJsonSetValue(_self, ["name"], "Cloth");
+	_self = llJsonSetValue(_self, ["part"], "gag");
+	_self = llJsonSetValue(_self, ["hasColor"], "1");
+	return _self;
 }
 
 // ===== Initializer =====
@@ -61,12 +63,11 @@ gui(integer prmScreen) {
 
 	// GUI: Main
 	if (prmScreen == 0) {
-		integer slot = (integer)llJsonGetValue(restraint, ["gagSlot"]);
 		btn3 = "<<Style>>";
-		if (slot) { mpButtons += "Ungag"; }
+		if (_slot) { mpButtons += "Ungag"; }
 		else { mpButtons += "Stuff"; }
-		if (slot < 2) { mpButtons += "Cleave"; }
-		if (slot < 4) { mpButtons += "OTN"; }
+		if (_slot < 2) { mpButtons += "Cleave"; }
+		if (_slot < 4) { mpButtons += "OTN"; }
 		mpButtons = multipageGui(mpButtons, 2, multipageIndex);
 	}
 	// GUI: Colorize
@@ -76,15 +77,15 @@ gui(integer prmScreen) {
 	}
 	else if (prmScreen == 101) {
 		guiText = "Choose a color for the cloth.";
-		mpButtons = multipageGui(colors, 3, multipageIndex);
+		mpButtons = multipageGui(_colors, 3, multipageIndex);
 	}
 	else if (prmScreen == 102) {
 		guiText = "Choose a color for the stuffing.";
-		mpButtons = multipageGui(colors, 3, multipageIndex);
+		mpButtons = multipageGui(_colors, 3, multipageIndex);
 	}
 	else if (prmScreen == 111) {
 		guiText = "Choose a texture for the gag.";
-		mpButtons = multipageGui(textures, 3, multipageIndex);
+		mpButtons = multipageGui(_textures, 3, multipageIndex);
 	}
 
 	if (prmScreen != guiScreen) { guiScreenLast = guiScreen; }
@@ -107,7 +108,7 @@ addGag(string prmName) {
 	gag = llJsonSetValue(gag, ["name"], prmName);
 
 	if (prmName == "Stuff") {
-		gag = llJsonSetValue(gag, ["gagSlot"], "1");
+		gag = llJsonSetValue(gag, ["slot"], "1");
 		gag = llJsonSetValue(gag, ["canCut"], "0");
 		gag = llJsonSetValue(gag, ["canEscape"], "1");
 		gag = llJsonSetValue(gag, ["mouthOpen"], "1");
@@ -117,11 +118,11 @@ addGag(string prmName) {
 		gag = llJsonSetValue(gag, ["attachments", JSON_APPEND], "gStuff");
 	} else if (prmName == "Cleave") {
 		list attachments;
-		if (isMouthOpen()) { attachments += ["gCleaveStuff"]; }
+		if (is_mouth_open()) { attachments += ["gCleaveStuff"]; }
 		else { attachments += ["gCleave"]; }
 
 		gag = llJsonSetValue(gag, ["garble", "garbled"], "1");
-		gag = llJsonSetValue(gag, ["gagSlot"], "2");
+		gag = llJsonSetValue(gag, ["slot"], "2");
 		gag = llJsonSetValue(gag, ["canCut"], "1");
 		gag = llJsonSetValue(gag, ["canEscape"], "1");
 		gag = llJsonSetValue(gag, ["type"], "knot");
@@ -130,7 +131,7 @@ addGag(string prmName) {
 		gag = llJsonSetValue(gag, ["attachments"], llList2Json(JSON_ARRAY, attachments));
 	} else if (prmName == "OTN") {
 		gag = llJsonSetValue(gag, ["garble", "muffled"], "1");
-		gag = llJsonSetValue(gag, ["gagSlot"], "4");
+		gag = llJsonSetValue(gag, ["slot"], "4");
 		gag = llJsonSetValue(gag, ["canCut"], "1");
 		gag = llJsonSetValue(gag, ["canEscape"], "1");
 		gag = llJsonSetValue(gag, ["type"], "knot");
@@ -139,22 +140,26 @@ addGag(string prmName) {
 		gag = llJsonSetValue(gag, ["attachments", JSON_APPEND], "gOTN");
 		gag = llJsonSetValue(gag, ["preventAttach", JSON_APPEND], "gCleave");
 		gag = llJsonSetValue(gag, ["preventAttach", JSON_APPEND], "gCleaveStuff");
+		gag = llJsonSetValue(gag, ["preventAttach", JSON_APPEND], "gBall");
 	}
 
-	addRestraint(gag);
+	string restraint;
+	restraint = llJsonSetValue(restraint, ["type"], "gag");
+	restraint = llJsonSetValue(restraint, ["restraint"], gag);
+	simple_request("addRestraint", restraint);
 }
 
 // Color Functions
 setColorByName(string prmColorName, string prmComponent) {
-	integer tmpColorIndex = llListFindList(colors, [prmColorName]);
-	setColor(llList2Vector(colorVals, tmpColorIndex), prmComponent);
+	integer tmpColorIndex = llListFindList(_colors, [prmColorName]);
+	setColor(llList2Vector(_colorVals, tmpColorIndex), prmComponent);
 }
 
 setColor(vector prmColor, string prmComponent) {
-	color = prmColor;
+	_color = prmColor;
 
 	string tmpRequest = "";
-	tmpRequest = llJsonSetValue(tmpRequest, ["color"], (string)color);
+	tmpRequest = llJsonSetValue(tmpRequest, ["color"], (string)_color);
 	tmpRequest = llJsonSetValue(tmpRequest, ["attachment"], "gag");
 	tmpRequest = llJsonSetValue(tmpRequest, ["component"], prmComponent);
 	tmpRequest = llJsonSetValue(tmpRequest, ["userKey"], (string)llGetOwner());
@@ -164,8 +169,8 @@ setColor(vector prmColor, string prmComponent) {
 }
 
 setTextureByName(string prmTextureName, string prmComponent) {
-	integer tmpTextureIndex = llListFindList(textures, [prmTextureName]);
-	setTexture(llList2String(textureVals, tmpTextureIndex), prmComponent);
+	integer tmpTextureIndex = llListFindList(_textures, [prmTextureName]);
+	setTexture(llList2String(_textureVals, tmpTextureIndex), prmComponent);
 }
 
 setTexture(string prmTexture, string prmComponent) {
@@ -179,35 +184,37 @@ setTexture(string prmTexture, string prmComponent) {
 	simpleRequest("setTexture", tmpRequest);
 }
 
-// ===== Gets =====
-string getName() {
-	return llGetDisplayName(llGetOwner());
-}
-
-integer getDifficulty() {
-	string tmpData = llJsonGetValue(restraint, ["difficulty"]);
-	if (tmpData == JSON_INVALID) { return 0; }
-	else { return (integer)tmpData; }
-}
-
-integer getTightness() {
-	string tmpData = llJsonGetValue(restraint, ["tightness"]);
-	if (tmpData == JSON_INVALID) { return 0; }
-	else { return (integer)tmpData; }
-}
-
 // ===== Sets =====
 setGender(string prmGender) {
-	gender = prmGender;
-}
-
-// ===== Other Functions =====
-debug(string output) {
-	// TODO: global enable/disable?
-	llOwnerSay(output);
+	_gender = prmGender;
 }
 
 // ===== Event Controls =====
+execute_function(string prmFunction, string prmJson) {
+	string value = llJsonGetValue(prmJson, ["value"]);
+	if (JSON_INVALID == value) {
+		//return;		// TODO: Rewrite all linked calls to send value in Json
+	}
+
+	if (prmFunction == "setGender") { setGender(value); }
+	else if (prmFunction == "setRestraints") { set_restraints(value); }
+	else if (prmFunction == "getAvailableRestraints") { sendAvailabilityInfo(); }
+	else if (prmFunction == "requestColor") {
+		if (llJsonGetValue(value, ["attachment"]) != "gag") { return; }
+		if (llJsonGetValue(value, ["name"]) != "cloth") { return; }
+		string component = llJsonGetValue(value, ["component"]);
+		if ("" == component) { component = "cloth"; }
+		setColor(_color, component);
+	}
+	else if (prmFunction == "gui_gag_cloth") {
+		key userkey = (key)llJsonGetValue(prmJson, ["userkey"]);
+		integer screen = 0;
+		if ((integer)llJsonGetValue(prmJson, ["restorescreen"]) && guiScreenLast) { screen = guiScreenLast;}
+		initGUI(userkey, screen);
+	} else if (prmFunction == "resetGUI") {
+		exit("");
+	}
+}
 
 default {
 	listen(integer prmChannel, string prmName, key prmID, string prmText) {
@@ -224,8 +231,8 @@ default {
 			else if (prmText == "<< Previous") { multipageIndex --; gui(guiScreen); return; }
 
 			if (prmText == "Ungag") {
-				removeGag();
-				gui(guiScreen);
+				simple_request("remRestraint", "gag");
+				_resumeFunction = "setRestraints";
 				return;
 			}
 
@@ -234,7 +241,7 @@ default {
 					gui(100);
 				} else {
 					addGag(prmText);
-					gui(guiScreen);
+					_resumeFunction = "setRestraints";
 				}
 				return;
 			} else if (guiScreen == 100) {
@@ -262,25 +269,12 @@ default {
 			debug(prmText);
 			return;
 		}
-		value = llJsonGetValue(prmText, ["value"]);
+		
+		execute_function(function, prmText);
 
-		if (function == "setGender") { setGender(value); }
-		else if (function == "bindGag") { bindGag(value, FALSE); }
-		else if (function == "getAvailableRestraints") { sendAvailabilityInfo(); }
-		else if (function == "requestColor") {
-			if (llJsonGetValue(value, ["attachment"]) != "gag") { return; }
-			if (llJsonGetValue(value, ["name"]) != "cloth") { return; }
-			string component = llJsonGetValue(value, ["component"]);
-			if ("" == component) { component = "cloth"; }
-			setColor(color, component);
-		}
-		else if (function == "gui_gag_cloth") {
-			key userkey = (key)llJsonGetValue(prmText, ["userkey"]);
-			integer screen = 0;
-			if ((integer)llJsonGetValue(prmText, ["restorescreen"]) && guiScreenLast) { screen = guiScreenLast;}
-			initGUI(userkey, screen);
-		} else if (function == "resetGUI") {
-			exit("");
+		if (function == _resumeFunction) {
+			_resumeFunction = "";
+			initGUI(guiUserID, guiScreen);
 		}
 	}
 
