@@ -10,6 +10,8 @@ integer mouthGarbled;
 integer mouthMuffled;
 integer mouthSealed;
 
+string _restraints;
+
 init() {
 	if (gagChatID) { llListenRemove(gagChatID); }
 	gagChatID = llListen(CHANNEL_GAGCHAT, "", llGetOwner(), "");
@@ -25,19 +27,27 @@ init() {
 }
 
 // ===== Main Function =====
+set_restraints(string prmJson) {
+	_restraints = prmJson;
 
-bindGag(string prmInfo) {
+	string gags = llJsonGetValue(_restraints, ["gag"]);
+	if (gags == JSON_INVALID || gags == JSON_NULL) {
+		release_gag();
+	}
+	set_gag(gags);
+}
+
+release_gag() {
+	llOwnerSay("@redirchat:" + (string)CHANNEL_GAGCHAT + "=rem");
+	llOwnerSay("@rediremote:" + (string)CHANNEL_GAGEMOTE + "=rem");
+	llListenControl(gagChatID, FALSE);
+}
+
+set_gag(string prmInfo) {
 	mouthOpen = FALSE;
 	mouthGarbled = FALSE;
 	mouthMuffled = FALSE;
 	mouthSealed = FALSE;
-
-	if (prmInfo == "free") {
-		llOwnerSay("@redirchat:" + (string)CHANNEL_GAGCHAT + "=rem");
-		llOwnerSay("@rediremote:" + (string)CHANNEL_GAGEMOTE + "=rem");
-		llListenControl(gagChatID, FALSE);
-		return;
-	}
 
 	list liGags = llJson2List(prmInfo);
 	integer index;
@@ -180,7 +190,7 @@ default {
 		}
 		value = llJsonGetValue(prmText, ["value"]);
 
-		if (function == "bindGag") { bindGag(value); }
+		if (function == "setRestraints") { set_restraints(value); }
 	}
 
 	listen(integer prmChannel, string prmName, key senderID, string prmMessage) {

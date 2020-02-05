@@ -1,5 +1,11 @@
 # Changelog
 
+## [3.2.2] - 2020-02-04
+
+### Fixed
+- Gags now garble again.
+- RealRestraint integration no longer frees all your BreakFree restraints on a status change.
+
 ## [3.2.1] - 2020-02-03
 
 ### Added

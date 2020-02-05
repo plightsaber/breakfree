@@ -12,10 +12,9 @@ add_restraint(string prmJson) {
 override_restraint(string prmJson) {
 	string type = llJsonGetValue(prmJson, ["type"]);
 	string restraint = llJsonGetValue(prmJson, ["restraint"]);
-	
-	_restraints = llJsonSetValue(_restraints, [type], JSON_DELETE);
+
+	_restraints = llJsonSetValue(_restraints, [type], JSON_NULL);
 	_restraints = llJsonSetValue(_restraints, [type, JSON_APPEND], restraint);
-	
 	rebuild_metadata();
 	simple_request("setRestraints", _restraints);
 }
@@ -31,7 +30,7 @@ rem_restraint(string prmType) {
 	liRestraints = llDeleteSubList(liRestraints, -1, -1);
 
 	if (llGetListLength(liRestraints) == 0) {
-		_restraints = llJsonSetValue(_restraints, [prmType], JSON_DELETE);
+		_restraints = llJsonSetValue(_restraints, [prmType], JSON_NULL);
 	} else {
 		_restraints = llJsonSetValue(_restraints, [prmType], llList2Json(JSON_ARRAY, liRestraints));
 	}
@@ -41,7 +40,7 @@ rem_restraint(string prmType) {
 }
 
 release_restraint(string prmType) {
-	_restraints = llJsonSetValue(_restraints, [prmType], JSON_DELETE);
+	_restraints = llJsonSetValue(_restraints, [prmType], JSON_NULL);
 	rebuild_metadata();
 	simple_request("setRestraints", _restraints);
 }

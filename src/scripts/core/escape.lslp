@@ -55,7 +55,7 @@ integer _struggle_progress;
 string _actionmsg;
 
 // Other
-integer armBoundExternal = FALSE;
+integer _armBoundExternal = FALSE;
 key configQueryID;
 string jsonSettings;
 integer _handsFree;
@@ -351,7 +351,7 @@ string getOwnerPronoun(string prmPlaceholder) {
 }
 
 integer isArmsBound() {
-	return armBoundExternal || (arm_tightness > 0);
+	return _armBoundExternal || (arm_tightness > 0);
 }
 
 integer is_bound() {
@@ -362,10 +362,14 @@ integer is_bound() {
 setRestraints(string prmInfo) {
 	_restraints = prmInfo;
 
+	_armBoundExternal = FALSE;
 	string armJson = get_top_restraint("arm");
 	if (JSON_NULL == armJson || JSON_INVALID == armJson) {
 		arm_tightness = 0;
-		armBoundExternal = FALSE;
+	} else if (llJsonGetValue(armJson, ["type"]) == "external") {
+		_armBoundExternal = TRUE;
+		arm_canEscape = FALSE;
+		arm_canCut = FALSE;
 	} else {
 		arm_canCut = (integer)llJsonGetValue(armJson, ["canCut"]);
 		arm_canEscape = (integer)llJsonGetValue(armJson, ["canEscape"]);
