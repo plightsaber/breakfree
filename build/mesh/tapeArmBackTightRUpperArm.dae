@@ -1,0 +1,147 @@
+<?xml version='1.0' encoding='utf-8'?>
+<COLLADA version="1.4.1" xmlns="http://www.collada.org/2005/11/COLLADASchema">
+  <asset>
+    <contributor>
+      <author>Avastar User</author>
+      <authoring_tool>Avastar 2-81-26 on Blender 2.82 (sub 7)</authoring_tool>
+    </contributor>
+    <created>2020-04-13T23:09:44</created>
+    <modified>2020-04-13T23:09:44</modified>
+    <unit meter="1" name="meter" />
+    <up_axis>Z_UP</up_axis>
+  </asset>
+  <library_cameras />
+  <library_lights />
+  <library_effects>
+    <effect id="tapeTex-effect">
+      <profile_COMMON>
+        <technique sid="common">
+          <phong>
+            <ambient>
+              <color sid="ambient">0 0 0 1</color>
+            </ambient>
+            <diffuse>
+              <color sid="diffuse">0.8 0.8 0.8 1</color>
+            </diffuse>
+            <specular>
+              <color sid="specular">0.5 0.5 0.5 1</color>
+            </specular>
+            <index_of_refraction>
+              <float sid="index_of_refraction">1.0</float>
+            </index_of_refraction>
+          </phong>
+        </technique>
+      </profile_COMMON>
+    </effect>
+    <effect id="tapeTexInner-effect">
+      <profile_COMMON>
+        <technique sid="common">
+          <phong>
+            <ambient>
+              <color sid="ambient">0 0 0 1</color>
+            </ambient>
+            <diffuse>
+              <color sid="diffuse">0.8 0.8 0.8 1</color>
+            </diffuse>
+            <specular>
+              <color sid="specular">0.5 0.5 0.5 1</color>
+            </specular>
+            <index_of_refraction>
+              <float sid="index_of_refraction">1.0</float>
+            </index_of_refraction>
+          </phong>
+        </technique>
+      </profile_COMMON>
+    </effect>
+  </library_effects>
+  <library_materials>
+    <material id="tapeTex-material" name="tapeTex">
+      <instance_effect url="#tapeTex-effect" />
+    </material>
+    <material id="tapeTexInner-material" name="tapeTexInner">
+      <instance_effect url="#tapeTexInner-effect" />
+    </material>
+  </library_materials>
+  <library_geometries>
+    <geometry id="tapeArmBackTightRUpperArm-mesh" name="tapeArmBackTightRUpperArm">
+      <mesh>
+        <source id="tapeArmBackTightRUpperArm-mesh-positions">
+          <float_array count="144" id="tapeArmBackTightRUpperArm-mesh-positions-array">-0.21 0.0315 1   -0.205 0.0315 1.051   -0.18 0.063 1   -0.175 0.077 1.051   -0.145 0.03 1   -0.135 0.033 1.051   -0.205 0.055 1   -0.2 0.063 1.051   -0.1545 0.058 1   -0.147 0.072 1.051   -0.2 0 1   -0.21 -0.0315 1   -0.195 0 1.05   -0.205 -0.0315 1.051   -0.18 -0.063 1   -0.175 -0.077 1.051   -0.145 -0.03 1   -0.135 -0.033 1.051   -0.14 0 1   -0.14 0 1.05   -0.205 -0.055 1   -0.2 -0.063 1.051   -0.1545 -0.058 1   -0.147 -0.072 1.051   -0.21 0.0315 1   -0.205 0.0315 1.051   -0.18 0.063 1   -0.175 0.077 1.051   -0.145 0.03 1   -0.135 0.033 1.051   -0.205 0.055 1   -0.2 0.063 1.051   -0.1545 0.058 1   -0.147 0.072 1.051   -0.2 0 1   -0.21 -0.0315 1   -0.195 0 1.05   -0.205 -0.0315 1.051   -0.18 -0.063 1   -0.175 -0.077 1.051   -0.145 -0.03 1   -0.135 -0.033 1.051   -0.14 0 1   -0.14 0 1.05   -0.205 -0.055 1   -0.2 -0.063 1.051   -0.1545 -0.058 1   -0.147 -0.072 1.051  </float_array>
+          <technique_common>
+            <accessor count="48" source="#tapeArmBackTightRUpperArm-mesh-positions-array" stride="3">
+              <param name="X" type="float" />
+              <param name="Y" type="float" />
+              <param name="Z" type="float" />
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="tapeArmBackTightRUpperArm-mesh-normals">
+          <float_array count="144" id="tapeArmBackTightRUpperArm-mesh-normals-array">-0.99516 0 0.098271   -0.993794 -0.066898 0.088872   -0.99409 -0.047854 0.097447   -0.769807 0.634486 -0.069461   -0.109044 0.97099 -0.212808   -0.785349 0.61902 -0.006379   0.975424 0.08756 -0.20219   0.653045 0.704439 -0.278028   0.619628 0.728886 -0.291182   0.992392 0 -0.123114   0.973473 0.184336 -0.135536   -0.132392 0.958243 -0.253462   -0.993794 0.066898 0.088872   -0.995038 0 0.099492   -0.769807 -0.634486 -0.069461   -0.109044 -0.97099 -0.212808   -0.132392 -0.958243 -0.253462   0.653045 -0.704439 -0.278028   0.975424 -0.08756 -0.20219   0.619628 -0.728886 -0.291182   0.973473 -0.184336 -0.135536   -0.785349 -0.61902 -0.006379   0.99516 0 -0.098271   0.993794 0.066898 -0.088872   0.995038 0 -0.099492   0.769807 -0.634486 0.069461   0.109044 -0.97099 0.212808   0.132392 -0.958243 0.253462   -0.653045 -0.704439 0.278028   -0.975424 -0.08756 0.20219   -0.619628 -0.728886 0.291182   -0.973473 -0.184336 0.135536   -0.992392 0 0.123114   0.785349 -0.61902 0.006379   0.993794 -0.066898 -0.088872   0.99409 -0.047854 -0.097447   0.769807 0.634486 0.069461   0.109044 0.97099 0.212808   0.785349 0.61902 0.006379   -0.975424 0.08756 0.20219   -0.653045 0.704439 0.278028   -0.619628 0.728886 0.291182   -0.973473 0.184336 0.135536   0.132392 0.958243 0.253462   1 0 0   -0.99409 0.047854 0.097447   0.99409 0.047854 -0.097447   -1 0 0  </float_array>
+          <technique_common>
+            <accessor count="48" source="#tapeArmBackTightRUpperArm-mesh-normals-array" stride="3">
+              <param name="X" type="float" />
+              <param name="Y" type="float" />
+              <param name="Z" type="float" />
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="tapeArmBackTightRUpperArm-mesh-map-0">
+          <float_array count="288" id="tapeArmBackTightRUpperArm-mesh-map-0-array">0.000100672 -5.06639e-07   0.182751 0.999899   0.182751 -6.85453e-07   0.336208 0.999899   0.487269 9.95994e-05   0.336208 9.95994e-05   0.831296 0.999899   0.639929 9.95398e-05   0.639929 0.999899   0.999947 0.999899   0.831296 9.93609e-05   0.831296 0.999899   0.182751 0.999899   0.336208 9.95994e-05   0.182751 -6.85453e-07   0.487269 0.999899   0.639929 9.95398e-05   0.487269 9.95994e-05   0.999899 -5.06639e-07   0.817249 0.999899   0.999799 0.999899   0.663792 0.999899   0.512731 9.95994e-05   0.512731 0.999899   0.360071 9.95398e-05   0.168704 0.999899   0.360071 0.999899   0.168704 9.93609e-05   5.30481e-05 0.999899   0.168704 0.999899   0.817249 0.999899   0.663792 9.95994e-05   0.663792 0.999899   0.512731 0.999899   0.360071 9.95398e-05   0.360071 0.999899   0.000100672 -5.06639e-07   0.182751 0.999899   0.000200629 0.999899   0.336208 0.999899   0.487269 9.95994e-05   0.487269 0.999899   0.639929 9.95398e-05   0.831296 0.999899   0.639929 0.999899   0.831296 9.93609e-05   0.999947 0.999899   0.831296 0.999899   0.182751 0.999899   0.336208 9.95994e-05   0.336208 0.999899   0.487269 0.999899   0.639929 9.95398e-05   0.639929 0.999899   0.999899 -5.06639e-07   0.817249 0.999899   0.817249 -6.85453e-07   0.663792 0.999899   0.512731 9.95994e-05   0.663792 9.95994e-05   0.168704 0.999899   0.360071 9.95398e-05   0.360071 0.999899   5.30481e-05 0.999899   0.168704 9.93609e-05   0.168704 0.999899   0.817249 0.999899   0.663792 9.95994e-05   0.817249 -6.85453e-07   0.512731 0.999899   0.360071 9.95398e-05   0.512731 9.95994e-05   0.000100672 -5.06639e-07   0.000200629 0.999899   0.182751 0.999899   0.336208 0.999899   0.487269 0.999899   0.487269 9.95994e-05   0.831296 0.999899   0.831296 9.93609e-05   0.639929 9.95398e-05   0.999947 0.999899   0.999999 9.93013e-05   0.831296 9.93609e-05   0.182751 0.999899   0.336208 0.999899   0.336208 9.95994e-05   0.487269 0.999899   0.639929 0.999899   0.639929 9.95398e-05   0.999899 -5.06639e-07   0.817249 -6.85453e-07   0.817249 0.999899   0.663792 0.999899   0.663792 9.95994e-05   0.512731 9.95994e-05   0.360071 9.95398e-05   0.168704 9.93609e-05   0.168704 0.999899   0.168704 9.93609e-05   5.96046e-07 9.93013e-05   5.30481e-05 0.999899   0.817249 0.999899   0.817249 -6.85453e-07   0.663792 9.95994e-05   0.512731 0.999899   0.512731 9.95994e-05   0.360071 9.95398e-05   0.000100672 -5.06639e-07   0.182751 -6.85453e-07   0.182751 0.999899   0.336208 0.999899   0.336208 9.95994e-05   0.487269 9.95994e-05   0.639929 9.95398e-05   0.831296 9.93609e-05   0.831296 0.999899   0.831296 9.93609e-05   0.999999 9.93013e-05   0.999947 0.999899   0.182751 0.999899   0.182751 -6.85453e-07   0.336208 9.95994e-05   0.487269 0.999899   0.487269 9.95994e-05   0.639929 9.95398e-05   0.999899 -5.06639e-07   0.999799 0.999899   0.817249 0.999899   0.663792 0.999899   0.512731 0.999899   0.512731 9.95994e-05   0.168704 0.999899   0.168704 9.93609e-05   0.360071 9.95398e-05   5.30481e-05 0.999899   5.96046e-07 9.93013e-05   0.168704 9.93609e-05   0.817249 0.999899   0.663792 0.999899   0.663792 9.95994e-05   0.512731 0.999899   0.360071 0.999899   0.360071 9.95398e-05  </float_array>
+          <technique_common>
+            <accessor count="144" source="#tapeArmBackTightRUpperArm-mesh-map-0-array" stride="2">
+              <param name="S" type="float" />
+              <param name="T" type="float" />
+            </accessor>
+          </technique_common>
+        </source>
+        <vertices id="tapeArmBackTightRUpperArm-mesh-vertices">
+          <input semantic="POSITION" source="#tapeArmBackTightRUpperArm-mesh-positions" />
+        </vertices>
+        <triangles count="24" material="tapeTex-material">
+          <input offset="0" semantic="VERTEX" source="#tapeArmBackTightRUpperArm-mesh-vertices" />
+          <input offset="1" semantic="NORMAL" source="#tapeArmBackTightRUpperArm-mesh-normals" />
+          <input offset="2" semantic="TEXCOORD" set="0" source="#tapeArmBackTightRUpperArm-mesh-map-0" />
+          <p>10 0 0  1 1 1  0 2 2     7 3 3  2 4 4  6 5 5     5 6 6  8 7 7  9 8 8     19 9 9  4 10 10  5 6 11     1 1 12  6 5 13  0 2 14     3 11 15  8 7 16  2 4 17     10 0 18  13 12 19  12 13 20     21 14 21  14 15 22  15 16 23     22 17 24  17 18 25  23 19 26     16 20 27  19 9 28  17 18 29     13 12 30  20 21 31  21 14 32     15 16 33  22 17 34  23 19 35     10 0 72  12 13 73  1 1 74     7 3 75  3 11 76  2 4 77     5 6 78  4 10 79  8 7 80     19 9 81  18 44 82  4 10 83     1 1 84  7 3 85  6 5 86     3 11 87  9 8 88  8 7 89     10 0 90  11 45 91  13 12 92     21 14 93  20 21 94  14 15 95     22 17 96  16 20 97  17 18 98     16 20 99  18 44 100  19 9 101     13 12 102  11 45 103  20 21 104     15 16 105  14 15 106  22 17 107    </p>
+        </triangles>
+        <triangles count="24" material="tapeTexInner-material">
+          <input offset="0" semantic="VERTEX" source="#tapeArmBackTightRUpperArm-mesh-vertices" />
+          <input offset="1" semantic="NORMAL" source="#tapeArmBackTightRUpperArm-mesh-normals" />
+          <input offset="2" semantic="TEXCOORD" set="0" source="#tapeArmBackTightRUpperArm-mesh-map-0" />
+          <p>34 22 36  25 23 37  36 24 38     31 25 39  26 26 40  27 27 41     32 28 42  29 29 43  33 30 44     28 31 45  43 32 46  29 29 47     25 23 48  30 33 49  31 25 50     27 27 51  32 28 52  33 30 53     34 22 54  37 34 55  35 35 56     45 36 57  38 37 58  44 38 59     41 39 60  46 40 61  47 41 62     43 32 63  40 42 64  41 39 65     37 34 66  44 38 67  35 35 68     39 43 69  46 40 70  38 37 71     34 22 108  24 46 109  25 23 110     31 25 111  30 33 112  26 26 113     32 28 114  28 31 115  29 29 116     28 31 117  42 47 118  43 32 119     25 23 120  24 46 121  30 33 122     27 27 123  26 26 124  32 28 125     34 22 126  36 24 127  37 34 128     45 36 129  39 43 130  38 37 131     41 39 132  40 42 133  46 40 134     43 32 135  42 47 136  40 42 137     37 34 138  45 36 139  44 38 140     39 43 141  47 41 142  46 40 143    </p>
+        </triangles>
+      </mesh>
+      <extra>
+        <technique profile="MAYA">
+          <double_sided>1</double_sided>
+        </technique>
+      </extra>
+    </geometry>
+  </library_geometries>
+  <library_controllers />
+  <library_visual_scenes>
+    <visual_scene id="Scene" name="Scene">
+      <node id="tapeArmBackTightRUpperArm" name="tapeArmBackTightRUpperArm" type="NODE">
+        <translate sid="location">0 0 0</translate>
+        <rotate sid="rotationZ">0 0 1 0</rotate>
+        <rotate sid="rotationY">0 1 0 0</rotate>
+        <rotate sid="rotationX">1 0 0 0</rotate>
+        <scale sid="scale">1 1 1</scale>
+        <instance_geometry url="#tapeArmBackTightRUpperArm-mesh">
+          <bind_material>
+            <technique_common>
+              <instance_material symbol="tapeTex-material" target="#tapeTex-material">
+                <bind_vertex_input input_semantic="TEXCOORD" input_set="0" semantic="UVMap" />
+              </instance_material>
+              <instance_material symbol="tapeTexInner-material" target="#tapeTexInner-material">
+                <bind_vertex_input input_semantic="TEXCOORD" input_set="0" semantic="UVMap" />
+              </instance_material>
+            </technique_common>
+          </bind_material>
+        </instance_geometry>
+      </node>
+    </visual_scene>
+  </library_visual_scenes>
+  <scene>
+    <instance_visual_scene url="#Scene" />
+  </scene>
+</COLLADA>

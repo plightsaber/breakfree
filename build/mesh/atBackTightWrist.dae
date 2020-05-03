@@ -1,0 +1,82 @@
+<?xml version='1.0' encoding='utf-8'?>
+<COLLADA version="1.4.1" xmlns="http://www.collada.org/2005/11/COLLADASchema">
+  <asset>
+    <contributor>
+      <author>Avastar User</author>
+      <authoring_tool>Avastar 2-79-2 on Blender 2.79 (sub 0)</authoring_tool>
+    </contributor>
+    <created>2020-04-05T23:09:26</created>
+    <modified>2020-04-05T23:09:26</modified>
+    <unit meter="1" name="meter" />
+    <up_axis>Z_UP</up_axis>
+  </asset>
+  <library_cameras />
+  <library_lights />
+  <library_effects />
+  <library_materials />
+  <library_geometries>
+    <geometry id="atArmBackTightWrist-mesh" name="atArmBackTightWrist">
+      <mesh>
+        <source id="atArmBackTightWrist-mesh-positions">
+          <float_array count="60" id="atArmBackTightWrist-mesh-positions-array">-0.234 0.032 0.99   -0.224 0.032 1.04   -0.18 0.057 0.99   -0.18 0.064 1.04   -0.212 0.0555 1.04   -0.2195 0.0545 0.99   -0.1585 0.043 0.99   -0.1485 0.053 1.04   -0.233 0 0.991   -0.22 0 1.04   -0.158 0 0.99   -0.148 0 1.04   -0.234 -0.032 0.99   -0.224 -0.032 1.04   -0.18 -0.057 0.99   -0.18 -0.064 1.04   -0.212 -0.0555 1.04   -0.2195 -0.0545 0.99   -0.1585 -0.043 0.99   -0.1485 -0.053 1.04  </float_array>
+          <technique_common>
+            <accessor count="20" source="#atArmBackTightWrist-mesh-positions-array" stride="3">
+              <param name="X" type="float" />
+              <param name="Y" type="float" />
+              <param name="Z" type="float" />
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="atArmBackTightWrist-mesh-normals">
+          <float_array count="60" id="atArmBackTightWrist-mesh-normals-array">-0.976031 0 0.217632   -0.958508 0.210184 0.192574   -0.946997 0.25947 0.189399   -0.564936 0.825018 0.013917   0.224283 0.970071 -0.093052   -0.549774 0.830644 0.088201   0.069797 0.980855 -0.181803   0.846259 0.489493 -0.210336   0.980385 0 -0.19709   0.774572 0.572262 -0.269361   -0.958508 -0.210184 0.192574   -0.966565 0 0.25642   0.224283 -0.970071 -0.093052   -0.564936 -0.825018 0.013917   -0.549774 -0.830644 0.088201   -0.946997 -0.25947 0.189399   0.069797 -0.980855 -0.181803   0.846259 -0.489493 -0.210336   0.774572 -0.572262 -0.269361   0.980581 0 -0.196116  </float_array>
+          <technique_common>
+            <accessor count="20" source="#atArmBackTightWrist-mesh-normals-array" stride="3">
+              <param name="X" type="float" />
+              <param name="Y" type="float" />
+              <param name="Z" type="float" />
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="atArmBackTightWrist-mesh-map-0">
+          <float_array count="120" id="atArmBackTightWrist-mesh-map-0-array">1 2.98023e-08   1.49012e-08 0.203546   1 0.203546   1.49012e-08 0.354907   1 0.559667   1 0.354907   1.49012e-08 0.203546   1 0.354907   1 0.203546   1.49012e-08 0.559667   1 0.728021   1 0.559667   -5.58794e-09 1   1 0.728021   1.49012e-08 0.728021   0 2.98023e-08   1 0.203546   1 0   1.19209e-07 0.559667   1 0.354907   1.19209e-07 0.354907   1.19209e-07 0.354907   1 0.203546   0 0.203546   1 0.559667   0 0.728021   1 0.728021   0 0.728021   1 1   1 0.728021   1 2.98023e-08   0 0   1.49012e-08 0.203546   1.49012e-08 0.354907   1.49012e-08 0.559667   1 0.559667   1.49012e-08 0.203546   1.49012e-08 0.354907   1 0.354907   1.49012e-08 0.559667   1.49012e-08 0.728021   1 0.728021   -5.58794e-09 1   1 1   1 0.728021   0 2.98023e-08   0 0.203546   1 0.203546   1.19209e-07 0.559667   1 0.559667   1 0.354907   1.19209e-07 0.354907   1 0.354907   1 0.203546   1 0.559667   1.19209e-07 0.559667   0 0.728021   0 0.728021   0 1   1 1  </float_array>
+          <technique_common>
+            <accessor count="60" source="#atArmBackTightWrist-mesh-map-0-array" stride="2">
+              <param name="S" type="float" />
+              <param name="T" type="float" />
+            </accessor>
+          </technique_common>
+        </source>
+        <vertices id="atArmBackTightWrist-mesh-vertices">
+          <input semantic="POSITION" source="#atArmBackTightWrist-mesh-positions" />
+        </vertices>
+        <triangles count="20">
+          <input offset="0" semantic="VERTEX" source="#atArmBackTightWrist-mesh-vertices" />
+          <input offset="1" semantic="NORMAL" source="#atArmBackTightWrist-mesh-normals" />
+          <input offset="2" semantic="TEXCOORD" set="0" source="#atArmBackTightWrist-mesh-map-0" />
+          <p>8 0 0  1 1 1  0 2 2     4 3 3  2 4 4  5 5 5     1 1 6  5 5 7  0 2 8     3 6 9  6 7 10  2 4 11     11 8 12  6 7 13  7 9 14     8 0 15  13 10 16  9 11 17     14 12 18  16 13 19  17 14 20     17 14 21  13 10 22  12 15 23     15 16 24  18 17 25  19 18 26     18 17 27  11 8 28  19 18 29     8 0 30  9 11 31  1 1 32     4 3 33  3 6 34  2 4 35     1 1 36  4 3 37  5 5 38     3 6 39  7 9 40  6 7 41     11 8 42  10 19 43  6 7 44     8 0 45  12 15 46  13 10 47     14 12 48  15 16 49  16 13 50     17 14 51  16 13 52  13 10 53     15 16 54  14 12 55  18 17 56     18 17 57  10 19 58  11 8 59    </p>
+        </triangles>
+      </mesh>
+      <extra>
+        <technique profile="MAYA">
+          <double_sided>1</double_sided>
+        </technique>
+      </extra>
+    </geometry>
+  </library_geometries>
+  <library_controllers />
+  <library_visual_scenes>
+    <visual_scene id="Scene" name="Scene">
+      <node id="atArmBackTightWrist" name="atArmBackTightWrist" type="NODE">
+        <translate sid="location">0 0 0</translate>
+        <rotate sid="rotationZ">0 0 1 0</rotate>
+        <rotate sid="rotationY">0 1 0 0</rotate>
+        <rotate sid="rotationX">1 0 0 0</rotate>
+        <scale sid="scale">1 1 1</scale>
+        <instance_geometry url="#atArmBackTightWrist-mesh" />
+      </node>
+    </visual_scene>
+  </library_visual_scenes>
+  <scene>
+    <instance_visual_scene url="#Scene" />
+  </scene>
+</COLLADA>

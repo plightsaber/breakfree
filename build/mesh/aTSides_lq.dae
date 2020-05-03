@@ -1,0 +1,121 @@
+<?xml version='1.0' encoding='utf-8'?>
+<COLLADA version="1.4.1" xmlns="http://www.collada.org/2005/11/COLLADASchema">
+  <asset>
+    <contributor>
+      <author>Avastar User</author>
+      <authoring_tool>Avastar 2-79-2 on Blender 2.79 (sub 0)</authoring_tool>
+    </contributor>
+    <created>2020-02-16T13:06:10</created>
+    <modified>2020-02-16T13:06:10</modified>
+    <unit meter="1" name="meter" />
+    <up_axis>Z_UP</up_axis>
+  </asset>
+  <library_cameras />
+  <library_lights />
+  <library_effects>
+    <effect id="Material_002-effect">
+      <profile_COMMON>
+        <technique sid="common">
+          <phong>
+            <emission>
+              <color sid="emission">0 0 0 1</color>
+            </emission>
+            <ambient>
+              <color sid="ambient">0 0 0 1</color>
+            </ambient>
+            <diffuse>
+              <color sid="diffuse">0.64 0.64 0.64 1</color>
+            </diffuse>
+            <specular>
+              <color sid="specular">0.5 0.5 0.5 1</color>
+            </specular>
+            <shininess>
+              <float sid="shininess">50</float>
+            </shininess>
+            <index_of_refraction>
+              <float sid="index_of_refraction">1.0</float>
+            </index_of_refraction>
+          </phong>
+        </technique>
+      </profile_COMMON>
+    </effect>
+  </library_effects>
+  <library_materials>
+    <material id="Material_002-material" name="Material.002">
+      <instance_effect url="#Material_002-effect" />
+    </material>
+  </library_materials>
+  <library_geometries>
+    <geometry id="arSides-mesh" name="arSides">
+      <mesh>
+        <source id="arSides-mesh-positions">
+          <float_array count="90" id="arSides-mesh-positions-array">0.0200001 -0.22 1.14   0.00999994 -0.2 1.3   -0.0599999 -0.14 1.16   -0.0800001 -0.14 1.3   0.1 -0.126 1.13   0.12 -0.126 1.3   -0.0500001 -0.2 1.3   -0.0399999 -0.21 1.15   0.00999994 -0.2 1.34   -0.0800001 -0.14 1.34   0.115 -0.126 1.34   -0.0500001 -0.2 1.34   0.0200001 0.22 1.14   0.13 0 1.13   0.00999994 0.2 1.3   0.145 0 1.3   -0.0599999 0.14 1.16   -0.0800001 0.14 1.3   -0.0799999 0 1.16   -0.0800001 0 1.3   0.1 0.126 1.13   0.12 0.126 1.3   -0.0500001 0.2 1.3   -0.0399999 0.21 1.15   0.00999994 0.2 1.34   0.14 0 1.34   -0.0800001 0.14 1.34   -0.0900001 0 1.34   0.115 0.126 1.34   -0.0500001 0.2 1.34  </float_array>
+          <technique_common>
+            <accessor count="30" source="#arSides-mesh-positions-array" stride="3">
+              <param name="X" type="float" />
+              <param name="Y" type="float" />
+              <param name="Z" type="float" />
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="arSides-mesh-normals">
+          <float_array count="90" id="arSides-mesh-normals-array">0.99448 0 -0.104923   0.838909 -0.544216 0.007813   0.862354 -0.505034 -0.03586   -0.55072 -0.83458 -0.013581   -0.966927 -0.233774 -0.101994   -0.573181 -0.818037 0.047732   -0.968434 -0.244245 -0.049807   -0.997477 0 -0.070987   0.312515 -0.949509 0.027681   0.400264 -0.905911 0.138253   0.820168 -0.564144 0.095219   0.302139 -0.953264 0   -0.994913 0 -0.100743   -0.971524 -0.235854 -0.022676   -0.970143 0 -0.242536   -0.525721 -0.850657 0   0.992278 0 0.124031   0.838909 0.544216 0.007813   0.862354 0.505034 -0.03586   -0.966927 0.233774 -0.101994   -0.55072 0.83458 -0.013581   -0.573181 0.818037 0.047732   -0.968434 0.244245 -0.049807   0.312515 0.949509 0.027681   0.400264 0.905911 0.138253   0.820168 0.564144 0.095219   -0.971524 0.235854 -0.022676   -0.525721 0.850657 0   0.99984 0 0.017915   0.302139 0.953264 0  </float_array>
+          <technique_common>
+            <accessor count="30" source="#arSides-mesh-normals-array" stride="3">
+              <param name="X" type="float" />
+              <param name="Y" type="float" />
+              <param name="Z" type="float" />
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="arSides-mesh-map-0">
+          <float_array count="240" id="arSides-mesh-map-0-array">0.5 7.45058e-08   0.378369 0.790113   0.378369 7.45058e-08   0.199488 0.790113   0.134111 7.45058e-08   0.199488 7.45058e-08   0.134111 0.790113   2.95113e-08 7.45058e-08   0.134111 7.45058e-08   0.378369 7.45058e-08   0.256869 0.790113   0.256869 7.45058e-08   0.256869 0.790113   0.199488 7.45058e-08   0.256869 7.45058e-08   0.256869 0.790113   0.378369 1   0.256869 1   -2.91038e-10 0.790113   0.134111 1   -2.91038e-10 1   0.256869 0.790113   0.199488 1   0.199488 0.790113   0.378369 0.790113   0.5 1   0.378369 1   0.199488 0.790113   0.134111 1   0.134111 0.790113   0.621631 0.790113   0.5 7.45058e-08   0.621631 7.45058e-08   0.865889 7.45058e-08   0.800512 0.790113   0.800512 7.45058e-08   1 7.45058e-08   0.865889 0.790113   0.865889 7.45058e-08   0.743131 0.790113   0.621631 7.45058e-08   0.743131 7.45058e-08   0.800512 7.45058e-08   0.743131 0.790113   0.743131 7.45058e-08   0.743131 0.790113   0.621631 1   0.621631 0.790113   1 0.790113   0.865889 1   0.865889 0.790113   0.800512 1   0.743131 0.790113   0.800512 0.790113   0.621631 0.790113   0.5 1   0.5 0.790113   0.865889 1   0.800512 0.790113   0.865889 0.790113   0.5 7.45058e-08   0.5 0.790113   0.378369 0.790113   0.199488 0.790113   0.134111 0.790113   0.134111 7.45058e-08   0.134111 0.790113   -2.91038e-10 0.790113   2.95113e-08 7.45058e-08   0.378369 7.45058e-08   0.378369 0.790113   0.256869 0.790113   0.256869 0.790113   0.199488 0.790113   0.199488 7.45058e-08   0.256869 0.790113   0.378369 0.790113   0.378369 1   -2.91038e-10 0.790113   0.134111 0.790113   0.134111 1   0.256869 0.790113   0.256869 1   0.199488 1   0.378369 0.790113   0.5 0.790113   0.5 1   0.199488 0.790113   0.199488 1   0.134111 1   0.621631 0.790113   0.5 0.790113   0.5 7.45058e-08   0.865889 7.45058e-08   0.865889 0.790113   0.800512 0.790113   1 7.45058e-08   1 0.790113   0.865889 0.790113   0.743131 0.790113   0.621631 0.790113   0.621631 7.45058e-08   0.800512 7.45058e-08   0.800512 0.790113   0.743131 0.790113   0.743131 0.790113   0.743131 1   0.621631 1   1 0.790113   1 1   0.865889 1   0.800512 1   0.743131 1   0.743131 0.790113   0.621631 0.790113   0.621631 1   0.5 1   0.865889 1   0.800512 1   0.800512 0.790113  </float_array>
+          <technique_common>
+            <accessor count="120" source="#arSides-mesh-map-0-array" stride="2">
+              <param name="S" type="float" />
+              <param name="T" type="float" />
+            </accessor>
+          </technique_common>
+        </source>
+        <vertices id="arSides-mesh-vertices">
+          <input semantic="POSITION" source="#arSides-mesh-positions" />
+        </vertices>
+        <triangles count="40" material="Material_002-material">
+          <input offset="0" semantic="VERTEX" source="#arSides-mesh-vertices" />
+          <input offset="1" semantic="NORMAL" source="#arSides-mesh-normals" />
+          <input offset="2" semantic="TEXCOORD" set="0" source="#arSides-mesh-map-0" />
+          <p>13 0 0  5 1 1  4 2 2     6 3 3  2 4 4  7 5 5     3 6 6  18 7 7  2 4 8     4 2 9  1 8 10  0 9 11     1 8 12  7 5 13  0 9 14     1 8 15  10 10 16  8 11 17     19 12 18  9 13 19  27 14 20     1 8 21  11 15 22  6 3 23     5 1 24  25 16 25  10 10 26     6 3 27  9 13 28  3 6 29     21 17 30  13 0 31  20 18 32     16 19 33  22 20 34  23 21 35     18 7 36  17 22 37  16 19 38     14 23 39  20 18 40  12 24 41     23 21 42  14 23 43  12 24 44     14 23 45  28 25 46  21 17 47     19 12 48  26 26 49  17 22 50     29 27 51  14 23 52  22 20 53     21 17 54  25 16 55  15 28 56     26 26 57  22 20 58  17 22 59     13 0 60  15 28 61  5 1 62     6 3 63  3 6 64  2 4 65     3 6 66  19 12 67  18 7 68     4 2 69  5 1 70  1 8 71     1 8 72  6 3 73  7 5 74     1 8 75  5 1 76  10 10 77     19 12 78  3 6 79  9 13 80     1 8 81  8 11 82  11 15 83     5 1 84  15 28 85  25 16 86     6 3 87  11 15 88  9 13 89     21 17 90  15 28 91  13 0 92     16 19 93  17 22 94  22 20 95     18 7 96  19 12 97  17 22 98     14 23 99  21 17 100  20 18 101     23 21 102  22 20 103  14 23 104     14 23 105  24 29 106  28 25 107     19 12 108  27 14 109  26 26 110     29 27 111  24 29 112  14 23 113     21 17 114  28 25 115  25 16 116     26 26 117  29 27 118  22 20 119    </p>
+        </triangles>
+      </mesh>
+      <extra>
+        <technique profile="MAYA">
+          <double_sided>1</double_sided>
+        </technique>
+      </extra>
+    </geometry>
+  </library_geometries>
+  <library_controllers />
+  <library_visual_scenes>
+    <visual_scene id="Scene" name="Scene">
+      <node id="arSides" name="arSides" type="NODE">
+        <translate sid="location">0 0 0</translate>
+        <rotate sid="rotationZ">0 0 1 0</rotate>
+        <rotate sid="rotationY">0 1 0 0</rotate>
+        <rotate sid="rotationX">1 0 0 0</rotate>
+        <scale sid="scale">1 1 1</scale>
+        <instance_geometry url="#arSides-mesh">
+          <bind_material>
+            <technique_common>
+              <instance_material symbol="Material_002-material" target="#Material_002-material">
+                <bind_vertex_input input_semantic="TEXCOORD" input_set="0" semantic="UVMap" />
+              </instance_material>
+            </technique_common>
+          </bind_material>
+        </instance_geometry>
+      </node>
+    </visual_scene>
+  </library_visual_scenes>
+  <scene>
+    <instance_visual_scene url="#Scene" />
+  </scene>
+</COLLADA>

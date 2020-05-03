@@ -1,0 +1,141 @@
+<?xml version='1.0' encoding='utf-8'?>
+<COLLADA version="1.4.1" xmlns="http://www.collada.org/2005/11/COLLADASchema">
+  <asset>
+    <contributor>
+      <author>Avastar User</author>
+      <authoring_tool>Avastar 2-81-26 on Blender 2.82 (sub 7)</authoring_tool>
+    </contributor>
+    <created>2020-04-12T00:56:22</created>
+    <modified>2020-04-12T00:56:22</modified>
+    <unit meter="1" name="meter" />
+    <up_axis>Z_UP</up_axis>
+  </asset>
+  <library_cameras />
+  <library_lights />
+  <library_effects>
+    <effect id="tapeTex-effect">
+      <profile_COMMON>
+        <technique sid="common">
+          <phong>
+            <ambient>
+              <color sid="ambient">0 0 0 1</color>
+            </ambient>
+            <diffuse>
+              <color sid="diffuse">0.214041 0.214041 0.214041 1</color>
+            </diffuse>
+            <specular>
+              <color sid="specular">0.5 0.5 0.5 1</color>
+            </specular>
+            <index_of_refraction>
+              <float sid="index_of_refraction">1.0</float>
+            </index_of_refraction>
+          </phong>
+        </technique>
+      </profile_COMMON>
+    </effect>
+    <effect id="DuctInside-effect">
+      <profile_COMMON>
+        <technique sid="common">
+          <phong>
+            <ambient>
+              <color sid="ambient">0 0 0 1</color>
+            </ambient>
+            <diffuse>
+              <color sid="diffuse">0.8 0.8 0.8 1</color>
+            </diffuse>
+            <specular>
+              <color sid="specular">0.5 0.5 0.5 1</color>
+            </specular>
+            <index_of_refraction>
+              <float sid="index_of_refraction">1.0</float>
+            </index_of_refraction>
+          </phong>
+        </technique>
+      </profile_COMMON>
+    </effect>
+  </library_effects>
+  <library_materials>
+    <material id="tapeTex-material" name="tapeTex">
+      <instance_effect url="#tapeTex-effect" />
+    </material>
+    <material id="DuctInside-material" name="DuctInside">
+      <instance_effect url="#DuctInside-effect" />
+    </material>
+  </library_materials>
+  <library_geometries>
+    <geometry id="tapeArmBackTightRForearm-mesh" name="tapeArmBackTightRForearm">
+      <mesh>
+        <source id="tapeArmBackTightRForearm-mesh-positions">
+          <float_array count="72" id="tapeArmBackTightRForearm-mesh-positions-array">-0.21 0.0315 1.01268   -0.205 0.0315 1.03818   -0.18 0.063 1.01268   -0.175 0.077 1.03818   -0.145 0.03 1.01268   -0.135 0.033 1.03818   -0.205 0.055 1.01268   -0.2 0.063 1.03818   -0.1545 0.058 1.01268   -0.147 0.072 1.03818   -0.2 0 1.01268   -0.21 -0.0315 1.01268   -0.195 0 1.03768   -0.205 -0.0315 1.03818   -0.18 -0.063 1.01268   -0.175 -0.077 1.03818   -0.145 -0.03 1.01268   -0.135 -0.033 1.03818   -0.14 0 1.01268   -0.14 0 1.03768   -0.205 -0.055 1.01268   -0.2 -0.063 1.03818   -0.1545 -0.058 1.01268   -0.147 -0.072 1.03818  </float_array>
+          <technique_common>
+            <accessor count="24" source="#tapeArmBackTightRForearm-mesh-positions-array" stride="3">
+              <param name="X" type="float" />
+              <param name="Y" type="float" />
+              <param name="Z" type="float" />
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="tapeArmBackTightRForearm-mesh-normals">
+          <float_array count="72" id="tapeArmBackTightRForearm-mesh-normals-array">-0.980896 0 0.194531   -0.981638 -0.062625 0.180183   -0.980257 -0.046512 0.192181   -0.718087 0.680914 -0.143898   -0.144203 0.903247 -0.404166   -0.822609 0.5686 0.002869   0.920955 0.088537 -0.379479   0.60581 0.616736 -0.502624   0.544704 0.657166 -0.52099   0.986214 0 -0.165473   0.943723 0.142526 -0.29845   -0.102849 0.878272 -0.466969   -0.981638 0.062625 0.180183   -0.980581 0 0.196116   -0.718087 -0.680914 -0.143898   -0.144203 -0.903247 -0.404166   -0.102849 -0.878272 -0.466969   0.60581 -0.616736 -0.502624   0.920955 -0.088537 -0.379479   0.544704 -0.657166 -0.52099   0.943723 -0.142526 -0.29845   -0.822609 -0.5686 0.002869   1 0 0   -0.980257 0.046512 0.192181  </float_array>
+          <technique_common>
+            <accessor count="24" source="#tapeArmBackTightRForearm-mesh-normals-array" stride="3">
+              <param name="X" type="float" />
+              <param name="Y" type="float" />
+              <param name="Z" type="float" />
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="tapeArmBackTightRForearm-mesh-map-0">
+          <float_array count="144" id="tapeArmBackTightRForearm-mesh-map-0-array">0.000100672 -5.06639e-07   0.182751 0.999899   0.182751 -6.85453e-07   0.336208 0.999899   0.487269 9.95994e-05   0.336208 9.95994e-05   0.831296 0.999899   0.639929 9.95398e-05   0.639929 0.999899   0.999947 0.999899   0.831296 9.93609e-05   0.831296 0.999899   0.182751 0.999899   0.336208 9.95994e-05   0.182751 -6.85453e-07   0.487269 0.999899   0.639929 9.95398e-05   0.487269 9.95994e-05   0.999899 -5.06639e-07   0.817249 0.999899   0.999799 0.999899   0.663792 0.999899   0.512731 9.95994e-05   0.512731 0.999899   0.360071 9.95398e-05   0.168704 0.999899   0.360071 0.999899   0.168704 9.93609e-05   5.30481e-05 0.999899   0.168704 0.999899   0.817249 0.999899   0.663792 9.95994e-05   0.663792 0.999899   0.512731 0.999899   0.360071 9.95398e-05   0.360071 0.999899   0.000100672 -5.06639e-07   0.000200629 0.999899   0.182751 0.999899   0.336208 0.999899   0.487269 0.999899   0.487269 9.95994e-05   0.831296 0.999899   0.831296 9.93609e-05   0.639929 9.95398e-05   0.999947 0.999899   0.999999 9.93013e-05   0.831296 9.93609e-05   0.182751 0.999899   0.336208 0.999899   0.336208 9.95994e-05   0.487269 0.999899   0.639929 0.999899   0.639929 9.95398e-05   0.999899 -5.06639e-07   0.817249 -6.85453e-07   0.817249 0.999899   0.663792 0.999899   0.663792 9.95994e-05   0.512731 9.95994e-05   0.360071 9.95398e-05   0.168704 9.93609e-05   0.168704 0.999899   0.168704 9.93609e-05   5.96046e-07 9.93013e-05   5.30481e-05 0.999899   0.817249 0.999899   0.817249 -6.85453e-07   0.663792 9.95994e-05   0.512731 0.999899   0.512731 9.95994e-05   0.360071 9.95398e-05  </float_array>
+          <technique_common>
+            <accessor count="72" source="#tapeArmBackTightRForearm-mesh-map-0-array" stride="2">
+              <param name="S" type="float" />
+              <param name="T" type="float" />
+            </accessor>
+          </technique_common>
+        </source>
+        <vertices id="tapeArmBackTightRForearm-mesh-vertices">
+          <input semantic="POSITION" source="#tapeArmBackTightRForearm-mesh-positions" />
+        </vertices>
+        <triangles count="24" material="tapeTex-material">
+          <input offset="0" semantic="VERTEX" source="#tapeArmBackTightRForearm-mesh-vertices" />
+          <input offset="1" semantic="NORMAL" source="#tapeArmBackTightRForearm-mesh-normals" />
+          <input offset="2" semantic="TEXCOORD" set="0" source="#tapeArmBackTightRForearm-mesh-map-0" />
+          <p>10 0 0  1 1 1  0 2 2     7 3 3  2 4 4  6 5 5     5 6 6  8 7 7  9 8 8     19 9 9  4 10 10  5 6 11     1 1 12  6 5 13  0 2 14     3 11 15  8 7 16  2 4 17     10 0 18  13 12 19  12 13 20     21 14 21  14 15 22  15 16 23     22 17 24  17 18 25  23 19 26     16 20 27  19 9 28  17 18 29     13 12 30  20 21 31  21 14 32     15 16 33  22 17 34  23 19 35     10 0 36  12 13 37  1 1 38     7 3 39  3 11 40  2 4 41     5 6 42  4 10 43  8 7 44     19 9 45  18 22 46  4 10 47     1 1 48  7 3 49  6 5 50     3 11 51  9 8 52  8 7 53     10 0 54  11 23 55  13 12 56     21 14 57  20 21 58  14 15 59     22 17 60  16 20 61  17 18 62     16 20 63  18 22 64  19 9 65     13 12 66  11 23 67  20 21 68     15 16 69  14 15 70  22 17 71    </p>
+        </triangles>
+      </mesh>
+      <extra>
+        <technique profile="MAYA">
+          <double_sided>1</double_sided>
+        </technique>
+      </extra>
+    </geometry>
+  </library_geometries>
+  <library_controllers />
+  <library_visual_scenes>
+    <visual_scene id="Scene" name="Scene">
+      <node id="tapeArmBackTightRForearm" name="tapeArmBackTightRForearm" type="NODE">
+        <translate sid="location">0 0 0</translate>
+        <rotate sid="rotationZ">0 0 1 0</rotate>
+        <rotate sid="rotationY">0 1 0 0</rotate>
+        <rotate sid="rotationX">1 0 0 0</rotate>
+        <scale sid="scale">1 1 1</scale>
+        <instance_geometry url="#tapeArmBackTightRForearm-mesh">
+          <bind_material>
+            <technique_common>
+              <instance_material symbol="tapeTex-material" target="#tapeTex-material">
+                <bind_vertex_input input_semantic="TEXCOORD" input_set="0" semantic="UVMap" />
+              </instance_material>
+              <instance_material symbol="DuctInside-material" target="#DuctInside-material">
+                <bind_vertex_input input_semantic="TEXCOORD" input_set="0" semantic="UVMap" />
+              </instance_material>
+            </technique_common>
+          </bind_material>
+        </instance_geometry>
+      </node>
+    </visual_scene>
+  </library_visual_scenes>
+  <scene>
+    <instance_visual_scene url="#Scene" />
+  </scene>
+</COLLADA>

@@ -1,0 +1,147 @@
+<?xml version='1.0' encoding='utf-8'?>
+<COLLADA version="1.4.1" xmlns="http://www.collada.org/2005/11/COLLADASchema">
+  <asset>
+    <contributor>
+      <author>Avastar User</author>
+      <authoring_tool>Avastar 2-81-26 on Blender 2.82 (sub 7)</authoring_tool>
+    </contributor>
+    <created>2020-04-17T22:53:50</created>
+    <modified>2020-04-17T22:53:50</modified>
+    <unit meter="1" name="meter" />
+    <up_axis>Z_UP</up_axis>
+  </asset>
+  <library_cameras />
+  <library_lights />
+  <library_effects>
+    <effect id="tapeTex_001-effect">
+      <profile_COMMON>
+        <technique sid="common">
+          <phong>
+            <ambient>
+              <color sid="ambient">0 0 0 1</color>
+            </ambient>
+            <diffuse>
+              <color sid="diffuse">0.8 0.8 0.8 1</color>
+            </diffuse>
+            <specular>
+              <color sid="specular">0.5 0.5 0.5 1</color>
+            </specular>
+            <index_of_refraction>
+              <float sid="index_of_refraction">1.0</float>
+            </index_of_refraction>
+          </phong>
+        </technique>
+      </profile_COMMON>
+    </effect>
+    <effect id="tapeTexInner_001-effect">
+      <profile_COMMON>
+        <technique sid="common">
+          <phong>
+            <ambient>
+              <color sid="ambient">0 0 0 1</color>
+            </ambient>
+            <diffuse>
+              <color sid="diffuse">0.8 0.8 0.8 1</color>
+            </diffuse>
+            <specular>
+              <color sid="specular">0.5 0.5 0.5 1</color>
+            </specular>
+            <index_of_refraction>
+              <float sid="index_of_refraction">1.0</float>
+            </index_of_refraction>
+          </phong>
+        </technique>
+      </profile_COMMON>
+    </effect>
+  </library_effects>
+  <library_materials>
+    <material id="tapeTex_001-material" name="tapeTex.001">
+      <instance_effect url="#tapeTex_001-effect" />
+    </material>
+    <material id="tapeTexInner_001-material" name="tapeTexInner.001">
+      <instance_effect url="#tapeTexInner_001-effect" />
+    </material>
+  </library_materials>
+  <library_geometries>
+    <geometry id="tapeAnkle-mesh" name="tapeAnkle">
+      <mesh>
+        <source id="tapeAnkle-mesh-positions">
+          <float_array count="144" id="tapeAnkle-mesh-positions-array">-0.034 0.05 -0.03   -0.044 0.05 0.02   0.01 0.09 -0.03   0.01 0.095 0.02   0.05 0.05 -0.03   0.05 0.05 0.02   -0.03 0.08 -0.03   -0.034 0.08 0.02   0.05 0.08 -0.03   0.05 0.083 0.02   -0.03 0 -0.03   -0.034 -0.05 -0.03   -0.03 0 0.02   -0.044 -0.05 0.02   0.01 -0.09 -0.03   0.01 -0.095 0.02   0.05 -0.05 -0.03   0.05 -0.05 0.02   0.038 0 -0.03   0.038 0 0.02   -0.03 -0.08 -0.03   -0.034 -0.08 0.02   0.05 -0.08 -0.03   0.05 -0.083 0.02   -0.034 0.05 -0.03   -0.044 0.05 0.02   0.01 0.09 -0.03   0.01 0.095 0.02   0.05 0.05 -0.03   0.05 0.05 0.02   -0.03 0.08 -0.03   -0.034 0.08 0.02   0.05 0.08 -0.03   0.05 0.083 0.02   -0.03 0 -0.03   -0.034 -0.05 -0.03   -0.03 0 0.02   -0.044 -0.05 0.02   0.01 -0.09 -0.03   0.01 -0.095 0.02   0.05 -0.05 -0.03   0.05 -0.05 0.02   0.038 0 -0.03   0.038 0 0.02   -0.03 -0.08 -0.03   -0.034 -0.08 0.02   0.05 -0.08 -0.03   0.05 -0.083 0.02  </float_array>
+          <technique_common>
+            <accessor count="48" source="#tapeAnkle-mesh-positions-array" stride="3">
+              <param name="X" type="float" />
+              <param name="Y" type="float" />
+              <param name="Z" type="float" />
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="tapeAnkle-mesh-normals">
+          <float_array count="120" id="tapeAnkle-mesh-normals-array">-0.995202 0 -0.097845   -0.993903 0.010895 -0.109715   -1 0 0   -0.000366 0.996832 -0.079532   -0.74403 0.662788 -0.084447   -0.738103 0.666841 -0.102605   0.993073 -0.117496 0   0.799182 0.600012 -0.035982   0.784279 0.618316 -0.050906   1 0 0   -0.980323 0.023042 -0.196052   0.010468 0.996029 -0.088414   -0.993903 -0.010895 -0.109715   -0.74403 -0.662788 -0.084447   -0.000366 -0.996832 -0.079532   -0.738103 -0.666841 -0.102605   0.799182 -0.600012 -0.035982   0.993073 0.117496 0   0.784279 -0.618316 -0.050906   -0.980323 -0.023042 -0.196052   0.010468 -0.996029 -0.088414   0.993903 -0.010895 0.109715   0.995202 0 0.097845   0.74403 -0.662788 0.084447   0.000366 -0.996832 0.079532   0.738103 -0.666841 0.102605   -0.799182 -0.600012 0.035982   -0.993073 0.117496 0   -0.784279 -0.618316 0.050906   0.980323 -0.023042 0.196052   -0.010468 -0.996029 0.088414   0.993903 0.010895 0.109715   0.000366 0.996832 0.079532   0.74403 0.662788 0.084447   0.738103 0.666841 0.102605   -0.993073 -0.117496 0   -0.799182 0.600012 0.035982   -0.784279 0.618316 0.050906   0.980323 0.023042 0.196052   -0.010468 0.996029 0.088414  </float_array>
+          <technique_common>
+            <accessor count="40" source="#tapeAnkle-mesh-normals-array" stride="3">
+              <param name="X" type="float" />
+              <param name="Y" type="float" />
+              <param name="Z" type="float" />
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="tapeAnkle-mesh-map-0">
+          <float_array count="288" id="tapeAnkle-mesh-map-0-array">0.000200629 0.999899   0.182751 -6.85453e-07   0.000100672 -5.06639e-07   0.487269 0.999899   0.336208 9.95994e-05   0.336208 0.999899   0.831296 0.999899   0.639929 9.95398e-05   0.639929 0.999899   0.999947 0.999899   0.831296 9.93609e-05   0.831296 0.999899   0.336208 0.999899   0.182751 -6.85453e-07   0.182751 0.999899   0.639929 0.999899   0.487269 9.95994e-05   0.487269 0.999899   0.817249 -6.85453e-07   0.999799 0.999899   0.999899 -5.06639e-07   0.663792 9.95994e-05   0.512731 0.999899   0.663792 0.999899   0.360071 9.95398e-05   0.168704 0.999899   0.360071 0.999899   0.168704 9.93609e-05   5.30481e-05 0.999899   0.168704 0.999899   0.817249 -6.85453e-07   0.663792 0.999899   0.817249 0.999899   0.512731 9.95994e-05   0.360071 0.999899   0.512731 0.999899   0.182751 -6.85453e-07   0.000200629 0.999899   0.000100672 -5.06639e-07   0.336208 9.95994e-05   0.487269 0.999899   0.336208 0.999899   0.639929 9.95398e-05   0.831296 0.999899   0.639929 0.999899   0.831296 9.93609e-05   0.999947 0.999899   0.831296 0.999899   0.182751 -6.85453e-07   0.336208 0.999899   0.182751 0.999899   0.487269 9.95994e-05   0.639929 0.999899   0.487269 0.999899   0.999799 0.999899   0.817249 -6.85453e-07   0.999899 -5.06639e-07   0.512731 0.999899   0.663792 9.95994e-05   0.663792 0.999899   0.168704 0.999899   0.360071 9.95398e-05   0.360071 0.999899   5.30481e-05 0.999899   0.168704 9.93609e-05   0.168704 0.999899   0.663792 0.999899   0.817249 -6.85453e-07   0.817249 0.999899   0.360071 0.999899   0.512731 9.95994e-05   0.512731 0.999899   0.000200629 0.999899   0.182751 0.999899   0.182751 -6.85453e-07   0.487269 0.999899   0.487269 9.95994e-05   0.336208 9.95994e-05   0.831296 0.999899   0.831296 9.93609e-05   0.639929 9.95398e-05   0.999947 0.999899   0.999999 9.93013e-05   0.831296 9.93609e-05   0.336208 0.999899   0.336208 9.95994e-05   0.182751 -6.85453e-07   0.639929 0.999899   0.639929 9.95398e-05   0.487269 9.95994e-05   0.817249 -6.85453e-07   0.817249 0.999899   0.999799 0.999899   0.663792 9.95994e-05   0.512731 9.95994e-05   0.512731 0.999899   0.360071 9.95398e-05   0.168704 9.93609e-05   0.168704 0.999899   0.168704 9.93609e-05   5.96046e-07 9.93013e-05   5.30481e-05 0.999899   0.817249 -6.85453e-07   0.663792 9.95994e-05   0.663792 0.999899   0.512731 9.95994e-05   0.360071 9.95398e-05   0.360071 0.999899   0.182751 -6.85453e-07   0.182751 0.999899   0.000200629 0.999899   0.336208 9.95994e-05   0.487269 9.95994e-05   0.487269 0.999899   0.639929 9.95398e-05   0.831296 9.93609e-05   0.831296 0.999899   0.831296 9.93609e-05   0.999999 9.93013e-05   0.999947 0.999899   0.182751 -6.85453e-07   0.336208 9.95994e-05   0.336208 0.999899   0.487269 9.95994e-05   0.639929 9.95398e-05   0.639929 0.999899   0.999799 0.999899   0.817249 0.999899   0.817249 -6.85453e-07   0.512731 0.999899   0.512731 9.95994e-05   0.663792 9.95994e-05   0.168704 0.999899   0.168704 9.93609e-05   0.360071 9.95398e-05   5.30481e-05 0.999899   5.96046e-07 9.93013e-05   0.168704 9.93609e-05   0.663792 0.999899   0.663792 9.95994e-05   0.817249 -6.85453e-07   0.360071 0.999899   0.360071 9.95398e-05   0.512731 9.95994e-05  </float_array>
+          <technique_common>
+            <accessor count="144" source="#tapeAnkle-mesh-map-0-array" stride="2">
+              <param name="S" type="float" />
+              <param name="T" type="float" />
+            </accessor>
+          </technique_common>
+        </source>
+        <vertices id="tapeAnkle-mesh-vertices">
+          <input semantic="POSITION" source="#tapeAnkle-mesh-positions" />
+        </vertices>
+        <triangles count="24" material="tapeTex_001-material">
+          <input offset="0" semantic="VERTEX" source="#tapeAnkle-mesh-vertices" />
+          <input offset="1" semantic="NORMAL" source="#tapeAnkle-mesh-normals" />
+          <input offset="2" semantic="TEXCOORD" set="0" source="#tapeAnkle-mesh-map-0" />
+          <p>12 0 0  0 1 1  10 2 2     3 3 3  6 4 4  7 5 5     5 6 6  8 7 7  9 8 8     19 9 9  4 6 10  5 6 11     7 5 12  0 1 13  1 10 14     9 8 15  2 11 16  3 3 17     11 12 18  12 0 19  10 2 20     20 13 21  15 14 22  21 15 23     22 16 24  17 17 25  23 18 26     16 17 27  19 9 28  17 17 29     11 12 30  21 15 31  13 19 32     14 20 33  23 18 34  15 14 35     12 0 72  1 10 73  0 1 74     3 3 75  2 11 76  6 4 77     5 6 78  4 6 79  8 7 80     19 9 81  18 9 82  4 6 83     7 5 84  6 4 85  0 1 86     9 8 87  8 7 88  2 11 89     11 12 90  13 19 91  12 0 92     20 13 93  14 20 94  15 14 95     22 16 96  16 17 97  17 17 98     16 17 99  18 9 100  19 9 101     11 12 102  20 13 103  21 15 104     14 20 105  22 16 106  23 18 107    </p>
+        </triangles>
+        <triangles count="24" material="tapeTexInner_001-material">
+          <input offset="0" semantic="VERTEX" source="#tapeAnkle-mesh-vertices" />
+          <input offset="1" semantic="NORMAL" source="#tapeAnkle-mesh-normals" />
+          <input offset="2" semantic="TEXCOORD" set="0" source="#tapeAnkle-mesh-map-0" />
+          <p>24 21 36  36 22 37  34 9 38     30 23 39  27 24 40  31 25 41     32 26 42  29 27 43  33 28 44     28 27 45  43 2 46  29 27 47     24 21 48  31 25 49  25 29 50     26 30 51  33 28 52  27 24 53     36 22 54  35 31 55  34 9 56     39 32 57  44 33 58  45 34 59     41 35 60  46 36 61  47 37 62     43 2 63  40 35 64  41 35 65     45 34 66  35 31 67  37 38 68     47 37 69  38 39 70  39 32 71     24 21 108  25 29 109  36 22 110     30 23 111  26 30 112  27 24 113     32 26 114  28 27 115  29 27 116     28 27 117  42 2 118  43 2 119     24 21 120  30 23 121  31 25 122     26 30 123  32 26 124  33 28 125     36 22 126  37 38 127  35 31 128     39 32 129  38 39 130  44 33 131     41 35 132  40 35 133  46 36 134     43 2 135  42 2 136  40 35 137     45 34 138  44 33 139  35 31 140     47 37 141  46 36 142  38 39 143    </p>
+        </triangles>
+      </mesh>
+      <extra>
+        <technique profile="MAYA">
+          <double_sided>1</double_sided>
+        </technique>
+      </extra>
+    </geometry>
+  </library_geometries>
+  <library_controllers />
+  <library_visual_scenes>
+    <visual_scene id="Scene" name="Scene">
+      <node id="tapeAnkle" name="tapeAnkle" type="NODE">
+        <translate sid="location">0 0 0.2</translate>
+        <rotate sid="rotationZ">0 0 1 0</rotate>
+        <rotate sid="rotationY">0 1 0 0</rotate>
+        <rotate sid="rotationX">1 0 0 0</rotate>
+        <scale sid="scale">1 1 1</scale>
+        <instance_geometry url="#tapeAnkle-mesh">
+          <bind_material>
+            <technique_common>
+              <instance_material symbol="tapeTex_001-material" target="#tapeTex_001-material">
+                <bind_vertex_input input_semantic="TEXCOORD" input_set="0" semantic="UVMap" />
+              </instance_material>
+              <instance_material symbol="tapeTexInner_001-material" target="#tapeTexInner_001-material">
+                <bind_vertex_input input_semantic="TEXCOORD" input_set="0" semantic="UVMap" />
+              </instance_material>
+            </technique_common>
+          </bind_material>
+        </instance_geometry>
+      </node>
+    </visual_scene>
+  </library_visual_scenes>
+  <scene>
+    <instance_visual_scene url="#Scene" />
+  </scene>
+</COLLADA>
