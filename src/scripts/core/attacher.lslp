@@ -5,12 +5,45 @@ string self;	// JSON object
 // Global Variables
 list _attachedFolders = [];
 
+addRestraint(string prmJson) {
+	string type = llJsonGetValue(prmJson, ["type"]);
+	string restraint = llJsonGetValue(prmJson, ["restraint"]);
+	
+	_restraints = llJsonSetValue(_restraints, [type, JSON_APPEND], restraint);
+	setRestraints(_restraints);
+}
+
+remRestraint(string prmType) {
+	string restraints = llJsonGetValue(_restraints, [prmType]);
+	if (JSON_NULL == restraints) {
+		debug("No restraints to remove.");
+		return;
+	}
+
+	list liRestraints = llJson2List(restraints);
+	string restraint = llList2String(liRestraints, -1);
+	liRestraints = llDeleteSubList(liRestraints, -1, -1);
+
+	if (llGetListLength(liRestraints) == 0) {
+		_restraints = llJsonSetValue(_restraints, [prmType], JSON_NULL);
+	} else {
+		_restraints = llJsonSetValue(_restraints, [prmType], llList2Json(JSON_ARRAY, liRestraints));
+	}
+	
+	setRestraints(_restraints);
+}
+
+releaseRestraint(string prmType) {
+	_restraints = llJsonSetValue(_restraints, [prmType], JSON_NULL);
+	setRestraints(_restraints);
+}
+
 setRestraints(string prmJson) {
 	list bindFolders = [];
 	list preventFolders = [];
 	string restraint;
 	integer index;
-	
+
 	// Arm loop.
 	restraint = llJsonGetValue(prmJson, ["arm"]);
 	if (restraint != JSON_INVALID) { 
@@ -37,6 +70,7 @@ setRestraints(string prmJson) {
 	list remFolders = ListXnotY(_attachedFolders, bindFolders);
 	
 	// Add Folders.
+	debug((string)addFolders);
 	for (index = 0; index < llGetListLength(addFolders); index++) {
 		llOwnerSay("@attachover:BreakFree/bf_" + llList2String(addFolders, index) + "=force");
 	}
@@ -79,6 +113,9 @@ default {
 		}
 		value = llJsonGetValue(prmText, ["value"]);
 
-		if (function == "setRestraints") { setRestraints(value); }
+		if ("addRestraint" == function) addRestraint(value);
+		else if ("remRestraint" == function) remRestraint(value);
+		else if ("releaseRestraint" == function) releaseRestraint(value);
+		else if ("overrideRestraint" == function) setRestraints(value);
 	}
 }

@@ -1,7 +1,7 @@
 $import Modules.LegTools.lslm();
 $import Modules.GeneralTools.lslm();
 $import Modules.GuiTools.lslm();
-$import Modules.RopeColor.lslm();
+$import Modules.TapeColor.lslm();
 
 // General Settings
 string gender = "female";
@@ -15,7 +15,7 @@ string _restraintLib;
 string getSelf() {
 	if (_self != "") return _self;
 
-	_self = llJsonSetValue(_self, ["name"], "Rope");
+	_self = llJsonSetValue(_self, ["name"], "Tape");
 	_self = llJsonSetValue(_self, ["part"], "leg");
 	_self = llJsonSetValue(_self, ["hasColor"], "1");
 	return _self;
@@ -79,7 +79,7 @@ gui(integer prmScreen) {
 	
 	// GUI: Colorize
 	else if (prmScreen == 100) {
-		guiText = "Choose a color for the leg rope.";
+		guiText = "Choose a color for the leg tape.";
 		mpButtons = multipageGui(_colors, 3, multipageIndex);
 	}
 
@@ -106,26 +106,26 @@ string defineRestraint(string prmName) {
 	restraint = llJsonSetValue(restraint, ["name"], prmName);
 	restraint = llJsonSetValue(_self, ["canCut"], "1");
 	restraint = llJsonSetValue(restraint, ["canEscape"], "1");
-	restraint = llJsonSetValue(restraint, ["canTether"], "1");
+	restraint = llJsonSetValue(restraint, ["canTether"], "0");
 	restraint = llJsonSetValue(restraint, ["canUseItem"], "1");
-	restraint = llJsonSetValue(restraint, ["type"], "rope");
+	restraint = llJsonSetValue(restraint, ["type"], "tape");
 
 	if (prmName == "Ankle") {
 		restraint = llJsonSetValue(restraint, ["uid"], "ankle");
 		restraint = llJsonSetValue(restraint, ["slot"], "ankle");
-		restraint = llJsonSetValue(restraint, ["complexity"], "4");
-		restraint = llJsonSetValue(restraint, ["integrity"], "10");
+		restraint = llJsonSetValue(restraint, ["complexity"], "1");
+		restraint = llJsonSetValue(restraint, ["integrity"], "20");
 		restraint = llJsonSetValue(restraint, ["tightness"], "5");
 		restraint = llJsonSetValue(restraint, ["poses"], llList2Json(JSON_ARRAY, liPoseStandard));
-		restraint = llJsonSetValue(restraint, ["attachments"], llList2Json(JSON_ARRAY, ["legRope_ankle"]));
+		restraint = llJsonSetValue(restraint, ["attachments"], llList2Json(JSON_ARRAY, ["legTape_ankle"]));
 	} else if (prmName == "Knee") {
 		restraint = llJsonSetValue(restraint, ["uid"], "knee");
 		restraint = llJsonSetValue(restraint, ["slot"], "knee");
-		restraint = llJsonSetValue(restraint, ["complexity"], "4");
-		restraint = llJsonSetValue(restraint, ["integrity"], "10");
+		restraint = llJsonSetValue(restraint, ["complexity"], "1");
+		restraint = llJsonSetValue(restraint, ["integrity"], "20");
 		restraint = llJsonSetValue(restraint, ["tightness"], "5");
 		restraint = llJsonSetValue(restraint, ["poses"], llList2Json(JSON_ARRAY, liPoseStandard));
-		restraint = llJsonSetValue(restraint, ["attachments"], llList2Json(JSON_ARRAY, ["legRope_knee"]));
+		restraint = llJsonSetValue(restraint, ["attachments"], llList2Json(JSON_ARRAY, ["legTape_knee"]));
 	}
 	
 	return restraint;
@@ -146,7 +146,7 @@ setColor(vector prmColor) {
   string tmpRequest = "";
   tmpRequest = llJsonSetValue(tmpRequest, ["color"], (string)_color);
   tmpRequest = llJsonSetValue(tmpRequest, ["attachment"], llJsonGetValue(_self, ["part"]));
-  tmpRequest = llJsonSetValue(tmpRequest, ["component"], "rope");
+  tmpRequest = llJsonSetValue(tmpRequest, ["component"], "tape");
   tmpRequest = llJsonSetValue(tmpRequest, ["userKey"], (string)llGetOwner());
 
   simpleAttachedRequest("setColor", tmpRequest);
@@ -182,10 +182,10 @@ execute_function(string prmFunction, string prmJson) {
     else if (prmFunction == "getAvailableRestraints") { sendAvailabilityInfo(); }
     else if (prmFunction == "requestColor") {
       if (llJsonGetValue(value, ["attachment"]) != llJsonGetValue(getSelf(), ["part"])) { return; }
-      if (llJsonGetValue(value, ["name"]) != "rope") { return; }
+      if (llJsonGetValue(value, ["name"]) != "tape") { return; }
       setColor(_color);
     }
-    else if (prmFunction == "gui_leg_rope") {
+    else if (prmFunction == "gui_leg_tape") {
       key userkey = (key)llJsonGetValue(prmJson, ["userkey"]);
       integer screen = 0;
       if ((integer)llJsonGetValue(prmJson, ["restorescreen"]) && guiScreenLast) { screen = guiScreenLast;}

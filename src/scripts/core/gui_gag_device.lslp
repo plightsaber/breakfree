@@ -63,9 +63,19 @@ gui(integer prmScreen) {
 
 	// GUI: Main
 	if (prmScreen == 0) {
+		getCurrentRestraints();
 		btn3 = "<<Style>>";
-		if (_slot) { mpButtons += "Ungag"; }
-		else { mpButtons += "Ballgag"; }
+		
+		if (llJsonGetValue(_currentRestraints, ["gag1"]) != JSON_NULL
+			|| llJsonGetValue(_currentRestraints, ["gag2"]) != JSON_NULL
+			|| llJsonGetValue(_currentRestraints, ["gag3"]) != JSON_NULL
+			|| llJsonGetValue(_currentRestraints, ["gag4"]) != JSON_NULL
+		) { 
+			mpButtons += "Ungag"; 
+		} else {
+			mpButtons += "Ballgag";
+		}
+
 		mpButtons = multipageGui(mpButtons, 2, multipageIndex);
 	}
 	// GUI: Colorize
@@ -103,25 +113,25 @@ gui(integer prmScreen) {
 }
 
 // ===== Main Functions =====
-addGag(string prmName) {
+string defineRestraint(string prmName) {
 	string gag;
+	
 	gag = llJsonSetValue(gag, ["name"], prmName);
 	if (prmName == "Ballgag") {
-		gag = llJsonSetValue(gag, ["garble", "garbled"], "1");
-		gag = llJsonSetValue(gag, ["slot"], "1");
+		gag = llJsonSetValue(gag, ["uid"], "ballgag");
+		gag = llJsonSetValue(gag, ["speechGarbled"], "1");
+		gag = llJsonSetValue(gag, ["slot"], "gag1");
 		gag = llJsonSetValue(gag, ["canCut"], "0");
 		gag = llJsonSetValue(gag, ["canEscape"], "0");
 		gag = llJsonSetValue(gag, ["mouthOpen"], "1");
 		gag = llJsonSetValue(gag, ["type"], "strap");
-		gag = llJsonSetValue(gag, ["difficulty"], "24");
+		gag = llJsonSetValue(gag, ["complexity"], "1");
+		gag = llJsonSetValue(gag, ["integrity"], "1");
 		gag = llJsonSetValue(gag, ["tightness"], "2");
 		gag = llJsonSetValue(gag, ["attachments", JSON_APPEND], "gBall");
 	}
 
-	string restraint;
-	restraint = llJsonSetValue(restraint, ["type"], "gag");
-	restraint = llJsonSetValue(restraint, ["restraint"], gag);
-	simple_request("addRestraint", restraint);
+	return gag;
 }
 
 // Color Functions
@@ -179,7 +189,10 @@ execute_function(string prmFunction, string prmJson) {
 	
 
 	if (prmFunction == "setGender") { setGender(value); }
-	else if (prmFunction == "setRestraints") { set_restraints(value); }
+    else if (prmFunction == "setRestraints") {
+    	_currentRestraints = llJsonGetValue(value, ["slots"]);
+    	_mouthOpen = llJsonGetValue(value, ["mouthOpen"]) == "1";
+	}
 	else if (prmFunction == "getAvailableRestraints") { sendAvailabilityInfo(); }
 	else if (prmFunction == "requestColor") {
 		if (llJsonGetValue(value, ["attachment"]) != "gag") { return; }
@@ -213,7 +226,7 @@ default {
 			else if (prmText == "<< Previous") { multipageIndex --; gui(guiScreen); return; }
 
 			if (prmText == "Ungag") {
-				simple_request("remRestraint", "gag");
+				simpleRequest("remRestraint", "gag");
 				_resumeFunction = "setRestraints";
 				return;
 			}
@@ -222,7 +235,10 @@ default {
 				if (prmText == "<<Style>>") {
 					gui(100);
 				} else {
-					addGag(prmText);
+					string restraint;
+					restraint = llJsonSetValue(restraint, ["type"], llJsonGetValue(getSelf(), ["part"]));
+					restraint = llJsonSetValue(restraint, ["restraint"], defineRestraint(prmText));
+					simpleRequest("addRestraint", restraint);
 					_resumeFunction = "setRestraints";
 				}
 				return;

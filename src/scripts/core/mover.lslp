@@ -1,6 +1,8 @@
+$import Modules.PoseLib.lslm();
+
 string self;  // JSON object
-list _poses;
-string _pose;
+list _legPoses;
+string _legPose;
 
 // Tether Variables
 key armTetherID;
@@ -24,7 +26,7 @@ set_restraints(string prmJson) {
 	
 	if (!(integer)llJsonGetValue(prmJson, ["isLegBound"])) {
 		llReleaseControls();
-		_pose = "";
+		_legPose = "";
 		legTetherID = NULL_KEY;
 		return;
 	}
@@ -33,50 +35,48 @@ set_restraints(string prmJson) {
 	llTakeControls(CONTROL_FWD | CONTROL_BACK | CONTROL_RIGHT | CONTROL_LEFT | CONTROL_UP | CONTROL_DOWN, TRUE, FALSE);
 }
 
-set_poses(string prmJson) {
-	_poses = llJson2List(prmJson);
-	string poseName = llJsonGetValue(_pose, ["name"]);
-	if (poseName == JSON_INVALID) { setPoseIndex(0, FALSE); }
-	else { setPoseIndex(getPoseIndexFromName(poseName), FALSE); }
+setLegPose(string uid, integer sendUpdate) {
+ 	llRequestPermissions(llGetOwner(), PERMISSION_TRIGGER_ANIMATION | PERMISSION_OVERRIDE_ANIMATIONS);
+	if (uid == JSON_NULL || uid == JSON_INVALID) {
+		return;	// Just keep on truckin'
+	}
+
+	if (uid == "free" || uid == "external") {
+		_legPose = "";
+		llRequestPermissions(llGetOwner(), PERMISSION_TAKE_CONTROLS | PERMISSION_TRACK_CAMERA);
+		llReleaseControls();		
+		return;
+	}
+
+	string pose = llJsonGetValue(getPoses(), ["leg", uid]);
+	if (pose == JSON_INVALID) {
+		debug("INVALID POSE: " + uid);
+		return;
+	}
+
+	llRequestPermissions(llGetOwner(), PERMISSION_TAKE_CONTROLS | PERMISSION_TRACK_CAMERA);
+	llTakeControls(CONTROL_FWD | CONTROL_BACK | CONTROL_RIGHT | CONTROL_LEFT | CONTROL_UP | CONTROL_DOWN, TRUE, FALSE);
+	_legPose = uid;
+	
+	if (sendUpdate) {
+		simpleRequest("setLegPose", _legPose);
+	}
+}
+
+setLegPoses(string prmPoses) {
+	_legPoses = llJson2List(prmPoses);
+	if (llListFindList(_legPoses, [_legPose]) == -1) {
+		setLegPose(llList2String(_legPoses, 0), FALSE);
+	}
 }
 
 // ===== Main Functions =====
-setPoseIndex(integer prmIndex, integer prmSend) {
-  _pose = llList2String(_poses, prmIndex);
-  if (prmSend) {
-    simpleRequest("setPose", get_poseName());
-  }
-}
-
-setPose(string prmPoseName, integer prmSend) {
-  integer index = getPoseIndexFromName(prmPoseName);
-  if (index == -1) {
-    debug("INVALID POSE: " + prmPoseName);
-    return;
-  }
-
-  setPoseIndex(index, prmSend);
-}
-
-string get_poseName() {
-  return llJsonGetValue(_pose, ["name"]);
-}
-
 float get_speedBack() {
-  return (float)llJsonGetValue(_pose, ["speedBack"])/10;
-}
-float get_speedFwd() {
-  return (float)llJsonGetValue(_pose, ["speedFwd"])/10;
+  return (float)llJsonGetValue(getPoses(), ["leg", _legPose, "speedBack"])/10;
 }
 
-integer getPoseIndexFromName(string prmName) {
-  integer index;
-  for (index = 0; index < llGetListLength(_poses); index++) {
-    if (llJsonGetValue(llList2String(_poses, index), ["name"]) == prmName) {
-      return index;
-    }
-  }
-  return -1;
+float get_speedFwd() {
+  return (float)llJsonGetValue(getPoses(), ["leg", _legPose, "speedFwd"])/10;
 }
 
 tetherTo(string prmJson) {
@@ -122,61 +122,47 @@ simpleRequest(string prmFunction, string prmValue) {
 }
 
 // ===== Event Controls =====
-execute_function(string prmFunction, string prmJson) {
+executeFunction(string function, string prmJson) {
 	string value = llJsonGetValue(prmJson, ["value"]);
 	if (JSON_INVALID == value) {
 		//return;		// TODO: Rewrite all linked calls to send in JSON
 	}
 	
-	if (prmFunction == "setRestraints") { set_restraints(value); }
-	else if (prmFunction == "tetherTo") { tetherTo(value); }
-	else if (prmFunction == "setPose") { setPose(value, FALSE); }
-	else if (prmFunction == "setPoses") { set_poses(value); }
+	if (function == "setLegPose") { setLegPose(value, FALSE); }
+    else if (function == "setLegPoses") { setLegPoses(value); }
+	else if (function == "tetherTo") { tetherTo(value); }
 }
 
 default {
-  control(key prmAviID, integer prmLevel, integer prmEdge) {
-    integer press   = prmLevel & prmEdge;
-    integer release = ~prmLevel & prmEdge;
-    integer hold  = prmLevel & ~prmEdge;
+  	control(key prmAviID, integer prmLevel, integer prmEdge) {
+    	integer press = prmLevel & prmEdge;
+    	integer release = ~prmLevel & prmEdge;
+    	integer hold = prmLevel & ~prmEdge;
 
-    // General Movement
-    if (hold == CONTROL_FWD) {
-      llSetVelocity(<get_speedFwd(),0,0>, TRUE);
-    }
+    	// General Movement
+		if (hold == CONTROL_FWD) {
+			llSetVelocity(<get_speedFwd(),0,0>, TRUE);
+    	}
 
-    // Position Changes
-    integer poseIndex = -1;
-    if (press == CONTROL_UP) {
-      poseIndex = getPoseIndexFromName(llJsonGetValue(_pose, ["poseUp"]));
-      if (poseIndex != -1) {
-        setPoseIndex(poseIndex, TRUE);
-      }
-    }
-    if (press == CONTROL_DOWN) {
-      poseIndex = getPoseIndexFromName(llJsonGetValue(_pose, ["poseDown"]));
-      if (poseIndex != -1) {
-        setPoseIndex(poseIndex, TRUE);
-      }
-    }
-    if (press == CONTROL_RIGHT) {
-      poseIndex = getPoseIndexFromName(llJsonGetValue(_pose, ["poseRight"]));
-      if (poseIndex != -1) {
-        setPoseIndex(poseIndex, TRUE);
-      }
-    }
-    if (press == CONTROL_LEFT) {
-      poseIndex = getPoseIndexFromName(llJsonGetValue(_pose, ["poseLeft"]));
-      if (poseIndex != -1) {
-        setPoseIndex(poseIndex, TRUE);
-      }
-    }
+    	// Position Changes
+    	if (press == CONTROL_UP) {
+      		setLegPose(llJsonGetValue(getPoses(), ["leg", _legPose, "poseUp"]), TRUE);
+    	}
+		if (press == CONTROL_DOWN) {
+    		setLegPose(llJsonGetValue(getPoses(), ["leg", _legPose, "poseDown"]), TRUE);
+    	}
+    	if (press == CONTROL_RIGHT) {
+      		setLegPose(llJsonGetValue(getPoses(), ["leg", _legPose, "poseRight"]), TRUE);
+    	}
+    	if (press == CONTROL_LEFT) {
+      		setLegPose(llJsonGetValue(getPoses(), ["leg", _legPose, "poseLeft"]), TRUE);
+    	}
 
-    // Animations
-    if (press == CONTROL_FWD) { simpleRequest("animate_mover", "animation_walk_forward"); }
+    	// Animations
+    	if (press == CONTROL_FWD) { simpleRequest("animate_mover", "animation_walk_forward"); }
 
-    if (release) { simpleRequest("animate_mover", "stop"); }
-  }
+    	if (release) { simpleRequest("animate_mover", "stop"); }
+  	}
   
 	link_message(integer prmLink, integer prmValue, string prmText, key prmID) {
 		string function;
@@ -186,7 +172,7 @@ default {
 			debug(prmText);
 			return;
 		}
-		execute_function(function, prmText);
+		executeFunction(function, prmText);
 	}
 
   sensor(integer prmCount) {

@@ -10,7 +10,7 @@ integer mouthGarbled;
 integer mouthMuffled;
 integer mouthSealed;
 
-string _restraints;
+string _currentRestraints;
 
 init() {
 	if (gagChatID) { llListenRemove(gagChatID); }
@@ -27,38 +27,21 @@ init() {
 }
 
 // ===== Main Function =====
-set_restraints(string prmJson) {
-	_restraints = prmJson;
-
-	string gags = llJsonGetValue(_restraints, ["gag"]);
-	if (gags == JSON_INVALID || gags == JSON_NULL) {
-		release_gag();
+setRestraints(string prmJson) {
+	_currentRestraints = prmJson;
+	
+	if ("0" == llJsonGetValue(_currentRestraints, ["isGagged"])) {
+		llOwnerSay("@redirchat:" + (string)CHANNEL_GAGCHAT + "=rem");
+		llOwnerSay("@rediremote:" + (string)CHANNEL_GAGEMOTE + "=rem");
+		llListenControl(gagChatID, FALSE);
+		return;
 	}
-	set_gag(gags);
-}
-
-release_gag() {
-	llOwnerSay("@redirchat:" + (string)CHANNEL_GAGCHAT + "=rem");
-	llOwnerSay("@rediremote:" + (string)CHANNEL_GAGEMOTE + "=rem");
-	llListenControl(gagChatID, FALSE);
-}
-
-set_gag(string prmInfo) {
-	mouthOpen = FALSE;
-	mouthGarbled = FALSE;
-	mouthMuffled = FALSE;
-	mouthSealed = FALSE;
-
-	list liGags = llJson2List(prmInfo);
-	integer index;
-	for (index = 0; index < llGetListLength(liGags); ++index) {
-		string gag = llList2String(liGags, index);
-		if ("1" == llJsonGetValue(gag, ["mouthOpen"])) { mouthOpen = TRUE; }
-		if ("1" == llJsonGetValue(gag, ["garble", "garbled"])) { mouthGarbled = TRUE; };
-		if ("1" == llJsonGetValue(gag, ["garble", "muffled"])) { mouthMuffled = TRUE; };
-		if ("1" == llJsonGetValue(gag, ["garble", "sealed"])) { mouthSealed = TRUE; };
-	}
-
+	
+	mouthOpen = ("1" == llJsonGetValue(_currentRestraints, ["mouthOpen"]));
+	mouthGarbled = ("1" == llJsonGetValue(_currentRestraints, ["speechGarbled"]));
+	mouthMuffled = ("1" == llJsonGetValue(_currentRestraints, ["speechMuffled"]));
+	mouthSealed = ("1" == llJsonGetValue(_currentRestraints, ["speechSealed"]));
+	
 	if (mouthOpen || mouthGarbled || mouthMuffled || mouthSealed) {
 		llOwnerSay("@redirchat:" + (string)CHANNEL_GAGCHAT + "=add");
 		llOwnerSay("@rediremote:" + (string)CHANNEL_GAGEMOTE + "=add");
@@ -190,7 +173,7 @@ default {
 		}
 		value = llJsonGetValue(prmText, ["value"]);
 
-		if (function == "setRestraints") { set_restraints(value); }
+		if (function == "setRestraints") { setRestraints(value); }
 	}
 
 	listen(integer prmChannel, string prmName, key senderID, string prmMessage) {

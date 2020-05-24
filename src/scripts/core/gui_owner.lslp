@@ -139,12 +139,6 @@ integer canLevelUp() {
 	return FALSE;
 }
 
-// ===== Other Functions =====
-debug(string output) {
-	// TODO: global enable/disable?
-	llOwnerSay(output);
-}
-
 // ===== Event Controls =====
 execute_function(string prmFunction, string prmJson) {
 	string value = llJsonGetValue(prmJson, ["value"]);

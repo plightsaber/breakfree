@@ -15,7 +15,7 @@ integer _gagBound = FALSE;
 integer _armsTetherable;
 integer _legsTetherable;
 
-list availablePoses;
+list _legPoses;
 
 // Restaint Lists
 list armRestraints;
@@ -42,7 +42,7 @@ init() {
 
 init_gui(key prmID, integer prmScreen) {
 	guiUserID = prmID;
-	simple_request("setVillainID", guiUserID);
+	simpleRequest("setVillainID", guiUserID);
 
 	if (guiID) { llListenRemove(guiID); }
 	guiChannel = (integer)llFrand(-9998) - 1;
@@ -86,7 +86,7 @@ gui(integer prmScreen) {
 		btn5 = "Bind Legs";
 		btn6 = "Gag";
 		
-		if (llGetListLength(getAvailablePoses()) > 1) { btn3 = "Position"; }
+		if (llGetListLength(_legPoses) > 1) { btn3 = "Position"; }
 	}
 
 	// GUI: Bind Arms
@@ -115,7 +115,7 @@ gui(integer prmScreen) {
 	// GUI: Position
 	if (prmScreen == 70) {
 		guiText = "How do you want to pose " + getName() + "?";
-		mpButtons = multipageGui(getAvailablePoses(), 3, multipageIndex);
+		mpButtons = multipageGui(_legPoses, 3, multipageIndex);
 	}
 
 	guiScreen = prmScreen;
@@ -151,22 +151,13 @@ string getName() {
 	return llGetDisplayName(llGetOwner());
 }
 
-list getAvailablePoses() {
-	return availablePoses;
-}
-
 // ===== Sets =====
 setGender(string prmGender) {
 	gender = prmGender;
 }
 
-set_available_poses(string prmPoses) {
-	availablePoses = [];
-	list tmpPoses = llJson2List(prmPoses);
-	integer i;
-	for (i = 0; i < llGetListLength(tmpPoses); i++) {
-		availablePoses += llJsonGetValue(llList2String(tmpPoses, i), ["name"]);
-	}
+setAvailablePoses(string prmPoses) {
+	_legPoses = llJson2List(prmPoses);
 }
 
 set_restraints(string prmJson) {
@@ -177,7 +168,6 @@ set_restraints(string prmJson) {
 	
 	_legsBound = (integer)llJsonGetValue(prmJson, ["isLegBound"]);
 	_legsTetherable = (integer)llJsonGetValue(prmJson, ["isLegTetherable"]);
-	set_available_poses(llJsonGetValue(prmJson, ["poses"]));
 }
 
 // ===== Event Controls =====
@@ -189,6 +179,7 @@ execute_function(string prmFunction, string prmJson) {
 	
 	if (prmFunction == "setGender") { setGender(value); }
 	else if (prmFunction == "setRestraints") { set_restraints(value); }
+	else if (prmFunction == "setLegPoses") { setAvailablePoses(value); }
 	else if (prmFunction == "addAvailableRestraint") { addAvailableRestraint(value); }
 	else if (prmFunction == "gui_bind") {
 		key userkey = (key)llJsonGetValue(prmJson, ["userkey"]);
@@ -269,7 +260,7 @@ default {
 				guiRequest("gui_gag_" + llToLower(prmText), FALSE, guiUserID, 0);
 				return;
 			} else if (guiScreen == 70) {
-				simpleRequest("setPose", prmText);
+				simpleRequest("setLegPose", prmText);
 				gui(guiScreen);
 				return;
 			}
