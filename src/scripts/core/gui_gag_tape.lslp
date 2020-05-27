@@ -71,30 +71,30 @@ gui(integer prmScreen) {
 			|| llJsonGetValue(_currentRestraints, ["gag2"]) != JSON_NULL
 			|| llJsonGetValue(_currentRestraints, ["gag3"]) != JSON_NULL
 			|| llJsonGetValue(_currentRestraints, ["gag4"]) != JSON_NULL
-		) { 
-			mpButtons += "Ungag"; 
+		) {
+			mpButtons += "Ungag";
 		}
-		
+
 		if (llJsonGetValue(_currentRestraints, ["gag1"]) == JSON_NULL
 			&& llJsonGetValue(_currentRestraints, ["gag2"]) == JSON_NULL
 			&& llJsonGetValue(_currentRestraints, ["gag3"]) == JSON_NULL
 			&& llJsonGetValue(_currentRestraints, ["gag4"]) == JSON_NULL
-		) { 
-			mpButtons += "Stuff"; 
+		) {
+			mpButtons += "Stuff";
 		}
 
 		if (llJsonGetValue(_currentRestraints, ["gag2"]) == JSON_NULL
 			&& llJsonGetValue(_currentRestraints, ["gag3"]) == JSON_NULL
 			&& llJsonGetValue(_currentRestraints, ["gag4"]) == JSON_NULL
-		) { 
-			mpButtons += "Simple"; 
+		) {
+			mpButtons += "Simple";
 		}
-		
+
 		if (llJsonGetValue(_currentRestraints, ["gag2"]) != JSON_NULL
 			&& llJsonGetValue(_currentRestraints, ["gag3"]) == JSON_NULL
 			&& llJsonGetValue(_currentRestraints, ["gag4"]) == JSON_NULL
-		) { 
-			mpButtons += "Heavy"; 
+		) {
+			mpButtons += "Heavy";
 		}
 
 		mpButtons = multipageGui(mpButtons, 2, multipageIndex);
@@ -136,39 +136,39 @@ gui(integer prmScreen) {
 // ===== Main Functions =====
 string defineRestraint(string prmName) {
 	string gag;
-	
+
 	// Type-specific values
 	gag = llJsonSetValue(gag, ["name"], prmName);
 	gag = llJsonSetValue(gag, ["type"], "tape");
 	gag = llJsonSetValue(gag, ["canEscape"], "1");
 	gag = llJsonSetValue(gag, ["canCut"], "1");
-	
+
 	if (prmName == "Stuff") {
 		gag = llJsonSetValue(gag, ["uid"], "stuff");
 		gag = llJsonSetValue(gag, ["slot"], "gag1");
 		gag = llJsonSetValue(gag, ["canCut"], "0");
 		gag = llJsonSetValue(gag, ["mouthOpen"], "1");
-		
+
 		gag = llJsonSetValue(gag, ["complexity"], "1");
-		gag = llJsonSetValue(gag, ["integrity"], "1");
-		gag = llJsonSetValue(gag, ["tightness"], "1");
+		gag = llJsonSetValue(gag, ["integrity"], "2");
+		gag = llJsonSetValue(gag, ["tightness"], "3");
 		gag = llJsonSetValue(gag, ["attachments", JSON_APPEND], "gStuff");
 	} else if (prmName == "Simple") {
 		gag = llJsonSetValue(gag, ["uid"], "tapeSimple");
 		gag = llJsonSetValue(gag, ["speechSealed"], "1");
 		gag = llJsonSetValue(gag, ["slot"], "gag2");
 		gag = llJsonSetValue(gag, ["complexity"], "1");
-		gag = llJsonSetValue(gag, ["integrity"], "3");
-		gag = llJsonSetValue(gag, ["tightness"], "3");
+		gag = llJsonSetValue(gag, ["integrity"], "10");
+		gag = llJsonSetValue(gag, ["tightness"], "5");
 		if (_mouthOpen) { gag = llJsonSetValue(gag, ["attachments", JSON_APPEND], "gTapeStuffed"); }
 		else { gag = llJsonSetValue(gag, ["attachments", JSON_APPEND], "gTapeSimple"); }
 	} else if (prmName == "Heavy") {
 		gag = llJsonSetValue(gag, ["uid"], "tapeHeavy");
 		gag = llJsonSetValue(gag, ["speechSealed"], "1");
 		gag = llJsonSetValue(gag, ["slot"], "gag3");
-		gag = llJsonSetValue(gag, ["complexity"], "1");
-		gag = llJsonSetValue(gag, ["integrity"], "9");
-		gag = llJsonSetValue(gag, ["tightness"], "9");
+		gag = llJsonSetValue(gag, ["complexity"], "2");
+		gag = llJsonSetValue(gag, ["integrity"], "10");
+		gag = llJsonSetValue(gag, ["tightness"], "5");
 		gag = llJsonSetValue(gag, ["attachments", JSON_APPEND], "gTapeHeavy");
 		gag = llJsonSetValue(gag, ["preventAttach", JSON_APPEND], "gTapeSimple");
 		gag = llJsonSetValue(gag, ["preventAttach", JSON_APPEND], "gTapeStuffed");
@@ -292,7 +292,7 @@ default {
 				setColorByName(prmText, "tape");
 			} else if (guiScreen == 102) {
 				setColorByName(prmText, "stuffing");
-			} 
+			}
 			/*
 			else if (guiScreen == 111) {
 				setTextureByName(prmText, "cloth");

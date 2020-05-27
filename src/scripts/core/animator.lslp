@@ -43,13 +43,13 @@ setArmPose(string uid) {
 	}
 
 	if (_animation_arm_base) { llStopAnimation(_animation_arm_base); }
-	
+
 	if (uid == "free" || uid == "external") {
 		_armPose = "";
 		_animation_arm_base = "";
 		return;
 	}
-	
+
 	_armPose = uid;
 	_animation_arm_base = llJsonGetValue(getPoses(), ["arm", uid, "base"]);
 	//_animation_arm_success = llJsonGetValue(getPoses(), ["arm", "uid", "struggleSuccess"]);
@@ -70,25 +70,25 @@ setLegPose(string uid) {
 	string pose = llJsonGetValue(_poseLib, ["leg", _legPose]);
 
 	if (_animation_leg_base) { llStopAnimation(_animation_leg_base); }
-	
+
 	if (uid == "free" || uid == "external") {
 		_legPose = "";
 		_animation_leg_base = "";
 		llResetAnimationOverride("ALL");
 		return;
 	}
-	
+
 	_legPose = uid;
 	_animation_leg_base = llJsonGetValue(getPoses(), ["leg", uid, "base"]);
 	_animation_leg_success = llJsonGetValue(getPoses(), ["leg", uid, "success"]);
 	_animation_leg_failure = llJsonGetValue(getPoses(), ["leg", uid, "failure"]);
 	_animation_leg_walk = llJsonGetValue(getPoses(), ["leg", uid, "walk"]);
-	
+
 	// Override walking animation
 	if (llGetAnimationOverride("Walking") != _animation_leg_walk) {
 		llSetAnimationOverride("Walking", _animation_leg_walk);
 	}
-	
+
 	llStartAnimation(_animation_leg_base);
 }
 
@@ -141,7 +141,7 @@ animate_mover(string prmAnimation) {
 
 	if (_animation_mover_current) { llStopAnimation(_animation_mover_current); }
 
-	if (prmAnimation == "animation_walk_forward") { 
+	if (prmAnimation == "animation_walk_forward") {
 		llResetAnimationOverride("ALL");
 		_animation_mover_current = _animation_leg_walk;
 	}
@@ -149,8 +149,8 @@ animate_mover(string prmAnimation) {
 		// Set override ONLY when not already walking.  Needed for tether animation, but does bad things for slow movement speeds
 		if (llGetAnimationOverride("Walking") != _animation_leg_walk) {
 			llSetAnimationOverride("Walking", _animation_leg_walk);
-		} 
-		_animation_mover_current = ""; 
+		}
+		_animation_mover_current = "";
 	}
 
 	if (_animation_mover_current) { llStartAnimation(_animation_mover_current); }

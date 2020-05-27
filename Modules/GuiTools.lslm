@@ -1,4 +1,5 @@
 $module ()
+$import Modules.GeneralTools.lslm();
 
 integer CHANNEL_ATTACHMENT = -9999277;
 
@@ -57,16 +58,9 @@ list multipageGui(list prmButtons, integer prmRows, integer prmPage) {
   return mpGui;
 }
 
-simpleAttachedRequest(string prmFunction, string prmValue) {
+simpleAttachedRequest(string prmFunction,string prmValue){
   string request = "";
-  request = llJsonSetValue(request, ["function"], prmFunction);
-  request = llJsonSetValue(request, ["value"], prmValue);
-  llRegionSayTo(llGetOwner(), CHANNEL_ATTACHMENT, request);
-}
-
-simpleRequest(string prmFunction, string prmValue) {
-  string request = "";
-  request = llJsonSetValue(request, ["function"], prmFunction);
-  request = llJsonSetValue(request, ["value"], prmValue);
-  llMessageLinked(LINK_THIS, 0, request, NULL_KEY);
+  (request = llJsonSetValue(request,["function"],prmFunction));
+  (request = llJsonSetValue(request,["value"],prmValue));
+  llRegionSayTo(llGetOwner(),CHANNEL_ATTACHMENT,request);
 }

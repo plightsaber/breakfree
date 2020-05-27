@@ -1,3 +1,4 @@
+$import Modules.ContribLib.lslm();
 $import Modules.GuiTools.lslm();
 
 // Quick Keys
@@ -9,12 +10,8 @@ integer rpMode = FALSE;
 integer _RLV = FALSE;
 
 // Stats
-integer userExp = 0;
-integer userStr = 1;
-integer userDex = 1;
-integer userInt = 1;
-integer userLevel = 1;
-list userSkills = [];
+integer _userExp = 0;
+list _userFeats = [];
 
 // Status Variables
 string self;
@@ -28,6 +25,19 @@ integer GUI_STATS = 10;
 integer GUI_OPTIONS = 20;
 
 string _resumeFunction;
+
+list _feats = [
+	"Athletic",
+	"Athletic+",
+	"Eidetic",
+	"Intuitive",
+	"Endurant",
+	"Endurant+",
+	"Flexible",
+	"Flexible+",
+	"Resolute",
+	"Resolute+"
+];
 
 init() {
 	_ownerID = llGetOwner();
@@ -51,9 +61,10 @@ gui(integer prmScreen) {
 	string btn7 = " ";	string btn8 = " ";			string btn9 = " ";
 	string btn4 = " ";	string btn5 = " ";			string btn6 = " ";
 	string btn1 = " ";	string btn2 = "<<Done>>";	string btn3 = " ";
-		
+
 	guiText = " ";
-		
+	list mpButtons;
+
 	// GUI: Main
 	if (prmScreen == GUI_HOME) {
 		if (rpMode || (!_isArmsBound && !_isLegsBound && !_isGagged) || _villainID == _ownerID) {
@@ -64,17 +75,17 @@ gui(integer prmScreen) {
 		if (_isArmsBound || _isLegsBound || _isGagged) { btn5 = "Escape"; }
 		btn3 = "Stats";
 	}
-	// GUI: Stats 
+	// GUI: Stats
 	else if (prmScreen == GUI_STATS) {
 		guiText = "Level: " + (string)getUserLevel() + "\n";
-		guiText += "Experience: " + (string)userExp + "/" + (string)getNextLevelExp() + "\n";
-		guiText += "STR: " + (string)userStr + "\tDEX: " + (string)userDex + "\tINT: " + (string)userInt;
+		guiText += "Experience: " + (string)_userExp + "/" + (string)getNextLevelExp() + "\n";
+		guiText += "Feats: " + llDumpList2String(_userFeats, ", ");
+		//guiText += "STR: " + (string)userStr + "\tDEX: " + (string)userDex + "\tINT: " + (string)userInt;
 
 		if (canLevelUp()) {
-			btn4 = "STR ↑";
-			btn5 = "DEX ↑";
-			btn6 = "INT ↑";
+			mpButtons = getAvailableFeats();
 		}
+		mpButtons = multipageGui(mpButtons, 3, multipageIndex);
 
 		btn1 = "<<Back>>";
 	}
@@ -88,7 +99,7 @@ gui(integer prmScreen) {
 		btn1 = "<<Back>>";
 	}
 
-	if (prmScreen != guiScreen) { guiScreenLast = guiScreen; }		
+	if (prmScreen != guiScreen) { guiScreenLast = guiScreen; }
 	guiScreen = prmScreen;
 
 	guiButtons = [btn1, btn2, btn3];
@@ -96,47 +107,87 @@ gui(integer prmScreen) {
 	if (btn7+btn8+btn9 != "   ") { guiButtons += [btn7, btn8, btn9]; }
 	if (btn10+btn11+btn12 != "   ") { guiButtons += [btn10, btn11, btn12]; }
 
+	if (llGetListLength(mpButtons)) { guiButtons += mpButtons; }
 	llDialog(guiUserID, guiText, guiButtons, guiChannel);
 }
 
 // ===== Gets & Sets =====
+list getAvailableFeats() {
+
+	// Remove any feats we already have
+	list feats = ListXnotY(_feats, _userFeats);
+
+	// Remove any feats that have unmet prerequisites
+	integer plusIndex;
+	integer preIndex;
+
+	plusIndex = llListFindList(feats, ["Athletic+"]);
+	preIndex = llListFindList(feats, ["Athletic"]);
+	if (preIndex != -1 && plusIndex != -1) {
+		feats = llDeleteSubList(feats, plusIndex, plusIndex);
+	}
+
+	plusIndex = llListFindList(feats, ["Endurant+"]);
+	preIndex = llListFindList(feats, ["Endurant"]);
+	if (preIndex != -1 && plusIndex != -1) {
+		feats = llDeleteSubList(feats, plusIndex, plusIndex);
+	}
+
+	plusIndex = llListFindList(feats, ["Flexible+"]);
+	preIndex = llListFindList(feats, ["Flexible"]);
+	if (preIndex != -1 && plusIndex != -1) {
+		feats = llDeleteSubList(feats, plusIndex, plusIndex);
+	}
+
+	plusIndex = llListFindList(feats, ["Resolute+"]);
+	preIndex = llListFindList(feats, ["Resolute"]);
+	if (preIndex != -1 && plusIndex != -1) {
+		feats = llDeleteSubList(feats, plusIndex, plusIndex);
+	}
+
+	return feats;
+}
+
 setRestraints(string prmJson) {
-	_isArmsBound = (integer)llJsonGetValue(prmJson, ["isArmBound"])
-		&& !(integer)llJsonGetValue(prmJson, ["isArmBoundExternal"]);
-	_isLegsBound = (integer)llJsonGetValue(prmJson, ["isLegBound"]);
-	_isGagged = (integer)llJsonGetValue(prmJson, ["isGagged"]);
+	_isArmsBound = (integer)llJsonGetValue(prmJson, ["armBound"])
+		&& !(integer)llJsonGetValue(prmJson, ["armBoundExternal"]);
+	_isLegsBound = (integer)llJsonGetValue(prmJson, ["legBound"]);
+	_isGagged = (integer)llJsonGetValue(prmJson, ["gagged"]);
 }
 
 addExp(string prmValue) {
 	integer addValue = (integer)prmValue;
-	if (addValue > 0) { userExp += addValue; }
+	if (addValue > 0) { _userExp += addValue; }
 }
 
-integer getUserLevel() { 
-	return userStr + userDex + userInt - 2;
+addFeat(string feat) {
+	_userFeats += [feat];
+	_userFeats = llListSort(_userFeats, 1, TRUE);
+	simpleRequest("setOwnerFeats", llList2Json(JSON_ARRAY, _userFeats));
 }
 
 integer getNextLevelExp() {
 	integer tmpLevel = getUserLevel();
-	return ((tmpLevel) * 200) + ((tmpLevel-1)*100);
+	if (tmpLevel == 0) {
+		return 0;
+	}
+
+	return (integer)(tmpLevel * 50 + llPow(tmpLevel,3));
 }
 
 setStats(string stats) {
-	userDex = (integer)llJsonGetValue(stats, ["dex"]);
-	userInt = (integer)llJsonGetValue(stats, ["int"]);
-	userStr = (integer)llJsonGetValue(stats, ["str"]);
-	userExp = (integer)llJsonGetValue(stats, ["exp"]);
-	userSkills = llJson2List(llJsonGetValue(stats, ["skills"]));
+	_userExp = (integer)llJsonGetValue(stats, ["exp"]);
+	_userFeats = llJson2List(llJsonGetValue(stats, ["feats"]));
 }
 
 // ===== Main Functions =====
 integer canLevelUp() {
-	integer tmpLevel = getUserLevel();
-	integer tmpRequired = getNextLevelExp();
+	return getNextLevelExp() <= _userExp
+		&& getUserLevel() < llGetListLength(_feats);
+}
 
-	if (tmpLevel < 20 && userExp > tmpRequired) { return TRUE; }
-
-	return FALSE;
+integer getUserLevel() {
+	return llGetListLength(_userFeats);
 }
 
 // ===== Event Controls =====
@@ -151,7 +202,7 @@ execute_function(string prmFunction, string prmJson) {
 		key userkey = (key)llJsonGetValue(prmJson, ["userkey"]);
 		init_gui(userkey, (integer)value);
 	}
-	else if (prmFunction == "setVillainID") { _villainID = value; }
+	else if (prmFunction == "setVillainKey") { _villainID = value; }
 	else if (prmFunction == "addExp") { addExp(value); }
 	else if (prmFunction == "setStats") { setStats(value); }
 	else if (prmFunction == "setRestraints") { setRestraints(value); }
@@ -159,6 +210,7 @@ execute_function(string prmFunction, string prmJson) {
 		exit("");
 	}
 }
+
 default {
 	state_entry() {
 		init();
@@ -176,9 +228,7 @@ default {
 				else if (prmText == "Stats") { gui(GUI_STATS); }
 				else if (prmText == "Options") { gui(GUI_OPTIONS); }
 			} else if (guiScreen == GUI_STATS) {
-				if (prmText == "STR ↑") { userStr++; simpleRequest("addStr", "1"); }
-				if (prmText == "DEX ↑") { userDex++; simpleRequest("addDex", "1"); }
-				if (prmText == "INT ↑") { userInt++; simpleRequest("addInt", "1"); }
+				addFeat(prmText);
 				gui(guiScreen);
 			} else if (guiScreen == GUI_OPTIONS) {
 				if (prmText == "☒ RP Mode") { rpMode = TRUE; simpleRequest("setRPMode", "1"); }
@@ -198,7 +248,6 @@ default {
 			debug(prmText);
 			return;
 		}
-		
 		execute_function(function, prmText);
 
 		if (function == _resumeFunction) {

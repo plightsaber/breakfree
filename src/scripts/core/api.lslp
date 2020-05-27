@@ -1,38 +1,19 @@
+$import Modules.UserLib.lslm();
+
 // Objects
-string self;
+string _self;
 string villain;
 
 // Listener Vars
 integer CHANNEL_API = -9999274;
 integer listenID;
 
-string DEFAULT_USER(key prmID) {
-	string user = "";
-	// Basic Info
-	user = llJsonSetValue(user, ["name"], llGetDisplayName(prmID));
-	user = llJsonSetValue(user, ["gender"], getGender(prmID));
-
-	// Attributes
-	user = llJsonSetValue(user, ["str"], "1");
-	user = llJsonSetValue(user, ["dex"], "1");
-	user = llJsonSetValue(user, ["int"], "1");
-
-	// Skills
-	list skills;
-	user = llJsonSetValue(user, ["skills"], llList2Json(JSON_ARRAY, skills));
-
-	// Bound Status
-	user = llJsonSetValue(user, ["armRestraints"], "free");
-
-	return user;
-}
-
 // ===== Initializer =====
 init() {
 	if (listenID) { llListenRemove(listenID); }
 	llListen(CHANNEL_API, "", NULL_KEY, "");
 
-	if (self == "") { self = DEFAULT_USER(llGetOwner()); }
+	if (_self == "") { _self = getDefaultUser(llGetOwner()); }
 }
 
 // ===== Primary Functions ====
@@ -48,7 +29,7 @@ api(string prmJson) {
 	// Execute API Call
 	if (function == "getTouchInfo") {
 		// Check arm bound status
-		send(senderID, "touchUser", self);
+		send(senderID, "touchUser", _self);
 	} else {
 		simpleRequest(function, prmJson);
 	}
@@ -65,16 +46,6 @@ send(key prmTargetID, string prmFunction, string prmJson) {
 // ===== Helper Functions =====
 debug(string prmString) {
 	llOwnerSay(prmString);
-}
-
-string getGender(key prmUserID) {
-	list details = llGetObjectDetails(prmUserID, [OBJECT_BODY_SHAPE_TYPE]);
-	if (details == []) return "female";
-
-	float gender = llList2Float(details, 0);
-	if (gender < 0.0)	 return "object";
-	if (gender > 0.5)	 return "male";
-	return "female";
 }
 
 simpleRequest(string prmFunction, string prmValue) {
@@ -104,9 +75,11 @@ default {
 		}
 		value = llJsonGetValue(prmText, ["value"]);
 
-		if (function == "bindArms") { self = llJsonSetValue(self, ["armRestraints"], value); }
-		else if (function == "bindLegs") { self = llJsonSetValue(self, ["legRestraints"], value);	}
-		else if (function == "bindGag") { self = llJsonSetValue(self, ["gagRestraints"], value);	}
+		if (function == "setRestraints") {
+			_self = llJsonSetValue(_self, ["armBound"], llJsonGetValue(value, ["armBound"]));
+		} else if (function == "setFeats") {
+			_self = llJsonSetValue(_self, ["feats"], value);
+		}
 	}
 
 	listen(integer prmChannel, string prmName, key prmID, string prmText) {

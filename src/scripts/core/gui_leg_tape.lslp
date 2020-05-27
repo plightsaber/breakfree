@@ -25,7 +25,7 @@ string getCurrentRestraints() {
 	if (_currentRestraints) {
 		return _currentRestraints;
 	}
-	
+
 	_currentRestraints = llJsonSetValue(_currentRestraints, ["ankle"], JSON_NULL);
 	_currentRestraints = llJsonSetValue(_currentRestraints, ["knee"], JSON_NULL);
 	_currentRestraints = llJsonSetValue(_currentRestraints, ["immobilizer"], JSON_NULL);
@@ -62,8 +62,8 @@ gui(integer prmScreen) {
 		if (llJsonGetValue(getCurrentRestraints(), ["ankle"]) != JSON_NULL
 			|| llJsonGetValue(_currentRestraints, ["knee"]) != JSON_NULL
 			|| llJsonGetValue(_currentRestraints, ["immobilizer"]) != JSON_NULL
-		) { 
-			mpButtons += "Untie"; 
+		) {
+			mpButtons += "Untie";
 		}
 
 		if (llJsonGetValue(_currentRestraints, ["ankle"]) == JSON_NULL && llJsonGetValue(_currentRestraints, ["immobilizer"]) == JSON_NULL) {
@@ -76,7 +76,7 @@ gui(integer prmScreen) {
 
 		mpButtons = multipageGui(mpButtons, 2, multipageIndex);
 	}
-	
+
 	// GUI: Colorize
 	else if (prmScreen == 100) {
 		guiText = "Choose a color for the leg tape.";
@@ -101,7 +101,7 @@ gui(integer prmScreen) {
 string defineRestraint(string prmName) {
 	string restraint;
 	list liPoseStandard = ["stand", "kneel", "sit", "sitLeft", "sitRight", "groundFront", "groundLeft", "groundRight", "groundBack"];
-	
+
 	// Type-specific values
 	restraint = llJsonSetValue(restraint, ["name"], prmName);
 	restraint = llJsonSetValue(_self, ["canCut"], "1");
@@ -114,20 +114,20 @@ string defineRestraint(string prmName) {
 		restraint = llJsonSetValue(restraint, ["uid"], "ankle");
 		restraint = llJsonSetValue(restraint, ["slot"], "ankle");
 		restraint = llJsonSetValue(restraint, ["complexity"], "1");
-		restraint = llJsonSetValue(restraint, ["integrity"], "20");
-		restraint = llJsonSetValue(restraint, ["tightness"], "5");
+		restraint = llJsonSetValue(restraint, ["integrity"], "25");
+		restraint = llJsonSetValue(restraint, ["tightness"], "6");
 		restraint = llJsonSetValue(restraint, ["poses"], llList2Json(JSON_ARRAY, liPoseStandard));
 		restraint = llJsonSetValue(restraint, ["attachments"], llList2Json(JSON_ARRAY, ["legTape_ankle"]));
 	} else if (prmName == "Knee") {
 		restraint = llJsonSetValue(restraint, ["uid"], "knee");
 		restraint = llJsonSetValue(restraint, ["slot"], "knee");
 		restraint = llJsonSetValue(restraint, ["complexity"], "1");
-		restraint = llJsonSetValue(restraint, ["integrity"], "20");
-		restraint = llJsonSetValue(restraint, ["tightness"], "5");
+		restraint = llJsonSetValue(restraint, ["integrity"], "25");
+		restraint = llJsonSetValue(restraint, ["tightness"], "6");
 		restraint = llJsonSetValue(restraint, ["poses"], llList2Json(JSON_ARRAY, liPoseStandard));
 		restraint = llJsonSetValue(restraint, ["attachments"], llList2Json(JSON_ARRAY, ["legTape_knee"]));
 	}
-	
+
 	return restraint;
 }
 
@@ -176,8 +176,8 @@ execute_function(string prmFunction, string prmJson) {
 
 	if (prmFunction == "setGender") { setGender(value); }
     else if (prmFunction == "setRestraints") {
-    	_currentRestraints = llJsonGetValue(value, ["slots"]); 
-    	set_restraints(value); 
+    	_currentRestraints = llJsonGetValue(value, ["slots"]);
+    	set_restraints(value);
 	}
     else if (prmFunction == "getAvailableRestraints") { sendAvailabilityInfo(); }
     else if (prmFunction == "requestColor") {
@@ -195,7 +195,7 @@ execute_function(string prmFunction, string prmJson) {
     }
 }
 
-default {	
+default {
 	listen(integer prmChannel, string prmName, key prmID, string prmText) {
 		if (prmChannel = guiChannel) {
 			if (prmText == "<<Done>>") { exit("done"); return; }
@@ -242,7 +242,7 @@ default {
 			debug(prmText);
 			return;
 		}
-		
+
 		execute_function(function, prmText);
 
 		if (function == _resumeFunction) {

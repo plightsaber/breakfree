@@ -1,0 +1,35 @@
+$module ()
+
+string getDefaultUser(key userKey) {
+	string user = "";
+	// Basic Info
+	user = llJsonSetValue(user, ["key"], userKey);
+	user = llJsonSetValue(user, ["name"], llGetDisplayName(userKey));
+	user = llJsonSetValue(user, ["gender"], getGender(userKey));
+
+	// Attributes
+	user = llJsonSetValue(user, ["str"], "1");
+	user = llJsonSetValue(user, ["dex"], "1");
+	user = llJsonSetValue(user, ["int"], "1");
+
+	// Skills
+	list skills;
+	user = llJsonSetValue(user, ["skills"], llList2Json(JSON_ARRAY, skills));
+
+	// Bound Status
+	user = llJsonSetValue(user, ["armBound"], "free");
+
+	return user;
+}
+
+
+string getGender(key prmUserID) {
+	list details = llGetObjectDetails(prmUserID, [OBJECT_BODY_SHAPE_TYPE]);
+	if (details == []) return "female";
+
+	float gender = llList2Float(details, 0);
+	if (gender < 0.0)	 return "object";
+	if (gender > 0.5)	 return "male";
+
+	return "female";
+}

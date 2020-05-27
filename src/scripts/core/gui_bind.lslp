@@ -42,7 +42,7 @@ init() {
 
 init_gui(key prmID, integer prmScreen) {
 	guiUserID = prmID;
-	simpleRequest("setVillainID", guiUserID);
+	simpleRequest("setVillainKey", guiUserID);
 
 	if (guiID) { llListenRemove(guiID); }
 	guiChannel = (integer)llFrand(-9998) - 1;
@@ -85,7 +85,6 @@ gui(integer prmScreen) {
 		if (!_armBoundExternal) { btn4 = "Bind Arms"; }
 		btn5 = "Bind Legs";
 		btn6 = "Gag";
-		
 		if (llGetListLength(_legPoses) > 1) { btn3 = "Position"; }
 	}
 
@@ -162,11 +161,10 @@ setAvailablePoses(string prmPoses) {
 
 set_restraints(string prmJson) {
 	_restraints = prmJson;
-	_armsBound = (integer)llJsonGetValue(prmJson, ["isArmBound"]);
+	_armsBound = (integer)llJsonGetValue(prmJson, ["armBound"]);
 	_armsTetherable = (integer)llJsonGetValue(prmJson, ["isArmTetherable"]);
-	_armBoundExternal = (integer)llJsonGetValue(prmJson, ["isArmBoundExternal"]);
-	
-	_legsBound = (integer)llJsonGetValue(prmJson, ["isLegBound"]);
+	_armBoundExternal = (integer)llJsonGetValue(prmJson, ["armBoundExternal"]);
+	_legsBound = (integer)llJsonGetValue(prmJson, ["legBound"]);
 	_legsTetherable = (integer)llJsonGetValue(prmJson, ["isLegTetherable"]);
 }
 
@@ -176,7 +174,6 @@ execute_function(string prmFunction, string prmJson) {
 	if (JSON_INVALID == value) {
 		//return;		// TODO: Rewrite all linked calls to send in JSON
 	}
-	
 	if (prmFunction == "setGender") { setGender(value); }
 	else if (prmFunction == "setRestraints") { set_restraints(value); }
 	else if (prmFunction == "setLegPoses") { setAvailablePoses(value); }
@@ -190,7 +187,6 @@ execute_function(string prmFunction, string prmJson) {
 		exit("");
 	}
 }
-	
 
 default {
 	state_entry() {

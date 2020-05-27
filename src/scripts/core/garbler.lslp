@@ -29,19 +29,16 @@ init() {
 // ===== Main Function =====
 setRestraints(string prmJson) {
 	_currentRestraints = prmJson;
-	
-	if ("0" == llJsonGetValue(_currentRestraints, ["isGagged"])) {
+	if ("0" == llJsonGetValue(_currentRestraints, ["gagged"])) {
 		llOwnerSay("@redirchat:" + (string)CHANNEL_GAGCHAT + "=rem");
 		llOwnerSay("@rediremote:" + (string)CHANNEL_GAGEMOTE + "=rem");
 		llListenControl(gagChatID, FALSE);
 		return;
 	}
-	
 	mouthOpen = ("1" == llJsonGetValue(_currentRestraints, ["mouthOpen"]));
 	mouthGarbled = ("1" == llJsonGetValue(_currentRestraints, ["speechGarbled"]));
 	mouthMuffled = ("1" == llJsonGetValue(_currentRestraints, ["speechMuffled"]));
 	mouthSealed = ("1" == llJsonGetValue(_currentRestraints, ["speechSealed"]));
-	
 	if (mouthOpen || mouthGarbled || mouthMuffled || mouthSealed) {
 		llOwnerSay("@redirchat:" + (string)CHANNEL_GAGCHAT + "=add");
 		llOwnerSay("@rediremote:" + (string)CHANNEL_GAGEMOTE + "=add");
@@ -100,7 +97,6 @@ string garbleChar(string char) {
 		else if (char == "x")	char = "k";
 		else if (char == "z")	char = "";
 	}
-		
 	if (mouthGarbled) {
 		if (char == "c")		char = "h";
 		else if (char == "r")	char = "h";

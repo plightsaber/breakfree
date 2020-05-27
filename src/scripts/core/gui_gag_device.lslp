@@ -65,13 +65,13 @@ gui(integer prmScreen) {
 	if (prmScreen == 0) {
 		getCurrentRestraints();
 		btn3 = "<<Style>>";
-		
+
 		if (llJsonGetValue(_currentRestraints, ["gag1"]) != JSON_NULL
 			|| llJsonGetValue(_currentRestraints, ["gag2"]) != JSON_NULL
 			|| llJsonGetValue(_currentRestraints, ["gag3"]) != JSON_NULL
 			|| llJsonGetValue(_currentRestraints, ["gag4"]) != JSON_NULL
-		) { 
-			mpButtons += "Ungag"; 
+		) {
+			mpButtons += "Ungag";
 		} else {
 			mpButtons += "Ballgag";
 		}
@@ -115,7 +115,7 @@ gui(integer prmScreen) {
 // ===== Main Functions =====
 string defineRestraint(string prmName) {
 	string gag;
-	
+
 	gag = llJsonSetValue(gag, ["name"], prmName);
 	if (prmName == "Ballgag") {
 		gag = llJsonSetValue(gag, ["uid"], "ballgag");
@@ -125,9 +125,9 @@ string defineRestraint(string prmName) {
 		gag = llJsonSetValue(gag, ["canEscape"], "0");
 		gag = llJsonSetValue(gag, ["mouthOpen"], "1");
 		gag = llJsonSetValue(gag, ["type"], "strap");
-		gag = llJsonSetValue(gag, ["complexity"], "1");
-		gag = llJsonSetValue(gag, ["integrity"], "1");
-		gag = llJsonSetValue(gag, ["tightness"], "2");
+		gag = llJsonSetValue(gag, ["complexity"], "2");
+		gag = llJsonSetValue(gag, ["integrity"], "10");
+		gag = llJsonSetValue(gag, ["tightness"], "3");
 		gag = llJsonSetValue(gag, ["attachments", JSON_APPEND], "gBall");
 	}
 
@@ -186,7 +186,7 @@ execute_function(string prmFunction, string prmJson) {
 	if (JSON_INVALID == value) {
 		//return;		// TODO: Rewrite all linked calls to send in JSON
 	}
-	
+
 
 	if (prmFunction == "setGender") { setGender(value); }
     else if (prmFunction == "setRestraints") {
@@ -251,7 +251,7 @@ default {
 				setColorByName(prmText, "strap");
 			} else if (guiScreen == 102) {
 				setColorByName(prmText, "ball");
-			} 
+			}
 			/*
 			else if (guiScreen == 111) {
 				setTextureByName(prmText, "cloth");
@@ -270,7 +270,7 @@ default {
 			debug(prmText);
 			return;
 		}
-		
+
 		execute_function(function, prmText);
 
 		if (function == _resumeFunction) {

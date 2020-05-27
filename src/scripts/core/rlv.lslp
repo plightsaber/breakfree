@@ -23,7 +23,7 @@ set_restraints(string prmJson) {
 	_restraints = prmJson;
 	if (!_RLV) { return; }
 
-	if ((integer)llJsonGetValue(prmJson, ["isArmBound"])) {
+	if ((integer)llJsonGetValue(prmJson, ["armBound"])) {
 		_armBound = TRUE;
 		llOwnerSay("@touchfar=n");
 	} else {
@@ -31,8 +31,8 @@ set_restraints(string prmJson) {
 		llOwnerSay("@touchfar=y");
 	}
 
-	_legBound = (integer)llJsonGetValue(prmJson, ["isLegBound"]);
-	_gagBound = (integer)llJsonGetValue(prmJson, ["isGagged"]);
+	_legBound = (integer)llJsonGetValue(prmJson, ["legBound"]);
+	_gagBound = (integer)llJsonGetValue(prmJson, ["gagged"]);
 
 	detachCheck();
 }

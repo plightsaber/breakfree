@@ -1,0 +1,17 @@
+$module ()
+
+// Colors
+vector COLOR_BROWN = <0.5, 0.25, 0.0>;
+vector COLOR_BLACK = <0.1, 0.1, 0.1>;
+vector COLOR_BLUE = <0.0, 0.25, 0.5>;
+vector COLOR_GREEN = <0.0, 0.4, 0.2>;
+vector COLOR_WHITE = <1.0, 1.0, 1.0>;
+vector COLOR_RED = <0.75, 0.0, 0.0>;
+vector COLOR_PINK = <1.0, 0.5, 0.5>;
+vector COLOR_YELLOW = <0.88, 0.68, 0.15>;
+vector COLOR_PURPLE = <0.5, 0.0, 0.5>;
+vector COLOR_SILVER = <0.5, 0.5, 0.5>;
+
+vector _color = COLOR_SILVER;
+list _colors = ["White", "Silver", "Black", "Purple", "Red", "Blue", "Green", "Pink", "Yellow", "Brown"];
+list _colorVals = [COLOR_WHITE, COLOR_SILVER, COLOR_BLACK, COLOR_PURPLE, COLOR_RED, COLOR_BLUE, COLOR_GREEN, COLOR_PINK, COLOR_YELLOW, COLOR_BROWN];

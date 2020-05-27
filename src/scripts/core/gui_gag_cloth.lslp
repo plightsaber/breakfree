@@ -71,28 +71,28 @@ gui(integer prmScreen) {
 			|| llJsonGetValue(_currentRestraints, ["gag2"]) != JSON_NULL
 			|| llJsonGetValue(_currentRestraints, ["gag3"]) != JSON_NULL
 			|| llJsonGetValue(_currentRestraints, ["gag4"]) != JSON_NULL
-		) { 
-			mpButtons += "Ungag"; 
+		) {
+			mpButtons += "Ungag";
 		}
-		
+
 		if (llJsonGetValue(_currentRestraints, ["gag1"]) == JSON_NULL
 			&& llJsonGetValue(_currentRestraints, ["gag2"]) == JSON_NULL
 			&& llJsonGetValue(_currentRestraints, ["gag3"]) == JSON_NULL
 			&& llJsonGetValue(_currentRestraints, ["gag4"]) == JSON_NULL
-		) { 
-			mpButtons += "Stuff"; 
+		) {
+			mpButtons += "Stuff";
 		}
-		
+
 		if (llJsonGetValue(_currentRestraints, ["gag2"]) == JSON_NULL
 			&& llJsonGetValue(_currentRestraints, ["gag3"]) == JSON_NULL
 			&& llJsonGetValue(_currentRestraints, ["gag4"]) == JSON_NULL
-		) { 
-			mpButtons += "Cleave"; 
+		) {
+			mpButtons += "Cleave";
 		}
 
 		if (llJsonGetValue(_currentRestraints, ["gag4"]) == JSON_NULL
-		) { 
-			mpButtons += "OTN"; 
+		) {
+			mpButtons += "OTN";
 		}
 
 		mpButtons = multipageGui(mpButtons, 2, multipageIndex);
@@ -132,7 +132,7 @@ gui(integer prmScreen) {
 // ===== Main Functions =====
 string defineRestraint(string prmName) {
 	string gag;
-	
+
 	// Type-specific values
 	gag = llJsonSetValue(gag, ["name"], prmName);
 	gag = llJsonSetValue(gag, ["type"], "knot");
@@ -143,9 +143,9 @@ string defineRestraint(string prmName) {
 		gag = llJsonSetValue(gag, ["slot"], "gag1");
 		gag = llJsonSetValue(gag, ["canCut"], "0");
 		gag = llJsonSetValue(gag, ["mouthOpen"], "1");
-		
+
 		gag = llJsonSetValue(gag, ["complexity"], "3");
-		gag = llJsonSetValue(gag, ["integrity"], "1");
+		gag = llJsonSetValue(gag, ["integrity"], "2");
 		gag = llJsonSetValue(gag, ["tightness"], "1");
 		gag = llJsonSetValue(gag, ["attachments", JSON_APPEND], "gStuff");
 	} else if (prmName == "Cleave") {
@@ -157,8 +157,8 @@ string defineRestraint(string prmName) {
 		gag = llJsonSetValue(gag, ["speechGarbled"], "1");
 		gag = llJsonSetValue(gag, ["slot"], "gag2");
 		gag = llJsonSetValue(gag, ["canCut"], "1");
-		gag = llJsonSetValue(gag, ["complexity"], "7");
-		gag = llJsonSetValue(gag, ["integrity"], "1");
+		gag = llJsonSetValue(gag, ["complexity"], "3");
+		gag = llJsonSetValue(gag, ["integrity"], "5");
 		gag = llJsonSetValue(gag, ["tightness"], "5");
 		gag = llJsonSetValue(gag, ["attachments"], llList2Json(JSON_ARRAY, attachments));
 	} else if (prmName == "OTN") {
@@ -166,15 +166,15 @@ string defineRestraint(string prmName) {
 		gag = llJsonSetValue(gag, ["speechMuffled"], "1");
 		gag = llJsonSetValue(gag, ["slot"], "gag4");
 		gag = llJsonSetValue(gag, ["canCut"], "1");
-		gag = llJsonSetValue(gag, ["complexity"], "5");
-		gag = llJsonSetValue(gag, ["integrity"], "1");;
+		gag = llJsonSetValue(gag, ["complexity"], "2");
+		gag = llJsonSetValue(gag, ["integrity"], "5");
 		gag = llJsonSetValue(gag, ["tightness"], "5");
 		gag = llJsonSetValue(gag, ["attachments", JSON_APPEND], "gOTN");
 		gag = llJsonSetValue(gag, ["preventAttach", JSON_APPEND], "gCleave");
 		gag = llJsonSetValue(gag, ["preventAttach", JSON_APPEND], "gCleaveStuff");
 		gag = llJsonSetValue(gag, ["preventAttach", JSON_APPEND], "gBall");
 	}
-	
+
 	return gag;
 }
 
@@ -304,7 +304,7 @@ default {
 			debug(prmText);
 			return;
 		}
-		
+
 		execute_function(function, prmText);
 
 		if (function == _resumeFunction) {

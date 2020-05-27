@@ -31,9 +31,12 @@ string _activePart;
 
 // Avi Settings
 string _gender = "female";
-list _feats = [];
+integer _maxStamina = 100;
+list _ownerFeats = [];
 
 // GUI variables
+string _guiUser;
+
 key guiUserID;
 list guiButtons;
 integer guiChannel;
@@ -46,9 +49,8 @@ integer guiTimeout = 30;
 string _actionmsg;
 
 // Escape Vars
-integer REST_TIMER = 10;	// TODO: Change to 60!
+integer REST_TIMER = 60;
 integer _stamina;
-string _stats;
 string _puzzles;
 string _escapeProgress;
 
@@ -56,7 +58,6 @@ string _escapeProgress;
 integer _armBoundExternal = FALSE;
 key configQueryID;
 string jsonSettings;
-integer _handsFree;
 string _resumeFunction;
 
 init_gui(key prmID, integer prmScreen) {
@@ -70,27 +71,26 @@ init_gui(key prmID, integer prmScreen) {
 
 string getEscapeProgress() {
 	if (_escapeProgress) { return _escapeProgress; }
-	getStats();
-	
-	_stamina = (integer)llJsonGetValue(_stats, ["stamina"]);
-	
+
+	_stamina = _maxStamina;
+
 	_escapeProgress = llJsonSetValue(_escapeProgress, ["arm", "complexity"], "0");
 	_escapeProgress = llJsonSetValue(_escapeProgress, ["arm", "integrity"], "0");
 	_escapeProgress = llJsonSetValue(_escapeProgress, ["arm", "tightness"], "0");
-	
+
 	_escapeProgress = llJsonSetValue(_escapeProgress, ["leg", "complexity"], "0");
 	_escapeProgress = llJsonSetValue(_escapeProgress, ["leg", "integrity"], "0");
 	_escapeProgress = llJsonSetValue(_escapeProgress, ["leg", "tightness"], "0");
-	
+
 	_escapeProgress = llJsonSetValue(_escapeProgress, ["gag", "complexity"], "0");
 	_escapeProgress = llJsonSetValue(_escapeProgress, ["gag", "integrity"], "0");
 	_escapeProgress = llJsonSetValue(_escapeProgress, ["gag", "tightness"], "0");
-	
+
 	return _escapeProgress;
 }
 
 // ===== Main Functions =====
-integer assisted() { return guiUserID != llGetOwner(); }
+integer isAssisted() { return guiUserID != llGetOwner(); }
 
 string action2String(integer action, string puzzleType) {
 	if (puzzleType == "tightness") {
@@ -98,52 +98,74 @@ string action2String(integer action, string puzzleType) {
 		else if (action == 2) { return "Struggle"; }
 		else if (action == 3) { return "Thrash"; }
 	} else if (puzzleType == "integrity") {
-		if (action == 1) { return "Pick"; }
+		if (action == 3) { return "Pick"; }
 		else if (action == 2) { return "Tug"; }
-		else if (action == 3) { return "Yank"; }
+		else if (action == 1) { return "Yank"; }
 	}
-	
+
 	return "ERROR: UNKNOWN ACTION:" + (string)(action);
 }
 
 string getSuggestedAction() {
 	getEscapeProgress();
-	
+
+	if (isAssisted()) {
+		return "";
+	}
+
+	integer eidetic = llListFindList(_ownerFeats, ["Eidetic"]) > -1;
+	integer intuitive = llListFindList(_ownerFeats, ["Intuitive"]) > -1;
+
 	integer progress = (integer)llJsonGetValue(_escapeProgress, [_activePart, "tightness", "progress"]);
-	integer tightness = (integer)llJsonGetValue(_restraints, ["escape", _activePart, "tightness"]);
+	integer tightness = (integer)llJsonGetValue(_restraints, ["security", _activePart, "tightness"]);
 	integer maxProgress = (integer)llJsonGetValue(_escapeProgress, [_activePart, "tightness", "maxProgress"]);
 
-	// TODO: Get action based on feats & distractions.
-	if (progress >= tightness) {
+
+	if (progress >= tightness && !intuitive) {
 		return "You think it is time to break free!";
-	} else if (maxProgress > progress) {
+	} else if (maxProgress > progress && eidetic) {
 		return "You think you should try to " + action2String((integer)llJsonGetValue(_puzzles, [_activePart, "tightness", progress]), "tightness");
+	} else if (intuitive) {
+		string puzzleType = "tightness";
+		if (progress >= tightness) {
+			puzzleType = "integrity";
+		}
+
+		integer action1 = (integer)llJsonGetValue(_puzzles, [_activePart, puzzleType, progress]);
+		integer action2;
+		do {
+			action2 = roll(1,3);
+		} while (action2 == action1);
+		list actions = [action1, action2];
+		actions = llListSort(actions, 1, TRUE);
+
+		return "You think should " + action2String(llList2Integer(actions, 0), puzzleType) + " or " + action2String(llList2Integer(actions, 1), puzzleType) + ".";
 	}
 	return "You are not sure how to escape.";
 }
 
 escapeAction(string prmVerb) {
 	string action;
-	integer stamina;	
+	integer stamina;
 	integer exertion;
 	string puzzleType;
-	
-	getEscapeProgress();
-	
-	// TODO: Central definition?
-	if (prmVerb == "Twist") { action = "1"; exertion = 4; puzzleType = "tightness"; }
-	else if (prmVerb == "Struggle") { action = "2"; exertion = 4; puzzleType = "tightness"; } 
-	else if (prmVerb == "Thrash") {	action = "3"; exertion = 6; puzzleType = "tightness"; }
 
-	else if (prmVerb == "Pick") { action = "1"; exertion = 5; puzzleType = "integrity";}
+	getEscapeProgress();
+
+	// TODO: Central definition?
+	if (prmVerb == "Twist") { action = "1"; exertion = 3; puzzleType = "tightness"; }
+	else if (prmVerb == "Struggle") { action = "2"; exertion = 4; puzzleType = "tightness"; }
+	else if (prmVerb == "Thrash") {	action = "3"; exertion = 7; puzzleType = "tightness"; }
+
+	else if (prmVerb == "Pick") { action = "3"; exertion = 2; puzzleType = "integrity";}
 	else if (prmVerb == "Tug") { action = "2"; exertion = 5; puzzleType = "integrity";}
-	else if (prmVerb == "Yank") { action = "3"; exertion = 5; puzzleType = "integrity";}
-	
+	else if (prmVerb == "Yank") { action = "1"; exertion = 5; puzzleType = "integrity";}
+
 	integer maxProgress = (integer)llJsonGetValue(_escapeProgress, [_activePart, puzzleType, "maxProgress"]);
 	integer progress = (integer)llJsonGetValue(_escapeProgress, [_activePart, puzzleType, "progress"]);
-	integer tightness = (integer)llJsonGetValue(_restraints, ["escape", _activePart, "tightness"]);
-	
-	if (!assisted()) {
+	integer tightness = (integer)llJsonGetValue(_restraints, ["security", _activePart, "tightness"]);
+
+	if (!isAssisted()) {
 		_stamina = _stamina - exertion;
 		if (_stamina < 0) {
 			_stamina = 0;
@@ -151,38 +173,62 @@ escapeAction(string prmVerb) {
 	}
 
 	// Execute action
-	//debug("Correct action: " + llJsonGetValue(_puzzles, [_activePart, puzzleType, progress]));
+	debug("CORRECT ACTION: " + llJsonGetValue(_puzzles, [_activePart, puzzleType, progress]));
 	integer success = (action == llJsonGetValue(_puzzles, [_activePart, puzzleType, progress]));
-	if (success && puzzleType == "integrity") {
+	if (success && puzzleType == "integrity" && !ignoreTightness()) {
+		// Tightness failure
 		integer tightnessProgress = (integer)llJsonGetValue(_escapeProgress, [_activePart, "tightness", "progress"]);
 		if (llFrand(1.0) > ((float)(tightnessProgress-(tightness-tightnessProgress))/(float)tightness)) {
 			success = FALSE;
 		}
-	}
-	
-	if (success) {
-		_actionmsg = "You think you've made some progress.";
-		progress++; 
-		if (maxProgress < progress) { 
-			maxProgress = progress;
-			_escapeProgress = llJsonSetValue(_escapeProgress, [_activePart, puzzleType, "maxProgress"], (string)maxProgress); 
-		}
-	} else {
-		_actionmsg = "Your " + prmVerb + " didn't help.";
-		if (!assisted() && progress > 0 && puzzleType == "tightness") { 
-			progress = progress - 2;
-			if (progress < 0) { progress = 0; }
+
+		// Escapability
+		if (!(integer)llJsonGetValue(_restraints, ["security", _activePart, "canEscape"])) {
+			success = FALSE;
 		}
 	}
 
+	// Set escape progress
+	if (prmVerb == "Thrash"
+		&& (integer)llJsonGetValue(_restraints, ["security", _activePart, "canEscape"])
+		&& checkThrash()
+	) {
+		_actionmsg = "You think you've made some unexpected progress.";
+		puzzleType = "integrity";
+		maxProgress = (integer)llJsonGetValue(_escapeProgress, [_activePart, puzzleType, "maxProgress"]);
+		progress = (integer)llJsonGetValue(_escapeProgress, [_activePart, puzzleType, "progress"]);
+		if (maxProgress < progress) {
+			maxProgress = progress;
+			_escapeProgress = llJsonSetValue(_escapeProgress, [_activePart, puzzleType, "maxProgress"], (string)maxProgress);
+		}
+	} else if (success) {
+		_actionmsg = "You think you've made some progress.";
+		progress++;
+		if (maxProgress < progress) {
+			maxProgress = progress;
+			_escapeProgress = llJsonSetValue(_escapeProgress, [_activePart, puzzleType, "maxProgress"], (string)maxProgress);
+		}
+	} else {
+		_actionmsg = "Your " + prmVerb + " didn't help.";
+		if (!isAssisted() && progress > 0 && puzzleType == "tightness") {
+			progress = loseProgress(progress);
+		}
+	}
+	_escapeProgress = llJsonSetValue(_escapeProgress, [_activePart, puzzleType, "progress"], (string)progress);
+
 	// Animate
-	if (!assisted() && puzzleType == "tightness") {
+	if (!isAssisted() && puzzleType == "tightness") {
 		if (success) { simpleRequest("animate", "animation_" + _activePart + "_success"); }
 		else { simpleRequest("animate", "animation_" + _activePart + "_failure"); }
 	}
 
-	_escapeProgress = llJsonSetValue(_escapeProgress, [_activePart, puzzleType, "progress"], (string)progress);
+	// Check if anything should be escaped from
 	if (success && puzzleType == "integrity") {
+		// If being rescued by an unbound avi, every success reduces complexity
+		if (ignoreIntegrity()) {
+			_escapeProgress = llJsonSetValue(_escapeProgress, ["integrity"], "9999");
+		}
+
 		if (checkIntegrity(_activePart)) {
 			if (checkComplexity(_activePart)) {
 				return;	// GUI will resume after getting restraints call
@@ -192,30 +238,44 @@ escapeAction(string prmVerb) {
 	gui(guiScreen);
 }
 
+integer checkThrash() {
+	integer dieSides = 100;
+	if (llListFindList(_ownerFeats, ["Athletic+"]) > -1) {
+		dieSides = 100;
+	} else if (llListFindList(_ownerFeats, ["Athletic"]) > -1) {
+		dieSides = 75;
+	}
+
+	return roll(1, dieSides) == dieSides;
+}
+
 integer checkIntegrity(string restraint) {
 	getEscapeProgress();
-	
+
 	integer integrityProgress = (integer)llJsonGetValue(_escapeProgress, [restraint, "integrity", "progress"]);
-	integer integrity = (integer)llJsonGetValue(_restraints, ["escape", restraint, "integrity"]);
-	
+	integer integrity = (integer)llJsonGetValue(_restraints, ["security", restraint, "integrity"]);
+
 	if (integrityProgress >= integrity) {
 		_actionmsg = "Your restraint suddenly feels looser!";
-		
+		if (!isAssisted()) {
+			simpleRequest("addExp", llJsonGetValue(_restraints, ["security", restraint, "tightness"]));
+		}
+
 		// Update complexity.
 		integer cProgress = (integer)llJsonGetValue(_escapeProgress, [restraint, "complexity", "progress"]) + 1;
 		_escapeProgress = llJsonSetValue(_escapeProgress, [restraint, "complexity", "progress"], (string)cProgress);
 		return TRUE;
 	}
-	
+
 	return FALSE;
 }
 
 integer checkComplexity(string restraint) {
 	getEscapeProgress();
-	
+
 	integer complexityProgress = (integer)llJsonGetValue(_escapeProgress, [restraint, "complexity", "progress"]);
-	integer complexity = (integer)llJsonGetValue(_restraints, ["escape", restraint, "complexity"]);
-	
+	integer complexity = (integer)llJsonGetValue(_restraints, ["security", restraint, "complexity"]);
+
 	if (complexityProgress >= complexity) {
 		llWhisper(0, getOwnerName() + " is freed from " + getOwnerPronoun("her") + " " + restraint + " restraints.");
 		simpleRequest("remRestraint", restraint);
@@ -241,8 +301,8 @@ list generatePuzzle(integer length) {
 
 refreshPuzzle(string restraint, string puzzleType) {
 	getEscapeProgress();
-	
-	list puzzle = generatePuzzle((integer)llJsonGetValue(_restraints, ["escape", restraint, puzzleType]));
+
+	list puzzle = generatePuzzle((integer)llJsonGetValue(_restraints, ["security", restraint, puzzleType]));
 	_escapeProgress = llJsonSetValue(_escapeProgress, [restraint, puzzleType, "progress"], "0");
 	_escapeProgress = llJsonSetValue(_escapeProgress, [restraint, puzzleType, "maxProgress"], "0");
 	_puzzles = llJsonSetValue(_puzzles, [restraint, puzzleType], llList2Json(JSON_ARRAY, puzzle));
@@ -250,7 +310,7 @@ refreshPuzzle(string restraint, string puzzleType) {
 
 string displayTightness(string restraint) {
 	integer index;
-	integer tightness = (integer)llJsonGetValue(_restraints, ["escape", restraint, "integrity"]);
+	integer tightness = (integer)llJsonGetValue(_restraints, ["security", restraint, "integrity"]);
 	string output;
 	string char = " ";
 
@@ -279,6 +339,31 @@ string displayTightness(string restraint) {
 	return output;
 }
 
+integer ignoreIntegrity() {
+	return (isAssisted() && !(integer)llJsonGetValue(_guiUser, ["armBound"])) || (!isAssisted() && !isArmBound());
+}
+
+integer ignoreTightness() {
+	return isAssisted() || !isArmBound();
+}
+
+integer loseProgress(integer progress) {
+	if (llListFindList(_ownerFeats, ["Flexible+"]) > -1) {
+		return progress;
+	} else if (llListFindList(_ownerFeats, ["Flexible"]) > -1) {
+		progress = progress - 1;
+	} else {
+		progress--;
+	}
+
+
+	if (progress < 0) {
+		return 0;
+	}
+
+	return progress;
+}
+
 // ===== GUI =====
 get_gui(string prmPart) {
 	string tmpType;
@@ -286,11 +371,9 @@ get_gui(string prmPart) {
 	_actionmsg = "";
 
 	if (guiUserID == llGetOwner() && isArmBound()) {
-		_handsFree = FALSE;
 		gui(10);
 		return;
 	} else {
-		_handsFree = TRUE;
 		gui(20);
 		return;
 	}
@@ -302,10 +385,10 @@ gui(integer prmScreen) {
 	if (_stamina <= 0) {
 		llOwnerSay("You are too tired to struggle anymore.");
 		_escapeProgress = llJsonSetValue(_escapeProgress, [_activePart, "tightness", "progress"], "0");
-		exit("Exhausted");	
+		exit("Exhausted");
 		return;
 	}
-	
+
 	// Reset Busy Clock
 	llSetTimerEvent(REST_TIMER);
 
@@ -331,9 +414,9 @@ gui(integer prmScreen) {
 		// reset previous screen
 		guiScreenLast = 0;
 
-		if ((integer)llJsonGetValue(_restraints, ["escape", "arm", "tightness"]) > 0) { btn4 = "Free Arms"; }
-		if ((integer)llJsonGetValue(_restraints, ["escape", "leg", "tightness"]) > 0) { btn4 = "Free Legs"; }
-		if ((integer)llJsonGetValue(_restraints, ["escape", "gag", "tightness"]) > 0) { btn4 = "Free Gag"; }
+		if ((integer)llJsonGetValue(_restraints, ["security", "arm", "tightness"]) > 0) { btn4 = "Free Arms"; }
+		if ((integer)llJsonGetValue(_restraints, ["security", "leg", "tightness"]) > 0) { btn5 = "Free Legs"; }
+		if ((integer)llJsonGetValue(_restraints, ["security", "gag", "tightness"]) > 0) { btn6 = "Free Gag"; }
 
 		// TODO: Get quick release options
 	}
@@ -361,9 +444,9 @@ gui(integer prmScreen) {
 
 		guiText = "Restraint: " + ToTitle(_activePart);	// TODO: Get full name of restraint
 		guiText += "\nTightness: " + displayTightness(_activePart);
-		// TODO: Show suggestion based on INT
+		// TODO: Suggested action for feats?
 		if (_actionmsg) { guiText += "\n" + _actionmsg; }
-		
+
 		if (guiUserID != llGetOwner() && (integer)llJsonGetValue(jsonSettings, ["gagOnly"])) {
 			btn1 = " ";
 		}
@@ -372,9 +455,9 @@ gui(integer prmScreen) {
 	guiScreen = prmScreen;
 	guiButtons = [btn1, btn2, btn3];
 
-	if (btn4+btn5+btn6 != "	 ") { guiButtons += [btn4, btn5, btn6]; }
-	if (btn7+btn8+btn9 != "	 ") { guiButtons += [btn7, btn8, btn9]; }
-	//if (btn10+btn11+btn12 != "	 ") { guiButtons += [btn10, btn11, btn12]; }
+	if (btn4+btn5+btn6 != "   ") { guiButtons += [btn4, btn5, btn6]; }
+	if (btn7+btn8+btn9 != "   ") { guiButtons += [btn7, btn8, btn9]; }
+	if (btn10+btn11+btn12 != "   ") { guiButtons += [btn10, btn11, btn12]; }
 	llDialog(guiUserID, guiText, guiButtons, guiChannel);
 }
 
@@ -401,15 +484,17 @@ string getOwnerPronoun(string prmPlaceholder) {
 }
 
 integer isArmBound() {
-	return _armBoundExternal || ((integer)llJsonGetValue(_restraints, ["escape", "arm", "tightness"]) > 0);
+	return _armBoundExternal
+		|| ((integer)llJsonGetValue(_restraints, ["security", "arm", "tightness"]) > 0)
+		|| ((integer)llJsonGetValue(_restraints, ["security", "hand", "tightness"]) > 0);
 }
 
 integer isLegBound() {
-	return (integer)llJsonGetValue(_restraints, ["escape", "leg", "tightness"]) > 0;
+	return (integer)llJsonGetValue(_restraints, ["security", "leg", "tightness"]) > 0;
 }
 
 integer isGagged() {
-	return (integer)llJsonGetValue(_restraints, ["escape", "gag", "tightness"]) > 0;
+	return (integer)llJsonGetValue(_restraints, ["security", "gag", "tightness"]) > 0;
 }
 
 
@@ -420,16 +505,17 @@ integer isBound() {
 // ===== Sets =====
 setRestraints(string prmInfo) {
 	_restraints = prmInfo;
-	
+	getEscapeProgress();
+
 	// TODO: Only reset progress on restraint level change?
 	_escapeProgress = llJsonSetValue(_escapeProgress, ["escape", "arm", "complexity"], "0");
 	_escapeProgress = llJsonSetValue(_escapeProgress, ["escape", "arm", "integrity"], "0");
 	_escapeProgress = llJsonSetValue(_escapeProgress, ["escape", "arm", "tightness"], "0");
-	
+
 	_escapeProgress = llJsonSetValue(_escapeProgress, ["escape", "leg", "complexity"], "0");
 	_escapeProgress = llJsonSetValue(_escapeProgress, ["escape", "leg", "integrity"], "0");
 	_escapeProgress = llJsonSetValue(_escapeProgress, ["escape", "leg", "tightness"], "0");
-	
+
 	_escapeProgress = llJsonSetValue(_escapeProgress, ["escape", "gag", "complexity"], "0");
 	_escapeProgress = llJsonSetValue(_escapeProgress, ["escape", "gag", "integrity"], "0");
 	_escapeProgress = llJsonSetValue(_escapeProgress, ["escape", "gag", "tightness"], "0");
@@ -440,7 +526,7 @@ setRestraints(string prmInfo) {
 
 	refreshPuzzle("leg", "integrity");
 	refreshPuzzle("leg", "tightness");
-	
+
 	refreshPuzzle("gag", "integrity");
 	refreshPuzzle("gag", "tightness");
 }
@@ -449,15 +535,17 @@ setGender(string prmGender) {
 	_gender = prmGender;
 }
 
-string getStats() {
-	if (_stats) { return _stats; }
-	
-	return _stats = llJsonSetValue(_stats, ["stamina"], "100");
-}
+setOwnerFeats(string feats) {
+	_ownerFeats = llJson2List(feats);
 
-setStats(string stats) {
-	_stamina = (integer)llJsonGetValue(stats, ["stamina"]);
-	_feats = llJson2List(llJsonGetValue(stats, ["feats"]));
+	// Set maxStamina based on feats
+	if (llListFindList(_ownerFeats, ["Endurant+"]) > -1) {
+		_maxStamina = 150;
+	} else if (llListFindList(_ownerFeats, ["Endurant"]) > -1) {
+		_maxStamina = 125;
+	} else {
+		_maxStamina = 100;
+	}
 }
 
 // ===== Other Functions =====
@@ -472,7 +560,7 @@ guiRequest(string prmGUI, integer prmRestore, key prmUserID, integer prmScreen) 
 }
 
 integer roll(integer dice, integer sides) {
-	integer result = 1;
+	integer result = 0;
 	integer i;
 	for (i = 0; i < dice; i++) {
 		result += llCeil(llFrand(sides));
@@ -503,8 +591,9 @@ execute_function(string prmFunction, string prmJson) {
 	}
 
 	if (prmFunction == "setGender") { setGender(value); }
-	else if (prmFunction == "setStats") { setStats(value); }
+	else if (prmFunction == "setOwnerFeats") { setOwnerFeats(value); }
 	else if (prmFunction == "setRestraints") { setRestraints(value); }
+	else if (prmFunction == "setToucher") { _guiUser = value; }
 	else if (prmFunction == "gui_escape") {
 		key userkey = (key)llJsonGetValue(prmJson, ["userkey"]);
 		integer screen = 0;
@@ -585,21 +674,27 @@ default {
 			llSetTimerEvent(0.0);
 			return;
 		}
-		
-		integer maxStamina = (integer)llJsonGetValue(getStats(), ["stamina"]);
-		if (_stamina == maxStamina) {
+
+		if (_stamina == _maxStamina) {
 			return;
 		}
-			
+
 		// Reset struggle progress (if resting, assumed stop)
 		_escapeProgress = llJsonSetValue(_escapeProgress, ["arm", "tightness", "progress"], "0");
 		_escapeProgress = llJsonSetValue(_escapeProgress, ["leg", "tightness", "progress"], "0");
-		_escapeProgress = llJsonSetValue(_escapeProgress, ["gag", "tightness", "progress"], "0");	
+		_escapeProgress = llJsonSetValue(_escapeProgress, ["gag", "tightness", "progress"], "0");
 
 		// Refresh stamina
-		_stamina += maxStamina/5;
-		if (_stamina >= maxStamina) {
-			_stamina = maxStamina;
+		integer denominator = 4;
+		if (llListFindList(_ownerFeats, ["Resolute+"]) > -1) {
+			denominator = 1;
+		} else if (llListFindList(_ownerFeats, ["Resolute"]) > -1) {
+			denominator = 2;
+		}
+
+		_stamina += _maxStamina/denominator;
+		if (_stamina >= _maxStamina) {
+			_stamina = _maxStamina;
 			llOwnerSay("You are feeling fully rested.");
 		}
 	}

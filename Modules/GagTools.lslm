@@ -6,26 +6,17 @@ string _self;
 string _restraints;	// JSON list of all restraints
 string _resumeFunction;
 
-// ===== Main Functions =====
-integer is_mouth_open() {
-	integer index;
-	list liGags = llJson2List(llJsonGetValue(_restraints,["gag"]));
-	for (index = 0; index < llGetListLength(liGags); ++index) {
-		if ("1" == llJsonGetValue(llList2String(liGags, index), ["mouthOpen"])) {
-			return TRUE;
-		}
+string _currentRestraints;
+integer _mouthOpen;
+
+string getCurrentRestraints() {
+	if (_currentRestraints) {
+		return _currentRestraints;
 	}
-	return FALSE;
-}
 
-set_restraints(string prmJson) {
-	_slot = 0;
-	_restraints = prmJson;
-	string gags = llJsonGetValue(prmJson, ["gag"]);
-	if (JSON_NULL == gags) return;
-
-	list liGags = llJson2List(gags);
-	string gag = llList2String(liGags, -1);
-
-	_slot = (integer)llJsonGetValue(gag, ["slot"]);
+	_currentRestraints = llJsonSetValue(_currentRestraints, ["gag1"], JSON_NULL);
+	_currentRestraints = llJsonSetValue(_currentRestraints, ["gag2"], JSON_NULL);
+	_currentRestraints = llJsonSetValue(_currentRestraints, ["gag3"], JSON_NULL);
+	_currentRestraints = llJsonSetValue(_currentRestraints, ["gag4"], JSON_NULL);
+	return _currentRestraints;
 }

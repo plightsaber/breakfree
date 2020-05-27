@@ -1,3 +1,4 @@
+$import Modules.ContribLib.lslm();
 $import Modules.RestraintTools.lslm();
 
 string self;	// JSON object
@@ -8,7 +9,7 @@ list _attachedFolders = [];
 addRestraint(string prmJson) {
 	string type = llJsonGetValue(prmJson, ["type"]);
 	string restraint = llJsonGetValue(prmJson, ["restraint"]);
-	
+
 	_restraints = llJsonSetValue(_restraints, [type, JSON_APPEND], restraint);
 	setRestraints(_restraints);
 }
@@ -29,7 +30,7 @@ remRestraint(string prmType) {
 	} else {
 		_restraints = llJsonSetValue(_restraints, [prmType], llList2Json(JSON_ARRAY, liRestraints));
 	}
-	
+
 	setRestraints(_restraints);
 }
 
@@ -46,29 +47,29 @@ setRestraints(string prmJson) {
 
 	// Arm loop.
 	restraint = llJsonGetValue(prmJson, ["arm"]);
-	if (restraint != JSON_INVALID) { 
-		bindFolders += get_restraint_list(restraint, "attachments");
-		preventFolders += get_restraint_list(restraint, "preventAttach");
+	if (restraint != JSON_INVALID) {
+		bindFolders += getRestraintList(restraint, "attachments");
+		preventFolders += getRestraintList(restraint, "preventAttach");
 	}
-	
+
 	// Leg Loop.
 	restraint = llJsonGetValue(prmJson, ["leg"]);
-	if (restraint != JSON_INVALID) { 
-		bindFolders += get_restraint_list(restraint, "attachments");
-		preventFolders += get_restraint_list(restraint, "preventAttach");
+	if (restraint != JSON_INVALID) {
+		bindFolders += getRestraintList(restraint, "attachments");
+		preventFolders += getRestraintList(restraint, "preventAttach");
 	}
-	
+
 	// Gag Loop.
 	restraint = llJsonGetValue(prmJson, ["gag"]);
-	if (restraint != JSON_INVALID) { 
-		bindFolders += get_restraint_list(restraint, "attachments");
-		preventFolders += get_restraint_list(restraint, "preventAttach");
+	if (restraint != JSON_INVALID) {
+		bindFolders += getRestraintList(restraint, "attachments");
+		preventFolders += getRestraintList(restraint, "preventAttach");
 	}
-	
+
 	bindFolders = ListXnotY(bindFolders, preventFolders);
 	list addFolders = ListXnotY(bindFolders, _attachedFolders);
 	list remFolders = ListXnotY(_attachedFolders, bindFolders);
-	
+
 	// Add Folders.
 	debug((string)addFolders);
 	for (index = 0; index < llGetListLength(addFolders); index++) {
@@ -79,20 +80,13 @@ setRestraints(string prmJson) {
 	for (index = 0; index < llGetListLength(remFolders); index++) {
 		llOwnerSay("@detachall:BreakFree/bf_" + llList2String(remFolders, index) + "=force");
 	}
-	
+
 	// Save setting
 	_attachedFolders = bindFolders;
 }
 
 // ===== User-Defined Functions ======
-list ListXnotY(list lx, list ly) {// return elements in X list that are not in Y list
-	list lz = [];
-	integer i = llGetListLength(lx);
-	while(i--)
-	if ( !~llListFindList(ly,llList2List(lx,i,i)) )
-			lz += llList2List(lx,i,i);
-	return lz;
-}
+
 
 // ===== Other Functions =====
 debug(string output) {

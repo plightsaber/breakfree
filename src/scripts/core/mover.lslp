@@ -20,17 +20,17 @@ init() {
 
 set_restraints(string prmJson) {
 	_restraints = prmJson;
-	if (!(integer)llJsonGetValue(prmJson, ["isArmBound"])) {
+	if (!(integer)llJsonGetValue(prmJson, ["armBound"])) {
 		armTetherID = NULL_KEY;
 	}
-	
-	if (!(integer)llJsonGetValue(prmJson, ["isLegBound"])) {
+
+	if (!(integer)llJsonGetValue(prmJson, ["legBound"])) {
 		llReleaseControls();
 		_legPose = "";
 		legTetherID = NULL_KEY;
 		return;
 	}
-	
+
 	init();
 	llTakeControls(CONTROL_FWD | CONTROL_BACK | CONTROL_RIGHT | CONTROL_LEFT | CONTROL_UP | CONTROL_DOWN, TRUE, FALSE);
 }
@@ -44,7 +44,7 @@ setLegPose(string uid, integer sendUpdate) {
 	if (uid == "free" || uid == "external") {
 		_legPose = "";
 		llRequestPermissions(llGetOwner(), PERMISSION_TAKE_CONTROLS | PERMISSION_TRACK_CAMERA);
-		llReleaseControls();		
+		llReleaseControls();
 		return;
 	}
 
@@ -57,7 +57,7 @@ setLegPose(string uid, integer sendUpdate) {
 	llRequestPermissions(llGetOwner(), PERMISSION_TAKE_CONTROLS | PERMISSION_TRACK_CAMERA);
 	llTakeControls(CONTROL_FWD | CONTROL_BACK | CONTROL_RIGHT | CONTROL_LEFT | CONTROL_UP | CONTROL_DOWN, TRUE, FALSE);
 	_legPose = uid;
-	
+
 	if (sendUpdate) {
 		simpleRequest("setLegPose", _legPose);
 	}
@@ -127,7 +127,7 @@ executeFunction(string function, string prmJson) {
 	if (JSON_INVALID == value) {
 		//return;		// TODO: Rewrite all linked calls to send in JSON
 	}
-	
+
 	if (function == "setLegPose") { setLegPose(value, FALSE); }
     else if (function == "setLegPoses") { setLegPoses(value); }
 	else if (function == "tetherTo") { tetherTo(value); }
@@ -163,7 +163,7 @@ default {
 
     	if (release) { simpleRequest("animate_mover", "stop"); }
   	}
-  
+
 	link_message(integer prmLink, integer prmValue, string prmText, key prmID) {
 		string function;
 		string value;
@@ -175,10 +175,11 @@ default {
 		executeFunction(function, prmText);
 	}
 
-  sensor(integer prmCount) {
-    updateAviTetherPos();
-  }
-  no_sensor() {
-    updateAviTetherPos();
-  }
+  	sensor(integer prmCount) {
+		updateAviTetherPos();
+	}
+
+  	no_sensor() {
+		updateAviTetherPos();
+  	}
 }
