@@ -2,12 +2,22 @@ $import Modules.LegTools.lslm();
 $import Modules.GeneralTools.lslm();
 $import Modules.GuiTools.lslm();
 $import Modules.RopeColor.lslm();
+$import Modules.UserLib.lslm();
 
 // General Settings
 string gender = "female";
+integer _rpMode = FALSE;
+
+// GUI screens
+integer GUI_HOME = 0;
+integer GUI_STYLE = 100;
+integer GUI_TEXTURE = 101;
+integer GUI_COLOR = 111;
 
 // Status
 string legsBound = "free";  // 0: FREE; 1: BOUND; 2: HELPLESS
+
+string _villain;
 
 string _currentRestraints;
 string _restraintLib;
@@ -25,6 +35,10 @@ string getCurrentRestraints() {
 	if (_currentRestraints) {
 		return _currentRestraints;
 	}
+
+	_currentRestraints = llJsonSetValue(_currentRestraints, ["wrist"], JSON_NULL);
+	_currentRestraints = llJsonSetValue(_currentRestraints, ["elbow"], JSON_NULL);
+	_currentRestraints = llJsonSetValue(_currentRestraints, ["torso"], JSON_NULL);
 
 	_currentRestraints = llJsonSetValue(_currentRestraints, ["ankle"], JSON_NULL);
 	_currentRestraints = llJsonSetValue(_currentRestraints, ["knee"], JSON_NULL);
@@ -74,13 +88,33 @@ gui(integer prmScreen) {
 			mpButtons += "Knee";
 		}
 
+		if (llJsonGetValue(_currentRestraints, ["immobilizer"]) == JSON_NULL
+			&& llJsonGetValue(_currentRestraints, ["ankle"]) == "ankleRope"
+			&& (llJsonGetValue(_currentRestraints, ["torso"]) == "boxRope" || llJsonGetValue(_currentRestraints, ["wrist"]) == "backRope")
+		) {
+			mpButtons += "Hog";
+		}
+
+		if ((hasFeat(_villain, "Rigger+") || _rpMode)
+			&& llJsonGetValue(_currentRestraints, ["immobilizer"]) == JSON_NULL) {
+			mpButtons += "Ball";
+		}
+
 		mpButtons = multipageGui(mpButtons, 2, multipageIndex);
 	}
 
 	// GUI: Colorize
-	else if (prmScreen == 100) {
-		guiText = "Choose a color for the leg rope.";
+	else if (prmScreen == GUI_STYLE) {
+		guiText = "Choose what you want to style.";
+		mpButtons = multipageGui(["Color", "Texture"], 2, multipageIndex);
+	}
+	else if (prmScreen == GUI_COLOR) {
+		guiText = "Choose a color the ropes.";
 		mpButtons = multipageGui(_colors, 3, multipageIndex);
+	}
+	else if (prmScreen == GUI_TEXTURE) {
+		guiText = "Choose a texture for the ropes.";
+		mpButtons = multipageGui(_textures, 3, multipageIndex);
 	}
 
 	if (prmScreen != guiScreen) { guiScreenLast = guiScreen; }
@@ -110,23 +144,53 @@ string defineRestraint(string prmName) {
 	restraint = llJsonSetValue(restraint, ["canUseItem"], "1");
 	restraint = llJsonSetValue(restraint, ["type"], "rope");
 
+	integer complexity;
+	integer integrity;
+	integer tightness;
+
 	if (prmName == "Ankle") {
-		restraint = llJsonSetValue(restraint, ["uid"], "ankle");
+		complexity = 3;
+		integrity = 5;
+		tightness = 6;
+
+		restraint = llJsonSetValue(restraint, ["uid"], "ankleRope");
 		restraint = llJsonSetValue(restraint, ["slot"], "ankle");
-		restraint = llJsonSetValue(restraint, ["complexity"], "3");
-		restraint = llJsonSetValue(restraint, ["integrity"], "5");
-		restraint = llJsonSetValue(restraint, ["tightness"], "6");
 		restraint = llJsonSetValue(restraint, ["poses"], llList2Json(JSON_ARRAY, liPoseStandard));
 		restraint = llJsonSetValue(restraint, ["attachments"], llList2Json(JSON_ARRAY, ["legRope_ankle"]));
 	} else if (prmName == "Knee") {
+		complexity = 3;
+		integrity = 5;
+		tightness = 6;
+
 		restraint = llJsonSetValue(restraint, ["uid"], "knee");
 		restraint = llJsonSetValue(restraint, ["slot"], "knee");
-		restraint = llJsonSetValue(restraint, ["complexity"], "3");
-		restraint = llJsonSetValue(restraint, ["integrity"], "5");
-		restraint = llJsonSetValue(restraint, ["tightness"], "6");
 		restraint = llJsonSetValue(restraint, ["poses"], llList2Json(JSON_ARRAY, liPoseStandard));
 		restraint = llJsonSetValue(restraint, ["attachments"], llList2Json(JSON_ARRAY, ["legRope_knee"]));
+	} else if (prmName == "Hog") {
+		complexity = 2;
+		integrity = 5;
+		tightness = 10;
+
+		restraint = llJsonSetValue(restraint, ["uid"], "ropeHog");
+		restraint = llJsonSetValue(restraint, ["slot"], "immobilizer");
+		restraint = llJsonSetValue(restraint, ["poses"], llList2Json(JSON_ARRAY, ["hogFront", "hogLeft", "hogRight"]));
+	} else if (prmName == "Ball") {
+		complexity = 4;
+		integrity = 5;
+		tightness = 15;
+
+		restraint = llJsonSetValue(restraint, ["uid"], "ropeBall");
+		restraint = llJsonSetValue(restraint, ["slot"], "immobilizer");
+		restraint = llJsonSetValue(restraint, ["poses"], llList2Json(JSON_ARRAY, ["ballLeft", "ballRight"]));
+		restraint = llJsonSetValue(restraint, ["attachments"], llList2Json(JSON_ARRAY, ["legRope_ball"]));
 	}
+
+	if (hasFeat(_villain, "Rigger")) { integrity = integrity+5; }
+	if (hasFeat(_villain, "Rigger+")) { complexity++; }
+
+	restraint = llJsonSetValue(restraint, ["complexity"], (string)complexity);
+	restraint = llJsonSetValue(restraint, ["integrity"], (string)integrity);
+	restraint = llJsonSetValue(restraint, ["tightness"], (string)tightness);
 
 	return restraint;
 }
@@ -135,22 +199,39 @@ sendAvailabilityInfo () {
 	simpleRequest("addAvailableRestraint", getSelf());
 }
 
-// Color Functions
-setColorByName(string prmColorName) {
-  integer tmpColorIndex = llListFindList(_colors, [prmColorName]);
-  setColor(llList2Vector(_colorVals, tmpColorIndex));
+// ===== Color Functions =====
+setColorByName(string prmColorName, string prmComponent) {
+	integer tmpColorIndex = llListFindList(_colors, [prmColorName]);
+	setColor(llList2Vector(_colorVals, tmpColorIndex), prmComponent);
 }
-setColor(vector prmColor) {
-  _color = prmColor;
 
-  string tmpRequest = "";
-  tmpRequest = llJsonSetValue(tmpRequest, ["color"], (string)_color);
-  tmpRequest = llJsonSetValue(tmpRequest, ["attachment"], llJsonGetValue(_self, ["part"]));
-  tmpRequest = llJsonSetValue(tmpRequest, ["component"], "rope");
-  tmpRequest = llJsonSetValue(tmpRequest, ["userKey"], (string)llGetOwner());
+setColor(vector prmColor, string prmComponent) {
+	_color = prmColor;
 
-  simpleAttachedRequest("setColor", tmpRequest);
-  simpleRequest("setColor", tmpRequest);
+	string tmpRequest = "";
+	tmpRequest = llJsonSetValue(tmpRequest, ["color"], (string)_color);
+	tmpRequest = llJsonSetValue(tmpRequest, ["attachment"], llJsonGetValue(getSelf(), ["part"]));
+	tmpRequest = llJsonSetValue(tmpRequest, ["component"], prmComponent);
+	tmpRequest = llJsonSetValue(tmpRequest, ["userKey"], (string)llGetOwner());
+
+	simpleAttachedRequest("setColor", tmpRequest);
+	simpleRequest("setColor", tmpRequest);
+}
+
+setTextureByName(string prmTextureName, string prmComponent) {
+	integer tmpTextureIndex = llListFindList(_textures, [prmTextureName]);
+	setTexture(llList2String(_textureVals, tmpTextureIndex), prmComponent);
+}
+
+setTexture(string prmTexture, string prmComponent) {
+	string tmpRequest = "";
+	tmpRequest = llJsonSetValue(tmpRequest, ["attachment"], llJsonGetValue(getSelf(), ["part"]));
+	tmpRequest = llJsonSetValue(tmpRequest, ["component"], prmComponent);
+	tmpRequest = llJsonSetValue(tmpRequest, ["texture"], prmTexture);
+	tmpRequest = llJsonSetValue(tmpRequest, ["userKey"], (string)llGetOwner());
+
+	simpleAttachedRequest("setTexture", tmpRequest);
+	simpleRequest("setTexture", tmpRequest);
 }
 
 // ===== Gets =====
@@ -175,24 +256,28 @@ execute_function(string prmFunction, string prmJson) {
 	}
 
 	if (prmFunction == "setGender") { setGender(value); }
-    else if (prmFunction == "setRestraints") {
-    	_currentRestraints = llJsonGetValue(value, ["slots"]);
-    	set_restraints(value);
+	else if (prmFunction == "setRestraints") {
+		_currentRestraints = llJsonGetValue(value, ["slots"]);
+		set_restraints(value);
 	}
-    else if (prmFunction == "getAvailableRestraints") { sendAvailabilityInfo(); }
-    else if (prmFunction == "requestColor") {
-      if (llJsonGetValue(value, ["attachment"]) != llJsonGetValue(getSelf(), ["part"])) { return; }
-      if (llJsonGetValue(value, ["name"]) != "rope") { return; }
-      setColor(_color);
-    }
-    else if (prmFunction == "gui_leg_rope") {
-      key userkey = (key)llJsonGetValue(prmJson, ["userkey"]);
-      integer screen = 0;
-      if ((integer)llJsonGetValue(prmJson, ["restorescreen"]) && guiScreenLast) { screen = guiScreenLast;}
-      init_gui(userkey, screen);
-    } else if (prmFunction == "resetGUI") {
-      exit("");
-    }
+	else if (prmFunction == "getAvailableRestraints") { sendAvailabilityInfo(); }
+	else if (prmFunction == "setRPMode") { _rpMode = (integer)value; }
+	else if (prmFunction == "setVillain") { _villain = value; }
+	else if (prmFunction == "requestColor") {
+	  	if (llJsonGetValue(value, ["attachment"]) != llJsonGetValue(getSelf(), ["part"])) { return; }
+	  	if (llJsonGetValue(value, ["name"]) != "rope") { return; }
+		string component = llJsonGetValue(value, ["component"]);
+		if ("" == component) { component = "rope"; }
+		setColor(_color, component);
+	}
+	else if (prmFunction == "gui_leg_rope") {
+	  key userkey = (key)llJsonGetValue(prmJson, ["userkey"]);
+	  integer screen = 0;
+	  if ((integer)llJsonGetValue(prmJson, ["restorescreen"]) && guiScreenLast) { screen = guiScreenLast;}
+	  init_gui(userkey, screen);
+	} else if (prmFunction == "resetGUI") {
+	  exit("");
+	}
 }
 
 default {
@@ -213,8 +298,7 @@ default {
 				_resumeFunction = "setRestraints";
 				return;
 			}
-
-			if (guiScreen == 0) {
+			if (guiScreen == GUI_HOME) {
 				if (prmText == "<<Color>>") {
 					gui(100);
 					return;
@@ -226,11 +310,17 @@ default {
 					_resumeFunction = "setRestraints";
 					return;
 				}
-			} else if (guiScreen == 100) {
-				setColorByName(prmText);
-				gui(guiScreen);
-				return;
+			} else if (guiScreen == GUI_STYLE) {
+				if ("Color" == prmText) { gui(GUI_COLOR); }
+				else if ("Texture" == prmText) { gui(GUI_TEXTURE); }
+			} else if (guiScreen == GUI_COLOR) {
+				setColorByName(prmText, "rope");
+			} else if (guiScreen == GUI_TEXTURE) {
+				setTextureByName(prmText, "rope");
 			}
+
+			gui(guiScreen);
+			return;
 		}
 	}
 

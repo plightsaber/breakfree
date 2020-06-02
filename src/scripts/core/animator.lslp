@@ -38,15 +38,15 @@ init() {
 setArmPose(string uid) {
  	llRequestPermissions(llGetOwner(), PERMISSION_TRIGGER_ANIMATION);
 	debug("Setting arm pose to " + uid);
-	if (uid == JSON_NULL || uid == JSON_INVALID) {
+	if (!isSet(uid)) {
 		return;	// Just keep on truckin'
 	}
 
-	if (_animation_arm_base) { llStopAnimation(_animation_arm_base); }
+	if (isSet(_animation_arm_base)) { llStopAnimation(_animation_arm_base); }
 
 	if (uid == "free" || uid == "external") {
-		_armPose = "";
-		_animation_arm_base = "";
+		_armPose = JSON_NULL;
+		_animation_arm_base = JSON_NULL;
 		return;
 	}
 
@@ -63,17 +63,17 @@ setArmPose(string uid) {
 setLegPose(string uid) {
  	llRequestPermissions(llGetOwner(), PERMISSION_TRIGGER_ANIMATION | PERMISSION_OVERRIDE_ANIMATIONS);
 	debug("Setting leg pose to " + uid);
-	if (uid == JSON_NULL || uid == JSON_INVALID) {
+	if (!isSet(uid)) {
 		return;	// Just keep on truckin'
 	}
 
 	string pose = llJsonGetValue(_poseLib, ["leg", _legPose]);
 
-	if (_animation_leg_base) { llStopAnimation(_animation_leg_base); }
+	if (isSet(_animation_leg_base)) { llStopAnimation(_animation_leg_base); }
 
 	if (uid == "free" || uid == "external") {
-		_legPose = "";
-		_animation_leg_base = "";
+		_legPose = JSON_NULL;
+		_animation_leg_base = JSON_NULL;
 		llResetAnimationOverride("ALL");
 		return;
 	}
@@ -85,11 +85,11 @@ setLegPose(string uid) {
 	_animation_leg_walk = llJsonGetValue(getPoses(), ["leg", uid, "walk"]);
 
 	// Override walking animation
-	if (llGetAnimationOverride("Walking") != _animation_leg_walk) {
+	if (isSet(_animation_leg_walk) && llGetAnimationOverride("Walking") != _animation_leg_walk) {
 		llSetAnimationOverride("Walking", _animation_leg_walk);
 	}
 
-	llStartAnimation(_animation_leg_base);
+	if (isSet(_animation_leg_base)) { llStartAnimation(_animation_leg_base); }
 }
 
 
@@ -132,14 +132,14 @@ animate(string prmAnimation) {
 	else if (prmAnimation == "animation_leg_success") { animation = _animation_leg_success; }
 	else if (prmAnimation == "animation_leg_failure") { animation = _animation_leg_failure; }
 
-	if (animation) { llStartAnimation(animation); }
+	if (isSet(animation)) { llStartAnimation(animation); }
 }
 
 animate_mover(string prmAnimation) {
 	debug(prmAnimation);
 	llRequestPermissions(llGetOwner(), PERMISSION_TRIGGER_ANIMATION | PERMISSION_OVERRIDE_ANIMATIONS);
 
-	if (_animation_mover_current) { llStopAnimation(_animation_mover_current); }
+	if (isSet(_animation_mover_current)) { llStopAnimation(_animation_mover_current); }
 
 	if (prmAnimation == "animation_walk_forward") {
 		llResetAnimationOverride("ALL");
@@ -147,43 +147,43 @@ animate_mover(string prmAnimation) {
 	}
 	else {
 		// Set override ONLY when not already walking.  Needed for tether animation, but does bad things for slow movement speeds
-		if (llGetAnimationOverride("Walking") != _animation_leg_walk) {
+		if (isSet(_animation_leg_walk) && llGetAnimationOverride("Walking") != _animation_leg_walk) {
 			llSetAnimationOverride("Walking", _animation_leg_walk);
 		}
-		_animation_mover_current = "";
+		_animation_mover_current = JSON_NULL;
 	}
 
-	if (_animation_mover_current) { llStartAnimation(_animation_mover_current); }
+	if (isSet(_animation_mover_current)) { llStartAnimation(_animation_mover_current); }
 }
 
 // ===== Event Controls =====
 
 default {
-  state_entry() { init(); }
-  on_rez(integer prmStart) { init(); }
-  link_message(integer prmLink, integer prmValue, string prmText, key prmID) {
-    string function;
-    string value;
+	state_entry() { init(); }
+  	on_rez(integer prmStart) { init(); }
+  	link_message(integer prmLink, integer prmValue, string prmText, key prmID) {
+		string function;
+		string value;
 
-    if ((function = llJsonGetValue(prmText, ["function"])) == JSON_INVALID) {
-      debug(prmText);
-      return;
-    }
-    value = llJsonGetValue(prmText, ["value"]);
+		if ((function = llJsonGetValue(prmText, ["function"])) == JSON_INVALID) {
+	  		debug(prmText);
+		  	return;
+		}
+		value = llJsonGetValue(prmText, ["value"]);
 
-	if (function == "setArmPose") { setArmPose(value); }
-	else if (function == "setArmPoses") { setArmPoses(value); }
-    else if (function == "animate") { animate(value); }
-    else if (function == "animate_mover") { animate_mover(value); }
-    else if (function == "setLegPose") { setLegPose(value); }
-    else if (function == "setLegPoses") { setLegPoses(value); }
-    else if (function == "setRestraints") { setRestraints(value); }
-  }
+		if (function == "setArmPose") { setArmPose(value); }
+		else if (function == "setArmPoses") { setArmPoses(value); }
+		else if (function == "animate") { animate(value); }
+		else if (function == "animate_mover") { animate_mover(value); }
+		else if (function == "setLegPose") { setLegPose(value); }
+		else if (function == "setLegPoses") { setLegPoses(value); }
+		else if (function == "setRestraints") { setRestraints(value); }
+  	}
 
-  timer() {
-    if (_mouthOpen) {
-      llRequestPermissions(llGetOwner(), PERMISSION_TRIGGER_ANIMATION);
-      llStartAnimation("express_open_mouth");
-    }
-  }
+  	timer() {
+		if (_mouthOpen) {
+		  	llRequestPermissions(llGetOwner(), PERMISSION_TRIGGER_ANIMATION);
+  			llStartAnimation("express_open_mouth");
+		}
+  	}
 }

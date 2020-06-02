@@ -2,9 +2,13 @@ $import Modules.LegTools.lslm();
 $import Modules.GeneralTools.lslm();
 $import Modules.GuiTools.lslm();
 $import Modules.TapeColor.lslm();
+$import Modules.UserLib.lslm();
 
 // General Settings
 string gender = "female";
+integer _rpMode = FALSE;
+
+string _villain;
 
 // Status
 string legsBound = "free";  // 0: FREE; 1: BOUND; 2: HELPLESS
@@ -110,23 +114,34 @@ string defineRestraint(string prmName) {
 	restraint = llJsonSetValue(restraint, ["canUseItem"], "1");
 	restraint = llJsonSetValue(restraint, ["type"], "tape");
 
+	integer complexity = 1;
+	integer integrity;
+	integer tightness;
+
 	if (prmName == "Ankle") {
+		integrity = 25;
+		tightness = 6;
+
 		restraint = llJsonSetValue(restraint, ["uid"], "ankle");
 		restraint = llJsonSetValue(restraint, ["slot"], "ankle");
-		restraint = llJsonSetValue(restraint, ["complexity"], "1");
-		restraint = llJsonSetValue(restraint, ["integrity"], "25");
-		restraint = llJsonSetValue(restraint, ["tightness"], "6");
 		restraint = llJsonSetValue(restraint, ["poses"], llList2Json(JSON_ARRAY, liPoseStandard));
 		restraint = llJsonSetValue(restraint, ["attachments"], llList2Json(JSON_ARRAY, ["legTape_ankle"]));
 	} else if (prmName == "Knee") {
+		integrity = 25;
+		tightness = 6;
+
 		restraint = llJsonSetValue(restraint, ["uid"], "knee");
 		restraint = llJsonSetValue(restraint, ["slot"], "knee");
-		restraint = llJsonSetValue(restraint, ["complexity"], "1");
-		restraint = llJsonSetValue(restraint, ["integrity"], "25");
-		restraint = llJsonSetValue(restraint, ["tightness"], "6");
 		restraint = llJsonSetValue(restraint, ["poses"], llList2Json(JSON_ARRAY, liPoseStandard));
 		restraint = llJsonSetValue(restraint, ["attachments"], llList2Json(JSON_ARRAY, ["legTape_knee"]));
 	}
+
+	if (hasFeat(_villain, "Anubis")) { tightness = tightness + 2; }
+	if (hasFeat(_villain, "Anubis+")) { tightness = tightness + 2; }
+
+	restraint = llJsonSetValue(restraint, ["complexity"], (string)complexity);
+	restraint = llJsonSetValue(restraint, ["integrity"], (string)integrity);
+	restraint = llJsonSetValue(restraint, ["tightness"], (string)tightness);
 
 	return restraint;
 }
@@ -175,24 +190,26 @@ execute_function(string prmFunction, string prmJson) {
 	}
 
 	if (prmFunction == "setGender") { setGender(value); }
-    else if (prmFunction == "setRestraints") {
-    	_currentRestraints = llJsonGetValue(value, ["slots"]);
-    	set_restraints(value);
+	else if (prmFunction == "setRestraints") {
+		_currentRestraints = llJsonGetValue(value, ["slots"]);
+		set_restraints(value);
 	}
-    else if (prmFunction == "getAvailableRestraints") { sendAvailabilityInfo(); }
-    else if (prmFunction == "requestColor") {
-      if (llJsonGetValue(value, ["attachment"]) != llJsonGetValue(getSelf(), ["part"])) { return; }
-      if (llJsonGetValue(value, ["name"]) != "tape") { return; }
-      setColor(_color);
-    }
-    else if (prmFunction == "gui_leg_tape") {
-      key userkey = (key)llJsonGetValue(prmJson, ["userkey"]);
-      integer screen = 0;
-      if ((integer)llJsonGetValue(prmJson, ["restorescreen"]) && guiScreenLast) { screen = guiScreenLast;}
-      init_gui(userkey, screen);
-    } else if (prmFunction == "resetGUI") {
-      exit("");
-    }
+	else if (prmFunction == "getAvailableRestraints") { sendAvailabilityInfo(); }
+	else if (prmFunction == "setRPMode") { _rpMode = (integer)value; }
+	else if (prmFunction == "setVillain") { _villain = value; }
+	else if (prmFunction == "requestColor") {
+	  if (llJsonGetValue(value, ["attachment"]) != llJsonGetValue(getSelf(), ["part"])) { return; }
+	  if (llJsonGetValue(value, ["name"]) != "tape") { return; }
+	  setColor(_color);
+	}
+	else if (prmFunction == "gui_leg_tape") {
+	  key userkey = (key)llJsonGetValue(prmJson, ["userkey"]);
+	  integer screen = 0;
+	  if ((integer)llJsonGetValue(prmJson, ["restorescreen"]) && guiScreenLast) { screen = guiScreenLast;}
+	  init_gui(userkey, screen);
+	} else if (prmFunction == "resetGUI") {
+	  exit("");
+	}
 }
 
 default {

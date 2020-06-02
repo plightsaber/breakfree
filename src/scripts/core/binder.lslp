@@ -1,7 +1,8 @@
+$import Modules.ContribLib.lslm();
 $import Modules.GeneralTools.lslm();
 $import Modules.RestraintTools.lslm();
 
-string _slots;
+string _slots;		// List of UIDs ONLY for currently applied restraints
 string _metadata;
 
 init() {
@@ -21,66 +22,117 @@ init() {
 addRestraint(string prmJson) {
 	string type = llJsonGetValue(prmJson, ["type"]);
 	string restraint = llJsonGetValue(prmJson, ["restraint"]);
+	string slot = llJsonGetValue(restraint, ["slot"]);
 
-	_restraints = llJsonSetValue(_restraints, [type, JSON_APPEND], restraint);
-	_slots = llJsonSetValue(_slots, [llJsonGetValue(restraint, ["slot"])], llJsonGetValue(restraint, ["uid"]));
+	_restraints = llJsonSetValue(_restraints, [slot], restraint);
+	_slots = llJsonSetValue(_slots, [slot], llJsonGetValue(restraint, ["uid"]));
+
+	resetPoses(type);
+	deployRestraints();
+}
+
+deployRestraints() {
+	simpleRequest("setAttachments", llList2Json(JSON_ARRAY, getAttachments()));
+
 	rebuild_metadata();
+	simpleRequest("setRestraints", _metadata);
+}
 
-	if (type == "arm") {
-		string armPoses = llJsonGetValue(restraint, ["poses"]);
-		if (armPoses != JSON_NULL && armPoses != JSON_INVALID) {
-			simpleRequest("setArmPoses", armPoses);
-		}
-	} else if (type == "leg") {
-		string legPoses = llJsonGetValue(restraint, ["poses"]);
-		if (legPoses != JSON_NULL && legPoses != JSON_INVALID) {
-			simpleRequest("setLegPoses", legPoses);
+list getAttachments() {
+	list bindFolders;
+	list preventFolders;
+	string restraint;
+
+	// Arm loop.
+	restraint = llJsonGetValue(_restraints, ["arm"]);
+	if (restraint != JSON_INVALID) {
+		bindFolders += getRestraintList(restraint, "attachments");
+		preventFolders += getRestraintList(restraint, "preventAttach");
+	}
+
+	// Leg Loop.
+	restraint = llJsonGetValue(_restraints, ["leg"]);
+	if (restraint != JSON_INVALID) {
+		bindFolders += getRestraintList(restraint, "attachments");
+		preventFolders += getRestraintList(restraint, "preventAttach");
+
+		// Rope Hog tie rules are so complicated they need to be here. <_<
+		if (llJsonGetValue(_restraints, ["immobilizer"]) == "ropeHog") {
+			if (isSet(llJsonGetValue(_restraints, ["elbow"]))) { bindFolders += ["legRope_hogBackTight"]; }
+			else if (llJsonGetValue(_restraints, ["wrist"]) == "ropeBox") { bindFolders += ["legRope_hogBox"]; }
+			else { bindFolders += ["legRope_hogBack"]; }
 		}
 	}
-	simpleRequest("setRestraints", _metadata);
+
+	// Gag Loop.
+	restraint = llJsonGetValue(_restraints, ["gag"]);
+	if (restraint != JSON_INVALID) {
+		bindFolders += getRestraintList(restraint, "attachments");
+		preventFolders += getRestraintList(restraint, "preventAttach");
+	}
+
+	return ListXnotY(bindFolders, preventFolders);
 }
 
 override_restraint(string prmJson) {
-	string type = llJsonGetValue(prmJson, ["type"]);
-	string restraint = llJsonGetValue(prmJson, ["restraint"]);
-
-	_restraints = llJsonSetValue(_restraints, [type], JSON_NULL);
-	_restraints = llJsonSetValue(_restraints, [type, JSON_APPEND], restraint);
-	rebuild_metadata();
-	simpleRequest("setRestraints", _metadata);
+	_restraints = prmJson;
+	deployRestraints();
 }
 
-rem_restraint(string prmType) {
+rmSlot(string slot) {
+	string restraint = llJsonGetValue(_restraints, [slot]);
+
+	_restraints = llJsonSetValue(_restraints, [slot], JSON_NULL);
+	_slots = llJsonSetValue(_slots, [slot], JSON_NULL);
+
+	// Remove ropeHog if connecting arm restraint removed
+	if (llJsonGetValue(_slots, ["immobilizer"]) == "ropeHog"
+		&& (slot == "wrist" || llJsonGetValue(restraint, ["uid"]) == "ropeBox")
+	) {
+		rmSlot("immobilizer");
+	}
+}
+
+remRestraint(string prmType) {
 	string restraints = llJsonGetValue(_restraints, [prmType]);
 	if (JSON_NULL == restraints) {
 		debug("No restraints to remove.");
 		return;
 	}
 
-	list liRestraints = llJson2List(restraints);
-	string restraint = llList2String(liRestraints, -1);
-	liRestraints = llDeleteSubList(liRestraints, -1, -1);
+	string removedRestraint = getTopRestraint(prmType);
+	string slot = llJsonGetValue(removedRestraint, ["slot"]);
 
-	_slots = llJsonSetValue(_slots, [llJsonGetValue(restraint, ["slot"])], JSON_NULL);
-
-	if (llGetListLength(liRestraints) == 0) {
-		_restraints = llJsonSetValue(_restraints, [prmType], JSON_NULL);
-	} else {
-		_restraints = llJsonSetValue(_restraints, [prmType], llList2Json(JSON_ARRAY, liRestraints));
+	// Removal rules are about to get complicated.  This is a problem for future Myshel!
+	integer isEscape = FALSE;	// TODO: Only apply alternate order for escapes.
+	if (isEscape && prmType == "leg") {
+		if (isSet(llJsonGetValue(_restraints, ["immobilizer"]))) { slot = "immobilizer"; }
+		else if (isSet(llJsonGetValue(_restraints, ["ankle"]))) { slot = "ankle"; }
+		else if (isSet(llJsonGetValue(_restraints, ["knee"]))) { slot = "knee"; }
 	}
 
-	if (prmType == "arm") {
-		string armPoses = llJsonGetValue(llList2String(liRestraints, -1), ["poses"]);
-		if (armPoses == JSON_INVALID) { armPoses = llJsonSetValue(armPoses, [JSON_APPEND], "free"); }
-		simpleRequest("setArmPoses", armPoses);
-	} else if (prmType == "leg") {
-		string legPoses = llJsonGetValue(llList2String(liRestraints, -1), ["poses"]);
-		if (legPoses == JSON_INVALID) { legPoses = llJsonSetValue(legPoses, [JSON_APPEND], "free"); }
-		simpleRequest("setLegPoses", legPoses);
+	rmSlot(slot);
+
+	resetPoses(prmType);
+	deployRestraints();
+}
+
+resetPoses(string prmType) {
+	string method;
+	if (prmType == "arm") { method = "setArmPoses"; }
+	else if (prmType == "leg") { method = "setLegPoses"; }
+	else { return; }
+
+
+	string topRestraint = getTopRestraint(prmType);
+	string poses = llJsonGetValue(topRestraint, ["poses"]);
+
+	if (!isSet(poses)) {
+		simpleRequest(method, llJsonSetValue(poses, [JSON_APPEND], "free"));
+		return;
 	}
 
-	rebuild_metadata();
-	simpleRequest("setRestraints", _metadata);
+	simpleRequest(method, poses);
 }
 
 release_restraint(string prmType) {
@@ -204,7 +256,7 @@ default {
 		}
 
 		if ("addRestraint" == function) addRestraint(value);
-		else if ("remRestraint" == function) rem_restraint(value);
+		else if ("remRestraint" == function) remRestraint(value);
 		else if ("releaseRestraint" == function) release_restraint(value);
 		else if ("overrideRestraint" == function) override_restraint(value);
 	}

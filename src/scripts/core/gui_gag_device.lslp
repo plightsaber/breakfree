@@ -189,9 +189,9 @@ execute_function(string prmFunction, string prmJson) {
 
 
 	if (prmFunction == "setGender") { setGender(value); }
-    else if (prmFunction == "setRestraints") {
-    	_currentRestraints = llJsonGetValue(value, ["slots"]);
-    	_mouthOpen = llJsonGetValue(value, ["mouthOpen"]) == "1";
+	else if (prmFunction == "setRestraints") {
+		_currentRestraints = llJsonGetValue(value, ["slots"]);
+		_mouthOpen = llJsonGetValue(value, ["mouthOpen"]) == "1";
 	}
 	else if (prmFunction == "getAvailableRestraints") { sendAvailabilityInfo(); }
 	else if (prmFunction == "requestColor") {

@@ -1,10 +1,14 @@
 $import Modules.GeneralTools.lslm();
 $import Modules.GagTools.lslm();
 $import Modules.GuiTools.lslm();
+$import Modules.UserLib.lslm();
 
 // ===== Variables =====
 // General Settings
 string gender = "female";
+integer _rpMode = FALSE;
+
+string _villain;
 
 // Colors
 vector COLOR_BROWN = <0.5, 0.25, 0.0>;
@@ -143,26 +147,35 @@ string defineRestraint(string prmName) {
 	gag = llJsonSetValue(gag, ["canEscape"], "1");
 	gag = llJsonSetValue(gag, ["canCut"], "1");
 
+	integer complexity;
+	integer integrity;
+	integer tightness;
+
 	if (prmName == "Stuff") {
+		complexity = 1;
+		integrity = 2;
+		tightness = 3;
+
 		gag = llJsonSetValue(gag, ["uid"], "stuff");
 		gag = llJsonSetValue(gag, ["slot"], "gag1");
 		gag = llJsonSetValue(gag, ["canCut"], "0");
 		gag = llJsonSetValue(gag, ["mouthOpen"], "1");
-
-		gag = llJsonSetValue(gag, ["complexity"], "1");
-		gag = llJsonSetValue(gag, ["integrity"], "2");
-		gag = llJsonSetValue(gag, ["tightness"], "3");
 		gag = llJsonSetValue(gag, ["attachments", JSON_APPEND], "gStuff");
 	} else if (prmName == "Simple") {
+		complexity = 1;
+		integrity = 10;
+		tightness = 5;
+
 		gag = llJsonSetValue(gag, ["uid"], "tapeSimple");
 		gag = llJsonSetValue(gag, ["speechSealed"], "1");
 		gag = llJsonSetValue(gag, ["slot"], "gag2");
-		gag = llJsonSetValue(gag, ["complexity"], "1");
-		gag = llJsonSetValue(gag, ["integrity"], "10");
-		gag = llJsonSetValue(gag, ["tightness"], "5");
 		if (_mouthOpen) { gag = llJsonSetValue(gag, ["attachments", JSON_APPEND], "gTapeStuffed"); }
 		else { gag = llJsonSetValue(gag, ["attachments", JSON_APPEND], "gTapeSimple"); }
 	} else if (prmName == "Heavy") {
+		complexity = 2;
+		integrity = 10;
+		tightness = 5;
+
 		gag = llJsonSetValue(gag, ["uid"], "tapeHeavy");
 		gag = llJsonSetValue(gag, ["speechSealed"], "1");
 		gag = llJsonSetValue(gag, ["slot"], "gag3");
@@ -173,6 +186,15 @@ string defineRestraint(string prmName) {
 		gag = llJsonSetValue(gag, ["preventAttach", JSON_APPEND], "gTapeSimple");
 		gag = llJsonSetValue(gag, ["preventAttach", JSON_APPEND], "gTapeStuffed");
 	}
+
+	if (hasFeat(_villain, "Anubis")) { tightness = tightness + 2; }
+	if (hasFeat(_villain, "Anubis+")) { tightness = tightness + 2; }
+	if (hasFeat(_villain, "Gag Snob")) { integrity = integrity + 5; }
+	if (hasFeat(_villain, "Gag Snob+")) { complexity++; }
+
+	gag = llJsonSetValue(gag, ["complexity"], (string)complexity);
+	gag = llJsonSetValue(gag, ["integrity"], (string)integrity);
+	gag = llJsonSetValue(gag, ["tightness"], (string)tightness);
 
 	return gag;
 }
@@ -220,11 +242,13 @@ execute_function(string prmFunction, string prmJson) {
 	}
 
 	if (prmFunction == "setGender") { setGender(value); }
-    else if (prmFunction == "setRestraints") {
-    	_currentRestraints = llJsonGetValue(value, ["slots"]);
-    	_mouthOpen = llJsonGetValue(value, ["mouthOpen"]) == "1";
+	else if (prmFunction == "setRestraints") {
+		_currentRestraints = llJsonGetValue(value, ["slots"]);
+		_mouthOpen = llJsonGetValue(value, ["mouthOpen"]) == "1";
 	}
 	else if (prmFunction == "getAvailableRestraints") { sendAvailabilityInfo(); }
+	else if (prmFunction == "setRPMode") { _rpMode = (integer)value; }
+	else if (prmFunction == "setVillain") { _villain = value; }
 	else if (prmFunction == "requestColor") {
 		if (llJsonGetValue(prmJson, ["attachment"]) != "gag") { return; }
 		if (llJsonGetValue(prmJson, ["name"]) != "tape") { return; }

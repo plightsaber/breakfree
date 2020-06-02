@@ -1,4 +1,5 @@
 $import Modules.GeneralTools.lslm();
+$import Modules.GuiTools.lslm();
 $import Modules.UserLib.lslm();
 
 integer CHANNEL_API = -9999274;
@@ -86,7 +87,7 @@ touchUser(string user) {
 	}
 
 	llOwnerSay(llJsonGetValue(user, ["name"]) + " is eyeing you suspiciously.");
-	simpleRequest("setToucher", user);
+	simpleRequest("setVillain", user);
 	guiRequest("gui_bind", FALSE, _activeKey, 0);
 }
 
@@ -94,16 +95,6 @@ integer isBound() {
 	return (integer)llJsonGetValue(_restraints, ["armBound"])
 		|| (integer)llJsonGetValue(_restraints, ["legBound"])
 		|| (integer)llJsonGetValue(_restraints, ["gagged"]);
-}
-
-// ===== Helper Functions =====
-guiRequest(string prmGUI, integer prmRestore, key prmUserID, integer prmScreen) {
-	string guiRequest = "";
-	guiRequest = llJsonSetValue(guiRequest, ["function"], prmGUI);
-	guiRequest = llJsonSetValue(guiRequest, ["restorescreen"], (string)prmRestore);
-	guiRequest = llJsonSetValue(guiRequest, ["userkey"], (string)prmUserID);
-	guiRequest = llJsonSetValue(guiRequest, ["value"], (string)prmScreen);
-	llMessageLinked(LINK_THIS, 0, guiRequest, NULL_KEY);
 }
 
 

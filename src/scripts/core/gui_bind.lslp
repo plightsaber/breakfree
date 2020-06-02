@@ -1,5 +1,6 @@
 $import Modules.GeneralTools.lslm();
 $import Modules.GuiTools.lslm();
+$import Modules.PoseLib.lslm();
 
 string self;	// JSON object
 
@@ -85,7 +86,7 @@ gui(integer prmScreen) {
 		if (!_armBoundExternal) { btn4 = "Bind Arms"; }
 		btn5 = "Bind Legs";
 		btn6 = "Gag";
-		if (llGetListLength(_legPoses) > 1) { btn3 = "Position"; }
+		if (llGetListLength(_legPoses) > 1) { btn3 = "Pose"; }
 	}
 
 	// GUI: Bind Arms
@@ -111,7 +112,7 @@ gui(integer prmScreen) {
 		}
 	}
 
-	// GUI: Position
+	// GUI: Pose
 	if (prmScreen == 70) {
 		guiText = "How do you want to pose " + getName() + "?";
 		mpButtons = multipageGui(_legPoses, 3, multipageIndex);
@@ -157,6 +158,7 @@ setGender(string prmGender) {
 
 setAvailablePoses(string prmPoses) {
 	_legPoses = llJson2List(prmPoses);
+	_legPoses += getPoseBallPoseList();
 }
 
 set_restraints(string prmJson) {
@@ -223,7 +225,7 @@ default {
 				if (prmText == "Bind Arms") { gui(10); }
 				else if (prmText == "Bind Legs") { gui(20); }
 				else if (prmText == "Gag") { gui(30); }
-				else if (prmText == "Position") { gui(70); }
+				else if (prmText == "Pose") { gui(70); }
 				else if (prmText == "Tether Arms") { guiRequest("gui_tether_arm", FALSE, guiUserID, 0); return; }
 				else if (prmText == "Tether Legs") { guiRequest("gui_tether_leg", FALSE, guiUserID, 0); return; }
 				else if (prmText == "<<Back>>") {

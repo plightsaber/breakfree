@@ -1,9 +1,13 @@
 $import Modules.ArmTools.lslm();
 $import Modules.GeneralTools.lslm();
 $import Modules.GuiTools.lslm();
+$import Modules.UserLib.lslm();
 
 // General Settings
 string gender = "female";
+integer _rpMode = FALSE;
+
+string _villain;
 
 // Status
 string armsBound = "free";  // 0: FREE; 1: BOUND; 2: HELPLESS
@@ -41,6 +45,7 @@ string getCurrentRestraints() {
 		return _currentRestraints;
 	}
 
+	_currentRestraints = llJsonSetValue(_currentRestraints, ["hand"], JSON_NULL);
 	_currentRestraints = llJsonSetValue(_currentRestraints, ["wrist"], JSON_NULL);
 	_currentRestraints = llJsonSetValue(_currentRestraints, ["elbow"], JSON_NULL);
 	_currentRestraints = llJsonSetValue(_currentRestraints, ["torso"], JSON_NULL);
@@ -88,7 +93,7 @@ gui(integer prmScreen) {
 
 		if (llJsonGetValue(_currentRestraints, ["elbow"]) == JSON_NULL
 			&& llJsonGetValue(_currentRestraints, ["torso"]) == JSON_NULL
-			&& (llJsonGetValue(_currentRestraints, ["wrist"]) == JSON_NULL || llJsonGetValue(_currentRestraints, ["wrist"]) == "back")
+			&& (llJsonGetValue(_currentRestraints, ["wrist"]) == "backTape" || llJsonGetValue(_currentRestraints, ["wrist"]) == "backRope")
 		) {
 			mpButtons += "Elbow";
 		}
@@ -97,6 +102,12 @@ gui(integer prmScreen) {
 			mpButtons += "Sides";
 		} else if (llJsonGetValue(_currentRestraints, ["torso"]) == JSON_NULL) {
 			mpButtons += "Harness";
+		}
+
+		if ((hasFeat(_villain, "Anubis") || _rpMode)
+			&& llJsonGetValue(_currentRestraints, ["hand"]) == JSON_NULL
+		) {
+			mpButtons += "Mitten";
 		}
 
 		mpButtons = multipageGui(mpButtons, 2, multipageIndex);
@@ -134,27 +145,30 @@ string defineRestraint(string prmName) {
 	restraint = llJsonSetValue(restraint, ["canUseItem"], "1");
 	restraint = llJsonSetValue(restraint, ["type"], "tape");
 
-	// Defaults
-	restraint = llJsonSetValue(restraint, ["animation_success"], "animArm_struggle");
-	restraint = llJsonSetValue(restraint, ["animation_failure"], "animArm_struggle");
+	integer complexity = 1;
+	integer integrity;
+	integer tightness;
 
 	if (prmName == "Sides") {
-		restraint = llJsonSetValue(restraint, ["uid"], "sides");
+		integrity = 20;
+		tightness = 5;
+
+		restraint = llJsonSetValue(restraint, ["uid"], "sidesTape");
 		restraint = llJsonSetValue(restraint, ["slot"], "torso");
-		restraint = llJsonSetValue(restraint, ["complexity"], "1");
-		restraint = llJsonSetValue(restraint, ["integrity"], "20");
-		restraint = llJsonSetValue(restraint, ["tightness"], "5");
 		restraint = llJsonSetValue(restraint, ["poses"], llList2Json(JSON_ARRAY, ["sides"]));
 		restraint = llJsonSetValue(restraint, ["attachments"], llList2Json(JSON_ARRAY, ["armTape_sides"]));
 	} else if (prmName == "Front") {
-		restraint = llJsonSetValue(restraint, ["uid"], "front");
+		integrity = 20;
+		tightness = 4;
+
+		restraint = llJsonSetValue(restraint, ["uid"], "frontTape");
 		restraint = llJsonSetValue(restraint, ["slot"], "wrist");
-		restraint = llJsonSetValue(restraint, ["complexity"], "1");
-		restraint = llJsonSetValue(restraint, ["integrity"], "20");
-		restraint = llJsonSetValue(restraint, ["tightness"], "4");
 		restraint = llJsonSetValue(restraint, ["poses"], llList2Json(JSON_ARRAY, ["front"]));
 		restraint = llJsonSetValue(restraint, ["attachments"], llList2Json(JSON_ARRAY, ["armTape_front_wrist"]));
 	} else if (prmName == "Back") {
+		integrity = 20;
+		tightness = 4;
+
 		string pose = "back";
 		list liAttachments = ["armTape_back_wrist"];
 		if (llJsonGetValue(getCurrentRestraints(), ["elbow"]) != JSON_NULL) {
@@ -162,28 +176,28 @@ string defineRestraint(string prmName) {
 			liAttachments = ["armTape_backTight_wrist"];
 		}
 
-		restraint = llJsonSetValue(restraint, ["uid"], "back");
+		restraint = llJsonSetValue(restraint, ["uid"], "backTape");
 		restraint = llJsonSetValue(restraint, ["slot"], "wrist");
-		restraint = llJsonSetValue(restraint, ["complexity"], "1");
-		restraint = llJsonSetValue(restraint, ["integrity"], "20");
-		restraint = llJsonSetValue(restraint, ["tightness"], "5");
 		restraint = llJsonSetValue(restraint, ["poses"], llList2Json(JSON_ARRAY, [pose]));
 		restraint = llJsonSetValue(restraint, ["attachments"], llList2Json(JSON_ARRAY, liAttachments));
 	} else if (prmName == "Elbow") {
+		integrity = 25;
+		tightness = 8;
+
 		list liAttachments = ["armTape_backTight_elbow"];
 		if (llJsonGetValue(getCurrentRestraints(), ["wrist"]) == "back") {
 			liAttachments += "armTape_backTight_wrist";
 		}
 
-		restraint = llJsonSetValue(restraint, ["uid"], "elbow");
+		restraint = llJsonSetValue(restraint, ["uid"], "elbowTape");
 		restraint = llJsonSetValue(restraint, ["slot"], "elbow");
-		restraint = llJsonSetValue(restraint, ["complexity"], "1");
-		restraint = llJsonSetValue(restraint, ["integrity"], "25");
-		restraint = llJsonSetValue(restraint, ["tightness"], "8");
 		restraint = llJsonSetValue(restraint, ["poses"], llList2Json(JSON_ARRAY, ["backTight"]));
 		restraint = llJsonSetValue(restraint, ["attachments"], llList2Json(JSON_ARRAY, liAttachments));
 		restraint = llJsonSetValue(restraint, ["preventAttach"], llList2Json(JSON_ARRAY, ["armRope_back_wrist", "armTape_back_wrist"]));
 	} else if (prmName == "Harness") {
+		integrity = 30;
+		tightness = 6;
+
 		list liAttachments;
 		if (llJsonGetValue(getCurrentRestraints(), ["elbow"]) != JSON_NULL) {
 			liAttachments += "armTape_backTight_harness";
@@ -193,13 +207,17 @@ string defineRestraint(string prmName) {
 			liAttachments += "armTape_front_harness";
 		}
 
-		restraint = llJsonSetValue(restraint, ["uid"], "harness");
+		restraint = llJsonSetValue(restraint, ["uid"], "harnessTape");
 		restraint = llJsonSetValue(restraint, ["slot"], "torso");
-		restraint = llJsonSetValue(restraint, ["complexity"], "1");
-		restraint = llJsonSetValue(restraint, ["integrity"], "30");
-		restraint = llJsonSetValue(restraint, ["tightness"], "6");
 		restraint = llJsonSetValue(restraint, ["attachments"], llList2Json(JSON_ARRAY, liAttachments));
 	}
+
+	if (hasFeat(_villain, "Anubis")) { tightness = tightness + 2; }
+	if (hasFeat(_villain, "Anubis+")) { tightness = tightness + 2; }
+
+	restraint = llJsonSetValue(restraint, ["complexity"], (string)complexity);
+	restraint = llJsonSetValue(restraint, ["integrity"], (string)integrity);
+	restraint = llJsonSetValue(restraint, ["tightness"], (string)tightness);
 
 	return restraint;
 }
@@ -249,24 +267,26 @@ execute_function(string prmFunction, string prmJson) {
 	}
 
 	if (prmFunction == "setGender") { setGender(value); }
-    else if (prmFunction == "setRestraints") {
-    	_currentRestraints = llJsonGetValue(value, ["slots"]);
-    	set_restraints(value);
+	else if (prmFunction == "setRestraints") {
+		_currentRestraints = llJsonGetValue(value, ["slots"]);
+		set_restraints(value);
 	}
-    else if (prmFunction == "getAvailableRestraints") { sendAvailabilityInfo(); }
-    else if (prmFunction == "requestColor") {
-      if (llJsonGetValue(value, ["attachment"]) != llJsonGetValue(getSelf(), ["part"])) { return; }
-      if (llJsonGetValue(value, ["name"]) != "tape") { return; }
-      setColor(color);
-    }
-    else if (prmFunction == "gui_arm_tape") {
-      key userkey = (key)llJsonGetValue(prmJson, ["userkey"]);
-      integer screen = 0;
-      if ((integer)llJsonGetValue(prmJson, ["restorescreen"]) && guiScreenLast) { screen = guiScreenLast;}
-      init_gui(userkey, screen);
-    } else if (prmFunction == "resetGUI") {
-      exit("");
-    }
+	else if (prmFunction == "getAvailableRestraints") { sendAvailabilityInfo(); }
+	else if (prmFunction == "setRPMode") { _rpMode = (integer)value; }
+	else if (prmFunction == "setVillain") { _villain = value; }
+	else if (prmFunction == "requestColor") {
+	  if (llJsonGetValue(value, ["attachment"]) != llJsonGetValue(getSelf(), ["part"])) { return; }
+	  if (llJsonGetValue(value, ["name"]) != "tape") { return; }
+	  setColor(color);
+	}
+	else if (prmFunction == "gui_arm_tape") {
+	  key userkey = (key)llJsonGetValue(prmJson, ["userkey"]);
+	  integer screen = 0;
+	  if ((integer)llJsonGetValue(prmJson, ["restorescreen"]) && guiScreenLast) { screen = guiScreenLast;}
+	  init_gui(userkey, screen);
+	} else if (prmFunction == "resetGUI") {
+	  exit("");
+	}
 }
 
 default {

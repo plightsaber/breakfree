@@ -1,77 +1,20 @@
 $import Modules.ContribLib.lslm();
-$import Modules.RestraintTools.lslm();
-
-string self;	// JSON object
+$import Modules.GeneralTools.lslm();
 
 // Global Variables
 list _attachedFolders = [];
 
-addRestraint(string prmJson) {
-	string type = llJsonGetValue(prmJson, ["type"]);
-	string restraint = llJsonGetValue(prmJson, ["restraint"]);
-
-	_restraints = llJsonSetValue(_restraints, [type, JSON_APPEND], restraint);
-	setRestraints(_restraints);
-}
-
-remRestraint(string prmType) {
-	string restraints = llJsonGetValue(_restraints, [prmType]);
-	if (JSON_NULL == restraints) {
-		debug("No restraints to remove.");
-		return;
-	}
-
-	list liRestraints = llJson2List(restraints);
-	string restraint = llList2String(liRestraints, -1);
-	liRestraints = llDeleteSubList(liRestraints, -1, -1);
-
-	if (llGetListLength(liRestraints) == 0) {
-		_restraints = llJsonSetValue(_restraints, [prmType], JSON_NULL);
-	} else {
-		_restraints = llJsonSetValue(_restraints, [prmType], llList2Json(JSON_ARRAY, liRestraints));
-	}
-
-	setRestraints(_restraints);
-}
-
-releaseRestraint(string prmType) {
-	_restraints = llJsonSetValue(_restraints, [prmType], JSON_NULL);
-	setRestraints(_restraints);
-}
-
-setRestraints(string prmJson) {
+setAttachments(string attachments) {
 	list bindFolders = [];
 	list preventFolders = [];
 	string restraint;
 	integer index;
 
-	// Arm loop.
-	restraint = llJsonGetValue(prmJson, ["arm"]);
-	if (restraint != JSON_INVALID) {
-		bindFolders += getRestraintList(restraint, "attachments");
-		preventFolders += getRestraintList(restraint, "preventAttach");
-	}
-
-	// Leg Loop.
-	restraint = llJsonGetValue(prmJson, ["leg"]);
-	if (restraint != JSON_INVALID) {
-		bindFolders += getRestraintList(restraint, "attachments");
-		preventFolders += getRestraintList(restraint, "preventAttach");
-	}
-
-	// Gag Loop.
-	restraint = llJsonGetValue(prmJson, ["gag"]);
-	if (restraint != JSON_INVALID) {
-		bindFolders += getRestraintList(restraint, "attachments");
-		preventFolders += getRestraintList(restraint, "preventAttach");
-	}
-
-	bindFolders = ListXnotY(bindFolders, preventFolders);
-	list addFolders = ListXnotY(bindFolders, _attachedFolders);
-	list remFolders = ListXnotY(_attachedFolders, bindFolders);
+	list liAttachments = llJson2List(attachments);
+	list addFolders = ListXnotY(liAttachments, _attachedFolders);
+	list remFolders = ListXnotY(_attachedFolders, liAttachments);
 
 	// Add Folders.
-	debug((string)addFolders);
 	for (index = 0; index < llGetListLength(addFolders); index++) {
 		llOwnerSay("@attachover:BreakFree/bf_" + llList2String(addFolders, index) + "=force");
 	}
@@ -83,15 +26,6 @@ setRestraints(string prmJson) {
 
 	// Save setting
 	_attachedFolders = bindFolders;
-}
-
-// ===== User-Defined Functions ======
-
-
-// ===== Other Functions =====
-debug(string output) {
-	// TODO: global enable/disable?
-	llOwnerSay(output);
 }
 
 // ===== Event Controls =====
@@ -107,9 +41,6 @@ default {
 		}
 		value = llJsonGetValue(prmText, ["value"]);
 
-		if ("addRestraint" == function) addRestraint(value);
-		else if ("remRestraint" == function) remRestraint(value);
-		else if ("releaseRestraint" == function) releaseRestraint(value);
-		else if ("overrideRestraint" == function) setRestraints(value);
+		if ("setAttachments" == function) setAttachments(value);
 	}
 }

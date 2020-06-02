@@ -1,5 +1,6 @@
 $import Modules.ContribLib.lslm();
 $import Modules.GuiTools.lslm();
+$import Modules.PoseLib.lslm();
 
 // Quick Keys
 key _ownerID;
@@ -10,19 +11,22 @@ integer rpMode = FALSE;
 integer _RLV = FALSE;
 
 // Stats
+string _self;
 integer _userExp = 0;
 list _userFeats = [];
 
 // Status Variables
-string self;
 integer _isArmsBound = FALSE;
 integer _isLegsBound = FALSE;
 integer _isGagged = FALSE;
+
+list _legPoses;
 
 // GUI screens
 integer GUI_HOME = 0;
 integer GUI_STATS = 10;
 integer GUI_OPTIONS = 20;
+integer GUI_POSE = 70;
 
 string _resumeFunction;
 
@@ -36,7 +40,14 @@ list _feats = [
 	"Flexible",
 	"Flexible+",
 	"Resolute",
-	"Resolute+"
+	"Resolute+",
+	"Anubis",
+	"Anubis+",
+	"Rigger",
+	"Rigger+",
+	"Gag Snob",
+	"Gag Snob+",
+	"Sadist"
 ];
 
 init() {
@@ -71,6 +82,10 @@ gui(integer prmScreen) {
 			btn1 = "Options";
 			btn4 = "Bind";
 		}
+		
+		if (_isLegsBound) {
+			btn6 = "Pose";
+		}
 
 		if (_isArmsBound || _isLegsBound || _isGagged) { btn5 = "Escape"; }
 		btn3 = "Stats";
@@ -97,6 +112,10 @@ gui(integer prmScreen) {
 		if (_RLV) { btn5 = "☑ RLV"; }
 		else { btn5 = "☒ RLV"; }
 		btn1 = "<<Back>>";
+	}
+	else if (prmScreen == GUI_POSE) {
+		guiText = "How do you want to pose?";
+		mpButtons = multipageGui(_legPoses, 3, multipageIndex);
 	}
 
 	if (prmScreen != guiScreen) { guiScreenLast = guiScreen; }
@@ -144,6 +163,21 @@ list getAvailableFeats() {
 	if (preIndex != -1 && plusIndex != -1) {
 		feats = llDeleteSubList(feats, plusIndex, plusIndex);
 	}
+	plusIndex = llListFindList(feats, ["Rigger+"]);
+	preIndex = llListFindList(feats, ["Rigger"]);
+	if (preIndex != -1 && plusIndex != -1) {
+		feats = llDeleteSubList(feats, plusIndex, plusIndex);
+	}
+	plusIndex = llListFindList(feats, ["Anubis+"]);
+	preIndex = llListFindList(feats, ["Anubis"]);
+	if (preIndex != -1 && plusIndex != -1) {
+		feats = llDeleteSubList(feats, plusIndex, plusIndex);
+	}
+	plusIndex = llListFindList(feats, ["Gag Snob+"]);
+	preIndex = llListFindList(feats, ["Gag Snob"]);
+	if (preIndex != -1 && plusIndex != -1) {
+		feats = llDeleteSubList(feats, plusIndex, plusIndex);
+	}
 
 	return feats;
 }
@@ -163,6 +197,7 @@ addExp(string prmValue) {
 addFeat(string feat) {
 	_userFeats += [feat];
 	_userFeats = llListSort(_userFeats, 1, TRUE);
+	_self = llJsonSetValue(_self, ["feats"], llList2Json(JSON_ARRAY, _userFeats));
 	simpleRequest("setOwnerFeats", llList2Json(JSON_ARRAY, _userFeats));
 }
 
@@ -173,6 +208,11 @@ integer getNextLevelExp() {
 	}
 
 	return (integer)(tmpLevel * 50 + llPow(tmpLevel,3));
+}
+
+setAvailablePoses(string prmPoses) {
+	_legPoses = llJson2List(prmPoses);
+	_legPoses += getPoseBallPoseList();
 }
 
 setStats(string stats) {
@@ -203,6 +243,7 @@ execute_function(string prmFunction, string prmJson) {
 		init_gui(userkey, (integer)value);
 	}
 	else if (prmFunction == "setVillainKey") { _villainID = value; }
+	else if (prmFunction == "setLegPoses") { setAvailablePoses(value); }
 	else if (prmFunction == "addExp") { addExp(value); }
 	else if (prmFunction == "setStats") { setStats(value); }
 	else if (prmFunction == "setRestraints") { setRestraints(value); }
@@ -219,14 +260,21 @@ default {
 	listen(integer prmChannel, string prmName, key prmID, string prmText) {
 		if (prmChannel = guiChannel) {
 			if (prmText == "<<Done>>") { exit("done"); return; }
-			else if (prmText == "<<Back>>") { gui(guiScreenLast); }
+			else if (prmText == "<<Back>>") { multipageIndex = 0; gui(guiScreenLast); return;}
+			else if (prmText == "Next >>") { multipageIndex ++; gui(guiScreen); return; }
+			else if (prmText == "<< Previous") { multipageIndex --; gui(guiScreen); return; }
 			else if (prmText == " ") { gui(guiScreen); }
 
 			if (guiScreen == GUI_HOME) {
-				if (prmText == "Bind") { guiRequest("gui_bind", FALSE, guiUserID, 0); return; }
+				if (prmText == "Bind") {
+					simpleRequest("setVillain", _self);
+					guiRequest("gui_bind", FALSE, guiUserID, 0);
+					return;
+				}
 				else if (prmText == "Escape") { guiRequest("gui_escape", FALSE, guiUserID, 0); return; }
 				else if (prmText == "Stats") { gui(GUI_STATS); }
 				else if (prmText == "Options") { gui(GUI_OPTIONS); }
+				else if (prmText == "Pose") { gui(GUI_POSE); }
 			} else if (guiScreen == GUI_STATS) {
 				addFeat(prmText);
 				gui(guiScreen);
@@ -235,6 +283,9 @@ default {
 				else if (prmText == "☑ RP Mode") { rpMode = FALSE; simpleRequest("setRPMode", "0"); }
 				else if (prmText == "☒ RLV") { _RLV = TRUE; simpleRequest("setRLV", "1"); }
 				else if (prmText == "☑ RLV") { _RLV = FALSE; simpleRequest("setRLV", "0"); }
+				gui(guiScreen);
+			} else if (guiScreen == GUI_POSE) {
+				simpleRequest("setLegPose", prmText);
 				gui(guiScreen);
 			}
 		}

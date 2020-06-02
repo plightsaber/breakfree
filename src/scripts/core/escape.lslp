@@ -165,7 +165,7 @@ escapeAction(string prmVerb) {
 	integer progress = (integer)llJsonGetValue(_escapeProgress, [_activePart, puzzleType, "progress"]);
 	integer tightness = (integer)llJsonGetValue(_restraints, ["security", _activePart, "tightness"]);
 
-	if (!isAssisted()) {
+	if (!isAssisted() && isArmBound()) {
 		_stamina = _stamina - exertion;
 		if (_stamina < 0) {
 			_stamina = 0;
@@ -261,6 +261,10 @@ integer checkIntegrity(string restraint) {
 			simpleRequest("addExp", llJsonGetValue(_restraints, ["security", restraint, "tightness"]));
 		}
 
+		// Reset puzzles
+		refreshPuzzle(restraint, "tightness");
+		refreshPuzzle(restraint, "integrity");
+
 		// Update complexity.
 		integer cProgress = (integer)llJsonGetValue(_escapeProgress, [restraint, "complexity", "progress"]) + 1;
 		_escapeProgress = llJsonSetValue(_escapeProgress, [restraint, "complexity", "progress"], (string)cProgress);
@@ -351,9 +355,9 @@ integer loseProgress(integer progress) {
 	if (llListFindList(_ownerFeats, ["Flexible+"]) > -1) {
 		return progress;
 	} else if (llListFindList(_ownerFeats, ["Flexible"]) > -1) {
-		progress = progress - 1;
-	} else {
 		progress--;
+	} else {
+		progress = progress - 2;
 	}
 
 
