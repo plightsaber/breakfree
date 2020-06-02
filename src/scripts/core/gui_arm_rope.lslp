@@ -187,32 +187,31 @@ string defineRestraint(string prmName) {
 		integrity = 5;
 		tightness = 8;
 
-		list liAttachments = ["armRope_backTight_elbow"];
-		if (llJsonGetValue(getCurrentRestraints(), ["wrist"]) == "back") {
-			liAttachments += "armRope_backTight_wrist";
-		}
-
 		restraint = llJsonSetValue(restraint, ["uid"], "elbowRope");
 		restraint = llJsonSetValue(restraint, ["slot"], "elbow");
 		restraint = llJsonSetValue(restraint, ["poses"], llList2Json(JSON_ARRAY, ["backTight"]));
-		restraint = llJsonSetValue(restraint, ["attachments"], llList2Json(JSON_ARRAY, liAttachments));
-		restraint = llJsonSetValue(restraint, ["preventAttach"], llList2Json(JSON_ARRAY, ["armRope_back_wrist", "armTape_back_wrist"]));
+		restraint = llJsonSetValue(restraint, ["attachments"], llList2Json(JSON_ARRAY, ["armRope_backTight_elbow"]));
 	} else if (prmName == "Harness") {
 		complexity = 3;
 		integrity = 5;
 		tightness = 6;
 
 		list liAttachments;
+		list liPoses;
 		if (llJsonGetValue(getCurrentRestraints(), ["elbow"]) != JSON_NULL) {
 			liAttachments += "armRope_backTight_harness";
+			liPoses = ["backTight"];
 		} else if (llJsonGetValue(getCurrentRestraints(), ["wrist"]) == "backRope" || llJsonGetValue(getCurrentRestraints(), ["wrist"]) == "backTape") {
 			liAttachments += "armRope_back_harness";
+			liPoses = ["back"];
 		} else if (llJsonGetValue(getCurrentRestraints(), ["wrist"]) == "frontRope" || llJsonGetValue(getCurrentRestraints(), ["wrist"]) == "frontTape") {
 			liAttachments += "armRope_front_harness";
+			liPoses = ["front"];
 		}
 
 		restraint = llJsonSetValue(restraint, ["uid"], "harnessRope");
 		restraint = llJsonSetValue(restraint, ["slot"], "torso");
+		restraint = llJsonSetValue(restraint, ["poses"], llList2Json(JSON_ARRAY, liPoses));
 		restraint = llJsonSetValue(restraint, ["attachments"], llList2Json(JSON_ARRAY, liAttachments));
 	} else if (prmName == "Box") {
 		complexity = 5;

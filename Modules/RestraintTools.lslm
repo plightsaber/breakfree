@@ -1,34 +1,63 @@
 $module ()
+$import Modules.GeneralTools.lslm();
+
 string _restraints;
 
 list getRestraintList(string prmRestraint, string prmList) {
-	list liValues = [];
+	list restraintList = [];
 	list slots = llJson2List(prmRestraint);
+	
 	integer index = 0;
 	for (index = 0; index < llGetListLength(slots); ++index) {
-		string attachments = llJsonGetValue(llList2String(slots, index), [prmList]);
-		if (JSON_INVALID != attachments) {
-			list restraintAttachments = llJson2List(attachments);
-			liValues += restraintAttachments;
+		string strList = llJsonGetValue(llList2String(slots, index), [prmList]);
+		if (JSON_INVALID != strList) {
+			list liValues = llJson2List(strList);
+			restraintList += liValues;
 		}
 	}
-	return liValues;
-}
-
-string getTopRestraint(string prmType) {
-	string typeJson = llJsonGetValue(_restraints, [prmType]);
-	list liRestraints = llJson2List(typeJson);
-	return llList2String(liRestraints, -1);
+	return restraintList;
 }
 
 integer searchRestraint(string prmType, string prmParameter, string prmValue) {
-	list liRestraints = llJson2List(llJsonGetValue(_restraints, [prmType]));
+	list searchSlots = getSearchSlots(prmType);
+
 	integer index;
-	for (index = 0; index < llGetListLength(liRestraints); ++index) {
-		if (llJsonGetValue(llList2String(liRestraints, index), [prmParameter]) == prmValue) {
+	for (index = 0; index < llGetListLength(searchSlots); ++index) {
+		if (llJsonGetValue(_restraints, [llList2String(searchSlots, index), prmParameter]) == prmValue) {
 			return TRUE;
 		}
 	}
-	
+
 	return FALSE;
+}
+
+string getTopRestraint(string prmType) {
+	if (prmType == "arm") {
+		if (isSet(llJsonGetValue(_restraints, ["torso"]))) { return llJsonGetValue(_restraints, ["torso"]); }
+		else if (isSet(llJsonGetValue(_restraints, ["elbow"]))) { return llJsonGetValue(_restraints, ["elbow"]); }
+		else if (isSet(llJsonGetValue(_restraints, ["wrist"]))) { return llJsonGetValue(_restraints, ["wrist"]); }
+	} else if (prmType == "leg") {
+		if (isSet(llJsonGetValue(_restraints, ["immobilizer"]))) { return llJsonGetValue(_restraints, ["immobilizer"]); }
+		else if (isSet(llJsonGetValue(_restraints, ["knee"]))) { return llJsonGetValue(_restraints, ["knee"]); }
+		else if (isSet(llJsonGetValue(_restraints, ["ankle"]))) { return llJsonGetValue(_restraints, ["ankle"]); }
+	} else if (prmType == "gag") {
+		if (isSet(llJsonGetValue(_restraints, ["gag1"]))) { return llJsonGetValue(_restraints, ["gag1"]); }
+		else if (isSet(llJsonGetValue(_restraints, ["gag2"]))) { return llJsonGetValue(_restraints, ["gag2"]); }
+		else if (isSet(llJsonGetValue(_restraints, ["gag3"]))) { return llJsonGetValue(_restraints, ["gag3"]); }
+		else if (isSet(llJsonGetValue(_restraints, ["gag4"]))) { return llJsonGetValue(_restraints, ["gag4"]); }
+	}
+
+	return JSON_NULL;
+}
+
+list getSearchSlots(string prmType) {
+	if (prmType == "arm") {
+		return ["wrist", "elbow", "torso"];
+	} else if (prmType == "leg") {
+		return ["ankle", "knee", "immobilizer"];
+	} else if (prmType == "gag") {
+		return ["gag1", "gag2", "gag3", "gag4"];
+	}
+
+	return [];	// Error?
 }

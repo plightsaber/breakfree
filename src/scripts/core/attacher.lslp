@@ -25,7 +25,7 @@ setAttachments(string attachments) {
 	}
 
 	// Save setting
-	_attachedFolders = bindFolders;
+	_attachedFolders = liAttachments;
 }
 
 // ===== Event Controls =====
@@ -41,6 +41,6 @@ default {
 		}
 		value = llJsonGetValue(prmText, ["value"]);
 
-		if ("setAttachments" == function) setAttachments(value);
+		if ("setAttachments" == function) { setAttachments(value); }
 	}
 }

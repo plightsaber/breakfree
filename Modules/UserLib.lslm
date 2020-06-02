@@ -33,3 +33,9 @@ string getGender(key prmUserID) {
 
 	return "female";
 }
+
+integer hasFeat(string user, string feat) {
+	string feats = llJsonGetValue(user, ["feats"]);
+	list liFeats = llJson2List(feats);
+	return llListFindList(liFeats, [feat]) > -1;
+}

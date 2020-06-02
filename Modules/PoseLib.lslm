@@ -1,6 +1,7 @@
 $module ()
 
 string _poseLib;	// JSON library containing details of all available poses
+
 string getPoses() {
 	if (_poseLib) { return _poseLib; }
 
@@ -137,5 +138,95 @@ string getPoses() {
 	_poseLib = llJsonSetValue(_poseLib, ["leg", "sitRight", "poseRight"], "kneel");
 	_poseLib = llJsonSetValue(_poseLib, ["leg", "sitRight", "poseFall"], "groundRight");
 
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "hogFront", "base"], "animLeg_hogFront");
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "hogFront", "failure"], "animLeg_hogFront_struggle");
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "hogFront", "success"], "animLeg_hogFront_struggle");
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "hogFront", "walk"], "animLeg_hogFront_walk");
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "hogFront", "jumpPower"], "0");
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "hogFront", "speedBack"], "8");
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "hogFront", "speedFwd"], "8");
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "hogFront", "stability"], "5");
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "hogFront", "poseUp"], JSON_NULL);
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "hogFront", "poseDown"], JSON_NULL);
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "hogFront", "poseLeft"], "hogLeft");
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "hogFront", "poseRight"], "hogRight");
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "hogFront", "poseFall"], JSON_NULL);
+
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "hogLeft", "base"], "animLeg_hogLeft");
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "hogLeft", "failure"], "animLeg_hogFront_struggle");
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "hogLeft", "success"], "animLeg_hogFront_struggle");
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "hogLeft", "walk"], "animLeg_hogFront_walk");
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "hogLeft", "jumpPower"], "0");
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "hogLeft", "speedBack"], "8");
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "hogLeft", "speedFwd"], "8");
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "hogLeft", "stability"], "5");
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "hogLeft", "poseUp"], JSON_NULL);
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "hogLeft", "poseDown"], JSON_NULL);
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "hogLeft", "poseLeft"], "hogLeft");
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "hogLeft", "poseRight"], "hogFront");
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "hogLeft", "poseFall"], JSON_NULL);
+
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "hogRight", "base"], "animLeg_hogRight");
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "hogRight", "failure"], "animLeg_hogFront_struggle");
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "hogRight", "success"], "animLeg_hogFront_struggle");
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "hogRight", "walk"], "animLeg_hogFront_walk");
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "hogRight", "jumpPower"], "0");
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "hogRight", "speedBack"], "8");
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "hogRight", "speedFwd"], "8");
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "hogRight", "stability"], "5");
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "hogRight", "poseUp"], JSON_NULL);
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "hogRight", "poseDown"], JSON_NULL);
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "hogRight", "poseLeft"], "hogFront");
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "hogRight", "poseRight"], "hogRight");
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "hogRight", "poseFall"], JSON_NULL);
+
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "ballLeft", "base"], "animLeg_ballLeft");
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "ballLeft", "failure"], "animLeg_ballLeft_struggle");
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "ballLeft", "success"], "animLeg_ballLeft_struggle");
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "ballLeft", "walk"], "animLeg_ballLeft_walk");
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "ballLeft", "jumpPower"], "0");
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "ballLeft", "speedBack"], "2");
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "ballLeft", "speedFwd"], "2");
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "ballLeft", "stability"], "5");
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "ballLeft", "poseUp"], JSON_NULL);
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "ballLeft", "poseDown"], JSON_NULL);
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "ballLeft", "poseLeft"], "ballRight");
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "ballLeft", "poseRight"], "ballRight");
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "ballLeft", "poseFall"], JSON_NULL);
+
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "ballRight", "base"], "animLeg_ballRight");
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "ballRight", "failure"], "animLeg_ballRight_struggle");
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "ballRight", "success"], "animLeg_ballRight_struggle");
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "ballRight", "walk"], "animLeg_ballRight_walk");
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "ballRight", "jumpPower"], "0");
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "ballRight", "speedBack"], "2");
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "ballRight", "speedFwd"], "2");
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "ballRight", "stability"], "5");
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "ballRight", "poseUp"], JSON_NULL);
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "ballRight", "poseDown"], JSON_NULL);
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "ballRight", "poseLeft"], "ballLeft");
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "ballRight", "poseRight"], "ballLeft");
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "ballRight", "poseFall"], JSON_NULL);
+
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "poseball00", "base"], "animLeg_poseball_00");
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "poseball00", "poseUp"], "poseball03");
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "poseball00", "poseDown"], "poseball01");
+
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "poseball01", "base"], "animLeg_poseball_01");
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "poseball01", "poseUp"], "poseball00");
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "poseball01", "poseDown"], "poseball0");
+
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "poseball02", "base"], "animLeg_poseball_02");
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "poseball02", "poseUp"], "poseball01");
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "poseball02", "poseDown"], "poseball03");
+
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "poseball03", "base"], "animLeg_poseball_03");
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "poseball03", "poseUp"], "poseball02");
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "poseball03", "poseDown"], "poseball00");
+
 	return _poseLib;
+}
+
+list getPoseBallPoseList() {
+	return ["poseball00", "poseball01", "poseball02", "poseball03"];
 }

@@ -12,3 +12,7 @@ simpleRequest(string prmFunction, string prmValue) {
 	request = llJsonSetValue(request, ["value"], prmValue);
 	llMessageLinked(LINK_THIS, 0, request, NULL_KEY);
 }
+
+integer isSet(string jsonValue) {
+	return (jsonValue != "" && jsonValue != JSON_NULL && jsonValue != JSON_INVALID);
+}

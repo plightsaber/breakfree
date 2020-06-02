@@ -33,29 +33,35 @@ guiRequest(string prmGUI, integer prmRestore, key prmUserID, integer prmScreen) 
 }
 
 list multipageGui(list prmButtons, integer prmRows, integer prmPage) {
-  list mpGui = [];
-  integer buttonCount = llGetListLength(prmButtons);
-  integer multipage = FALSE;
+  	list mpGui = [];
+  	integer buttonCount = llGetListLength(prmButtons);
+  	integer availableRows = prmRows;
 
-  if (buttonCount > 3 * prmRows) {
-    multipage = TRUE;
-    mpGui += ["<< Previous", " ", "Next >>"];
+  	if (buttonCount > 3 * prmRows) {
+  		// Devote a row to navigation buttons
+    	availableRows--;
+    	mpGui += ["<< Previous", " ", "Next >>"];
 
-    if (prmPage * prmRows * 3 > buttonCount) { prmPage = 0; }
-    else if (prmPage < 0) { prmPage = llFloor(buttonCount / (3 * prmRows - multipage)); }
+    	multipageIndex = prmPage;
+	}
 
-    multipageIndex = prmPage;
-}
+	// Set page index
+	multipageIndex = prmPage;
+	if (prmPage < 0) {
+		multipageIndex = llFloor(buttonCount / (3 * availableRows));
+	} else if (prmPage * availableRows * 3 > buttonCount) {
+		multipageIndex = 0;
+	}
 
-  integer mpIndex = 0;
-  for (mpIndex; mpIndex < buttonCount; mpIndex++) {
-    if (mpIndex >= prmPage * prmRows * (3 - multipage)) {
-      mpGui += llList2String(prmButtons, mpIndex);
-    }
-    if (llGetListLength(mpGui) == prmRows * 3) { mpIndex = buttonCount; }
-  }
+  	integer mpIndex = multipageIndex * availableRows * 3;
+  	for (mpIndex; mpIndex < buttonCount; mpIndex++) {
+  		mpGui += llList2String(prmButtons, mpIndex);
+    	if (llGetListLength(mpGui) == prmRows * 3) {
+    		return mpGui;
+		}
+  	}
 
-  return mpGui;
+  	return mpGui;
 }
 
 simpleAttachedRequest(string prmFunction,string prmValue){

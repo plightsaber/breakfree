@@ -18,6 +18,13 @@ integer _legsTetherable;
 
 list _legPoses;
 
+// GUI screens
+integer GUI_HOME = 0;
+integer GUI_ARM = 10;
+integer GUI_LEG = 20;
+integer GUI_GAG = 30;
+integer GUI_POSE = 70;
+
 // Restaint Lists
 list armRestraints;
 list legRestraints;
@@ -69,16 +76,16 @@ gui(integer prmScreen) {
 
 	// Handle Gag-only path
 	if ((integer)llJsonGetValue(jsonSettings, ["gagOnly"]) && prmScreen == 0) {
-		prmScreen = 30;
+		prmScreen = GUI_GAG;
 	}
 
 	if (prmScreen != guiScreen) { guiScreenLast = guiScreen; }
 	if (btn1 == " " && (prmScreen != 0)) { btn1 = "<<Back>>"; };
 
 	// GUI: Main
-	if (prmScreen == 0) {
+	if (prmScreen == GUI_HOME) {
 		// reset previous screen
-		guiScreenLast = 0;
+		guiScreenLast = GUI_HOME;
 
 		if (_armsTetherable) { btn7 = "Tether Arms"; }
 		if (_legsTetherable) { btn7 = "Tether Legs"; }
@@ -86,23 +93,23 @@ gui(integer prmScreen) {
 		if (!_armBoundExternal) { btn4 = "Bind Arms"; }
 		btn5 = "Bind Legs";
 		btn6 = "Gag";
-		if (llGetListLength(_legPoses) > 1) { btn3 = "Pose"; }
+		if (_legsBound) { btn3 = "Pose"; }
 	}
 
 	// GUI: Bind Arms
-	if (prmScreen == 10) {
+	if (prmScreen == GUI_ARM) {
 		guiText = "What do you want to bind " + getName() + "'s arms with?";
 		mpButtons = multipageGui(armRestraints, 3, multipageIndex);
 	}
 
 	// GUI: Bind Legs
-	if (prmScreen == 20) {
+	if (prmScreen == GUI_LEG) {
 		guiText = "What do you want to bind " + getName() + "'s legs with?";
 		mpButtons = multipageGui(legRestraints, 3, multipageIndex);
 	}
 
 	// GUI: Bind Gag
-	if (prmScreen == 30) {
+	if (prmScreen == GUI_GAG) {
 		guiText = "What do you want to gag " + getName() + " with?";
 		mpButtons = multipageGui(gagRestraints, 3, multipageIndex);
 
@@ -113,7 +120,7 @@ gui(integer prmScreen) {
 	}
 
 	// GUI: Pose
-	if (prmScreen == 70) {
+	if (prmScreen == GUI_POSE) {
 		guiText = "How do you want to pose " + getName() + "?";
 		mpButtons = multipageGui(_legPoses, 3, multipageIndex);
 	}
@@ -161,7 +168,7 @@ setAvailablePoses(string prmPoses) {
 	_legPoses += getPoseBallPoseList();
 }
 
-set_restraints(string prmJson) {
+setRestraints(string prmJson) {
 	_restraints = prmJson;
 	_armsBound = (integer)llJsonGetValue(prmJson, ["armBound"]);
 	_armsTetherable = (integer)llJsonGetValue(prmJson, ["isArmTetherable"]);
@@ -177,12 +184,12 @@ execute_function(string prmFunction, string prmJson) {
 		//return;		// TODO: Rewrite all linked calls to send in JSON
 	}
 	if (prmFunction == "setGender") { setGender(value); }
-	else if (prmFunction == "setRestraints") { set_restraints(value); }
+	else if (prmFunction == "setRestraints") { setRestraints(value); }
 	else if (prmFunction == "setLegPoses") { setAvailablePoses(value); }
 	else if (prmFunction == "addAvailableRestraint") { addAvailableRestraint(value); }
 	else if (prmFunction == "gui_bind") {
 		key userkey = (key)llJsonGetValue(prmJson, ["userkey"]);
-		integer screen = 0;
+		integer screen = GUI_HOME;
 		if ((integer)llJsonGetValue(prmJson, ["restorescreen"]) && guiScreen) { screen = guiScreen;}
 		init_gui(userkey, screen);
 	} else if (prmFunction == "resetGUI") {
@@ -210,22 +217,22 @@ default {
 			if (prmText == "<<Done>>") { exit("done"); return; }
 			else if (prmText == " ") { gui(guiScreen); }
 			else if (prmText == "<<Back>>"
-				&& guiScreen == 30
+				&& guiScreen == GUI_GAG
 				&& (integer)llJsonGetValue(jsonSettings, ["gagOnly"])
 			) {
 				guiRequest("gui_owner", FALSE, guiUserID, 0);
 				return;
 			}
-			else if (guiScreen !=0 && prmText == "<<Back>>") { gui(guiScreenLast); return; }
+			else if (guiScreen != GUI_HOME && prmText == "<<Back>>") { gui(guiScreenLast); return; }
 
 			else if (prmText == "Next >>") { multipageIndex ++; gui(guiScreen); return; }
 			else if (prmText == "<< Previous") { multipageIndex --; gui(guiScreen); return; }
 
-			if (guiScreen == 0) {
-				if (prmText == "Bind Arms") { gui(10); }
-				else if (prmText == "Bind Legs") { gui(20); }
-				else if (prmText == "Gag") { gui(30); }
-				else if (prmText == "Pose") { gui(70); }
+			if (guiScreen == GUI_HOME) {
+				if (prmText == "Bind Arms") { gui(GUI_ARM); }
+				else if (prmText == "Bind Legs") { gui(GUI_LEG); }
+				else if (prmText == "Gag") { gui(GUI_GAG); }
+				else if (prmText == "Pose") { gui(GUI_POSE); }
 				else if (prmText == "Tether Arms") { guiRequest("gui_tether_arm", FALSE, guiUserID, 0); return; }
 				else if (prmText == "Tether Legs") { guiRequest("gui_tether_leg", FALSE, guiUserID, 0); return; }
 				else if (prmText == "<<Back>>") {
@@ -233,7 +240,7 @@ default {
 					return;
 				}
 			}
-			else if (guiScreen == 10) {
+			else if (guiScreen == GUI_ARM) {
 				if (prmText == "Unbound") {
 					simpleRequest("releaseRestraint", "arm");
 					gui(guiScreen);
@@ -241,7 +248,7 @@ default {
 				}
 				guiRequest("gui_arm_" + llToLower(prmText), FALSE, guiUserID, 0);
 				return;
-			} else if (guiScreen == 20) {
+			} else if (guiScreen == GUI_LEG) {
 				if (prmText == "Unbound") {
 					simpleRequest("releaseRestraint", "leg");
 					gui(guiScreen);
@@ -249,7 +256,7 @@ default {
 				}
 				guiRequest("gui_leg_" + llToLower(prmText), FALSE, guiUserID, 0);
 				return;
-			} else if (guiScreen == 30) {
+			} else if (guiScreen == GUI_GAG) {
 				if (prmText == "Unbound") {
 					simpleRequest("releaseRestraint", "gag");
 					gui(guiScreen);
@@ -257,7 +264,7 @@ default {
 				}
 				guiRequest("gui_gag_" + llToLower(prmText), FALSE, guiUserID, 0);
 				return;
-			} else if (guiScreen == 70) {
+			} else if (guiScreen == GUI_POSE) {
 				simpleRequest("setLegPose", prmText);
 				gui(guiScreen);
 				return;

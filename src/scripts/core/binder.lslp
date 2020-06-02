@@ -27,48 +27,38 @@ addRestraint(string prmJson) {
 	_restraints = llJsonSetValue(_restraints, [slot], restraint);
 	_slots = llJsonSetValue(_slots, [slot], llJsonGetValue(restraint, ["uid"]));
 
-	resetPoses(type);
 	deployRestraints();
 }
 
 deployRestraints() {
 	simpleRequest("setAttachments", llList2Json(JSON_ARRAY, getAttachments()));
 
+	resetPoses();
 	rebuild_metadata();
 	simpleRequest("setRestraints", _metadata);
 }
 
 list getAttachments() {
-	list bindFolders;
-	list preventFolders;
-	string restraint;
+	list bindFolders = getRestraintList(_restraints, "attachments");
+	list preventFolders = getRestraintList(_restraints, "preventAttach");
 
-	// Arm loop.
-	restraint = llJsonGetValue(_restraints, ["arm"]);
-	if (restraint != JSON_INVALID) {
-		bindFolders += getRestraintList(restraint, "attachments");
-		preventFolders += getRestraintList(restraint, "preventAttach");
+	// Odd rules so complicated they need to be here. <_<
+	if (llJsonGetValue(_restraints, ["immobilizer", "uid"]) == "ropeHog") {
+		if (isSet(llJsonGetValue(_restraints, ["elbow"]))) { bindFolders += ["legRope_hogBackTight"]; }
+		else if (llJsonGetValue(_restraints, ["wrist", "uid"]) == "ropeBox") { bindFolders += ["legRope_hogBox"]; }
+		else { bindFolders += ["legRope_hogBack"]; }
 	}
 
-	// Leg Loop.
-	restraint = llJsonGetValue(_restraints, ["leg"]);
-	if (restraint != JSON_INVALID) {
-		bindFolders += getRestraintList(restraint, "attachments");
-		preventFolders += getRestraintList(restraint, "preventAttach");
-
-		// Rope Hog tie rules are so complicated they need to be here. <_<
-		if (llJsonGetValue(_restraints, ["immobilizer"]) == "ropeHog") {
-			if (isSet(llJsonGetValue(_restraints, ["elbow"]))) { bindFolders += ["legRope_hogBackTight"]; }
-			else if (llJsonGetValue(_restraints, ["wrist"]) == "ropeBox") { bindFolders += ["legRope_hogBox"]; }
-			else { bindFolders += ["legRope_hogBack"]; }
+	if (isSet(llJsonGetValue(_restraints, ["elbow"]))) {
+		// Update wrist restraints to alternate mesh for pose
+		string wrist = llJsonGetValue(_restraints, ["wrist", "uid"]);
+		if (wrist == "backRope") {
+			bindFolders += "armRope_backTight_wrist";
+			preventFolders += "armRope_back_wrist";
+		} else if (wrist == "backTape") {
+			bindFolders += "armTape_backTight_wrist";
+			preventFolders += "armTape_back_wrist";
 		}
-	}
-
-	// Gag Loop.
-	restraint = llJsonGetValue(_restraints, ["gag"]);
-	if (restraint != JSON_INVALID) {
-		bindFolders += getRestraintList(restraint, "attachments");
-		preventFolders += getRestraintList(restraint, "preventAttach");
 	}
 
 	return ListXnotY(bindFolders, preventFolders);
@@ -94,13 +84,12 @@ rmSlot(string slot) {
 }
 
 remRestraint(string prmType) {
-	string restraints = llJsonGetValue(_restraints, [prmType]);
-	if (JSON_NULL == restraints) {
+	string removedRestraint = getTopRestraint(prmType);
+	if (JSON_NULL == removedRestraint) {
 		debug("No restraints to remove.");
 		return;
 	}
 
-	string removedRestraint = getTopRestraint(prmType);
 	string slot = llJsonGetValue(removedRestraint, ["slot"]);
 
 	// Removal rules are about to get complicated.  This is a problem for future Myshel!
@@ -112,70 +101,68 @@ remRestraint(string prmType) {
 	}
 
 	rmSlot(slot);
-
-	resetPoses(prmType);
 	deployRestraints();
 }
 
-resetPoses(string prmType) {
-	string method;
-	if (prmType == "arm") { method = "setArmPoses"; }
-	else if (prmType == "leg") { method = "setLegPoses"; }
-	else { return; }
+resetPoses() {
+	string poses;
+	string topRestraint;
 
-
-	string topRestraint = getTopRestraint(prmType);
-	string poses = llJsonGetValue(topRestraint, ["poses"]);
-
+	// Arm poses
+	topRestraint = getTopRestraint("arm");
+	poses = llJsonGetValue(topRestraint, ["poses"]);
 	if (!isSet(poses)) {
-		simpleRequest(method, llJsonSetValue(poses, [JSON_APPEND], "free"));
-		return;
+		poses = llJsonSetValue(poses, [JSON_APPEND], "free");
 	}
+	simpleRequest("setArmPoses", poses);
 
-	simpleRequest(method, poses);
+	// Leg poses
+	topRestraint = getTopRestraint("leg");
+	poses = llJsonGetValue(topRestraint, ["poses"]);
+	if (!isSet(poses)) {
+		poses = llJsonSetValue(poses, [JSON_APPEND], "free");
+	}
+	simpleRequest("setLegPoses", poses);
 }
 
-release_restraint(string prmType) {
-	_restraints = llJsonSetValue(_restraints, [prmType], JSON_NULL);
+releaseRestraint(string prmType) {
 	if (prmType == "arm") {
-		_slots = llJsonSetValue(_slots, ["wrist"], JSON_NULL);
-		_slots = llJsonSetValue(_slots, ["elbow"], JSON_NULL);
-		_slots = llJsonSetValue(_slots, ["torso"], JSON_NULL);
-		simpleRequest("setArmPose", "free");
+		rmSlot("torso");
+		rmSlot("elbow");
+		rmSlot("wrist");
 	} else if (prmType == "leg") {
-		_slots = llJsonSetValue(_slots, ["ankle"], JSON_NULL);
-		_slots = llJsonSetValue(_slots, ["knee"], JSON_NULL);
-		_slots = llJsonSetValue(_slots, ["immobilizer"], JSON_NULL);
-		simpleRequest("setLegPose", "free");
+		rmSlot("immobilizer");
+		rmSlot("knee");
+		rmSlot("ankle");
+	} else if (prmType == "gag") {
+		rmSlot("gag1");
+		rmSlot("gag2");
+		rmSlot("gag3");
+		rmSlot("gag4");
 	}
 
-	rebuild_metadata();
-	simpleRequest("setRestraints", _metadata);
+	deployRestraints();
 }
 
 rebuild_metadata() {
 	_metadata = llJsonSetValue(_metadata, ["slots"], _slots);
 
-	integer isArmsBound = FALSE;
-	string armJson = llJsonGetValue(_restraints, ["arm"]);
-	if (JSON_NULL != armJson && JSON_INVALID != armJson) {
-		isArmsBound = llGetListLength(llJson2List(armJson));
-	}
+	integer isArmsBound = isSet(llJsonGetValue(_restraints, ["wrist"])) 
+		|| isSet(llJsonGetValue(_restraints, ["elbow"])) 
+		|| isSet(llJsonGetValue(_restraints, ["torso"]));
 	_metadata = llJsonSetValue(_metadata, ["armBound"], (string)isArmsBound);
 
-	integer isLegsBound = FALSE;
-	string legJson = llJsonGetValue(_restraints, ["leg"]);
-	if (JSON_NULL != legJson && JSON_INVALID != legJson) {
-		isLegsBound = llGetListLength(llJson2List(legJson));
-	}
+	integer isLegsBound = isSet(llJsonGetValue(_restraints, ["ankle"])) 
+		|| isSet(llJsonGetValue(_restraints, ["knee"])) 
+		|| isSet(llJsonGetValue(_restraints, ["immobilizer"]));
 	_metadata = llJsonSetValue(_metadata, ["legBound"], (string)isLegsBound);
 
-	integer isGagged = FALSE;
-	string gagJson = llJsonGetValue(_restraints, ["gag"]);
-	if (JSON_NULL != gagJson && JSON_INVALID != gagJson) {
-		isGagged = llGetListLength(llJson2List(gagJson));
-	}
+	integer isGagged = isSet(llJsonGetValue(_restraints, ["gag1"])) 
+		|| isSet(llJsonGetValue(_restraints, ["gag2"])) 
+		|| isSet(llJsonGetValue(_restraints, ["gag3"]))
+		|| isSet(llJsonGetValue(_restraints, ["gag4"]));
 	_metadata = llJsonSetValue(_metadata, ["gagged"], (string)isGagged);
+
 	_metadata = llJsonSetValue(_metadata, ["mouthOpen"], (string)searchRestraint("gag", "mouthOpen", "1"));
 	_metadata = llJsonSetValue(_metadata, ["speechGarbled"], (string)searchRestraint("gag", "speechGarbled", "1"));
 	_metadata = llJsonSetValue(_metadata, ["speechMuffled"], (string)searchRestraint("gag", "speechMuffled", "1"));
@@ -257,7 +244,7 @@ default {
 
 		if ("addRestraint" == function) addRestraint(value);
 		else if ("remRestraint" == function) remRestraint(value);
-		else if ("releaseRestraint" == function) release_restraint(value);
+		else if ("releaseRestraint" == function) releaseRestraint(value);
 		else if ("overrideRestraint" == function) override_restraint(value);
 	}
 }

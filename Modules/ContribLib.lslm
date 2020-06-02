@@ -1,0 +1,10 @@
+$module ()
+
+list ListXnotY(list lx, list ly) {// return elements in X list that are not in Y list
+	list lz = [];
+	integer i = llGetListLength(lx);
+	while(i--)
+	if ( !~llListFindList(ly,llList2List(lx,i,i)) )
+			lz += llList2List(lx,i,i);
+	return lz;
+}
