@@ -79,33 +79,37 @@ gui(integer prmScreen) {
 	if (prmScreen == 0) {
 		btn3 = "<<Color>>";
 
-		if (llJsonGetValue(getCurrentRestraints(), ["wrist"]) != JSON_NULL
-			|| llJsonGetValue(_currentRestraints, ["elbow"]) != JSON_NULL
-			|| llJsonGetValue(_currentRestraints, ["torso"]) != JSON_NULL
+		if (isSet(llJsonGetValue(getCurrentRestraints(), ["wrist"]))
+			|| isSet(llJsonGetValue(_currentRestraints, ["elbow"]))
+			|| isSet(llJsonGetValue(_currentRestraints, ["torso"]))
 		) {
 			mpButtons += "Untie";
 		}
 
-		if (llJsonGetValue(_currentRestraints, ["wrist"]) == JSON_NULL && llJsonGetValue(_currentRestraints, ["torso"]) == JSON_NULL) {
-			if (llJsonGetValue(_currentRestraints, ["elbow"]) == JSON_NULL) { mpButtons += "Front"; }
+		if (isSet(llJsonGetValue(_currentRestraints, ["hand"]))) { mpButtons += "Free Hands"; }
+
+		if (!isSet(llJsonGetValue(_currentRestraints, ["wrist"])) && !isSet(llJsonGetValue(_currentRestraints, ["torso"]))) {
+			if (!isSet(llJsonGetValue(_currentRestraints, ["elbow"]))) {
+				mpButtons += "Front";
+			}
 			mpButtons += "Back";
 		}
 
-		if (llJsonGetValue(_currentRestraints, ["elbow"]) == JSON_NULL
-			&& llJsonGetValue(_currentRestraints, ["torso"]) == JSON_NULL
-			&& (llJsonGetValue(_currentRestraints, ["wrist"]) == "backTape" || llJsonGetValue(_currentRestraints, ["wrist"]) == "backRope")
+		if (!isSet(llJsonGetValue(_currentRestraints, ["elbow"]))
+			&& !isSet(llJsonGetValue(_currentRestraints, ["torso"]))
+			&& ("backTape" == llJsonGetValue(_currentRestraints, ["wrist"]) || "backRope" == llJsonGetValue(_currentRestraints, ["wrist"]))
 		) {
 			mpButtons += "Elbow";
 		}
 
-		if (llJsonGetValue(_currentRestraints, ["torso"]) == JSON_NULL && llJsonGetValue(_currentRestraints, ["elbow"]) == JSON_NULL && llJsonGetValue(_currentRestraints, ["wrist"]) == JSON_NULL) {
+		if (!isSet(llJsonGetValue(_currentRestraints, ["torso"])) && !isSet(llJsonGetValue(_currentRestraints, ["elbow"])) && !isSet(llJsonGetValue(_currentRestraints, ["wrist"]))) {
 			mpButtons += "Sides";
-		} else if (llJsonGetValue(_currentRestraints, ["torso"]) == JSON_NULL) {
+		} else if (!isSet(llJsonGetValue(_currentRestraints, ["torso"]))) {
 			mpButtons += "Harness";
 		}
 
 		if ((hasFeat(_villain, "Anubis") || _rpMode)
-			&& llJsonGetValue(_currentRestraints, ["hand"]) == JSON_NULL
+			&& !isSet(llJsonGetValue(_currentRestraints, ["hand"]))
 		) {
 			mpButtons += "Mitten";
 		}
@@ -202,13 +206,20 @@ string defineRestraint(string prmName) {
 			liPoses = ["back"];
 		} else if (llJsonGetValue(getCurrentRestraints(), ["wrist"]) == "frontRope" || llJsonGetValue(getCurrentRestraints(), ["wrist"]) == "frontTape") {
 			liAttachments += "armTape_front_harness";
-			liPoses = ["backFront"];
+			liPoses = ["back"];
 		}
-
 		restraint = llJsonSetValue(restraint, ["uid"], "harnessTape");
 		restraint = llJsonSetValue(restraint, ["slot"], "torso");
 		restraint = llJsonSetValue(restraint, ["poses"], llList2Json(JSON_ARRAY, liPoses));
 		restraint = llJsonSetValue(restraint, ["attachments"], llList2Json(JSON_ARRAY, liAttachments));
+	} else if (prmName == "Mitten") {
+		tightness = 5;
+		integrity = 10;
+
+		restraint = llJsonSetValue(restraint, ["uid"], "mittenTape");
+		restraint = llJsonSetValue(restraint, ["slot"], "hand");
+		restraint = llJsonSetValue(restraint, ["animations"], "animHand_fist");
+		restraint = llJsonSetValue(restraint, ["attachments"], llList2Json(JSON_ARRAY, ["armTape_mitten"]));
 	}
 
 	if (hasFeat(_villain, "Anubis")) { tightness = tightness + 2; }
@@ -303,6 +314,10 @@ default {
 
 			if (prmText == "Untie") {
 				simpleRequest("remRestraint", llJsonGetValue(getSelf(), ["part"]));
+				_resumeFunction = "setRestraints";
+				return;
+			} else if (prmText == "Free Hands") {
+				simpleRequest("rmSlot", "hand");
 				_resumeFunction = "setRestraints";
 				return;
 			}

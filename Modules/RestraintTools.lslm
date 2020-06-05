@@ -1,12 +1,13 @@
 $module ()
 $import Modules.GeneralTools.lslm();
 
+integer _armBoundExternal = FALSE;
 string _restraints;
 
 list getRestraintList(string prmRestraint, string prmList) {
 	list restraintList = [];
 	list slots = llJson2List(prmRestraint);
-	
+
 	integer index = 0;
 	for (index = 0; index < llGetListLength(slots); ++index) {
 		string strList = llJsonGetValue(llList2String(slots, index), [prmList]);
@@ -16,6 +17,27 @@ list getRestraintList(string prmRestraint, string prmList) {
 		}
 	}
 	return restraintList;
+}
+
+integer isArmBound() {
+	return _armBoundExternal || isSet(llJsonGetValue(_restraints, ["armBound"]));
+}
+
+integer isLegBound() {
+	return isSet(llJsonGetValue(_restraints, ["legBound"]));
+}
+
+integer isGagged() {
+	return isSet(llJsonGetValue(_restraints, ["gagged"]));
+}
+
+integer isOtherBound() {
+	return isSet(llJsonGetValue(_restraints, ["slots", "crotch"]))
+		|| isSet(llJsonGetValue(_restraints, ["slots", "hand"]));
+}
+
+integer isBound() {
+	return isArmBound() || isLegBound() || isGagged() || isOtherBound();
 }
 
 integer searchRestraint(string prmType, string prmParameter, string prmValue) {
@@ -45,6 +67,8 @@ string getTopRestraint(string prmType) {
 		else if (isSet(llJsonGetValue(_restraints, ["gag2"]))) { return llJsonGetValue(_restraints, ["gag2"]); }
 		else if (isSet(llJsonGetValue(_restraints, ["gag3"]))) { return llJsonGetValue(_restraints, ["gag3"]); }
 		else if (isSet(llJsonGetValue(_restraints, ["gag4"]))) { return llJsonGetValue(_restraints, ["gag4"]); }
+	} else if (isSet(llJsonGetValue(_restraints, [prmType]))) {
+		return llJsonGetValue(_restraints, [prmType]);	// Return special slot
 	}
 
 	return JSON_NULL;
@@ -59,5 +83,5 @@ list getSearchSlots(string prmType) {
 		return ["gag1", "gag2", "gag3", "gag4"];
 	}
 
-	return [];	// Error?
+	return [prmType];	// Assume special slot - return self
 }

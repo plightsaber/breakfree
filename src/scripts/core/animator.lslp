@@ -1,3 +1,4 @@
+$import Modules.ContribLib.lslm();
 $import Modules.GeneralTools.lslm();
 $import Modules.RestraintTools.lslm();
 $import Modules.PoseLib.lslm();
@@ -5,6 +6,7 @@ $import Modules.PoseLib.lslm();
 string _self;  // JSON object
 
 // Global Variables
+list _animations;	// Other animations set by restraints. (ie. mitten hands)
 string _animation_arm_base;
 string _animation_arm_success;
 string _animation_arm_failure;
@@ -26,8 +28,8 @@ string _armPose;	// The currently set arm pose
 
 init() {
 	llRequestPermissions(llGetOwner(), PERMISSION_TRIGGER_ANIMATION);
-	if (_animation_arm_base) { llStartAnimation(_animation_arm_base); }
-	if (_animation_leg_base) { llStartAnimation(_animation_leg_base); }
+	if (isSet(_animation_arm_base)) { llStartAnimation(_animation_arm_base); }
+	if (isSet(_animation_leg_base)) { llStartAnimation(_animation_leg_base); }
 	if (_mouthOpen) {
 		llStartAnimation("express_open_mouth");
 		llStartAnimation("animOpenMouthBento");
@@ -120,6 +122,24 @@ setRestraints(string prmJson) {
 		llStopAnimation("express_open_mouth");
 		llStopAnimation("animOpenMouthBento");
 	}
+
+	// Other animations
+	list newAnimations = llJson2List(llJsonGetValue(prmJson, ["animations"]));
+	list startAnimations = ListXnotY(newAnimations, _animations);
+	list stopAnimations = ListXnotY(_animations, newAnimations);
+	integer index;
+
+	// Start animations
+	for (index = 0; index < llGetListLength(startAnimations); index++) {
+		llStartAnimation(llList2String(startAnimations, index));
+	}
+
+	// Stop animations
+	for (index = 0; index < llGetListLength(stopAnimations); index++) {
+		llStopAnimation(llList2String(stopAnimations, index));
+	}
+
+	_animations = newAnimations;
 }
 
 // ===== Main Functions =====

@@ -48,14 +48,18 @@ integer guiTimeout = 30;
 
 string _actionmsg;
 
+integer GUI_MAIN = 0;
+integer GUI_ESCAPE = 10;
+integer GUI_RESCUE = 20;
+
 // Escape Vars
 integer REST_TIMER = 60;
+integer _arousal;
 integer _stamina;
 string _puzzles;
 string _escapeProgress;
 
 // Other
-integer _armBoundExternal = FALSE;
 key configQueryID;
 string jsonSettings;
 string _resumeFunction;
@@ -93,6 +97,10 @@ string getEscapeProgress() {
 integer isAssisted() { return guiUserID != llGetOwner(); }
 
 string action2String(integer action, string puzzleType) {
+
+	// Cause a distraction ...
+	if (roll(_arousal, 5) >= 20) { return "???"; }
+
 	if (puzzleType == "tightness") {
 		if (action == 1) { return "Twist"; }
 		else if (action == 2) { return "Struggle"; }
@@ -120,14 +128,13 @@ string getSuggestedAction() {
 	integer tightness = (integer)llJsonGetValue(_restraints, ["security", _activePart, "tightness"]);
 	integer maxProgress = (integer)llJsonGetValue(_escapeProgress, [_activePart, "tightness", "maxProgress"]);
 
-
-	if (progress >= tightness && !intuitive) {
+	if ((progress >= tightness || ignoreTightness()) && !intuitive) {
 		return "You think it is time to break free!";
-	} else if (maxProgress > progress && eidetic) {
+	} else if (maxProgress > progress && eidetic && !ignoreTightness()) {
 		return "You think you should try to " + action2String((integer)llJsonGetValue(_puzzles, [_activePart, "tightness", progress]), "tightness");
 	} else if (intuitive) {
 		string puzzleType = "tightness";
-		if (progress >= tightness) {
+		if (progress >= tightness || ignoreTightness()) {
 			puzzleType = "integrity";
 		}
 
@@ -220,6 +227,11 @@ escapeAction(string prmVerb) {
 	if (!isAssisted() && puzzleType == "tightness") {
 		if (success) { simpleRequest("animate", "animation_" + _activePart + "_success"); }
 		else { simpleRequest("animate", "animation_" + _activePart + "_failure"); }
+	}
+
+	// Adjust arousal
+	if (!isAssisted() && !success && isSet(llJsonGetValue(_restraints, ["slots", "crotch"]))) {
+		_arousal++;
 	}
 
 	// Check if anything should be escaped from
@@ -369,16 +381,16 @@ integer loseProgress(integer progress) {
 }
 
 // ===== GUI =====
-get_gui(string prmPart) {
+getGui(string prmPart) {
 	string tmpType;
 	_activePart = prmPart;
 	_actionmsg = "";
 
-	if (guiUserID == llGetOwner() && isArmBound()) {
-		gui(10);
+	if (guiUserID == llGetOwner()) {
+		gui(GUI_ESCAPE);
 		return;
 	} else {
-		gui(20);
+		gui(GUI_RESCUE);
 		return;
 	}
 }
@@ -404,15 +416,14 @@ gui(integer prmScreen) {
 	guiText = " ";
 
 	if (prmScreen == 0 && ((integer)llJsonGetValue(jsonSettings, ["gagOnly"]))) {
-		get_gui("gag");
+		getGui("gag");
 		return;
 	}
 
 	if (prmScreen != guiScreen) { guiScreenLast = guiScreen; }
 	if (btn1 == " " && (prmScreen != 0)) { btn1 = "<<Back>>"; };
 
-	// GUI: Main
-	if (prmScreen == 0) {
+	if (prmScreen == GUI_MAIN) {
 		if (guiUserID == llGetOwner()) { btn1 = "<<Back>>"; }
 
 		// reset previous screen
@@ -421,16 +432,15 @@ gui(integer prmScreen) {
 		if ((integer)llJsonGetValue(_restraints, ["security", "arm", "tightness"]) > 0) { btn4 = "Free Arms"; }
 		if ((integer)llJsonGetValue(_restraints, ["security", "leg", "tightness"]) > 0) { btn5 = "Free Legs"; }
 		if ((integer)llJsonGetValue(_restraints, ["security", "gag", "tightness"]) > 0) { btn6 = "Free Gag"; }
+		if (isSet(llJsonGetValue(_restraints, ["slots", "hand"]))) { btn7 = "Free Hands"; }
+		if (isSet(llJsonGetValue(_restraints, ["slots", "crotch"]))) { btn8 = "Free Crotch"; }
 
 		// TODO: Get quick release options
-	}
-
-	// GUI: Self Escape
-	else if (prmScreen == 10) {
+	} else if (prmScreen == GUI_ESCAPE) {
 		btn4 = "Twist";
 		btn5 = "Struggle";
 		btn6 = "Thrash";
-		btn7 = "Pick";
+		if (!isSet(llJsonGetValue(_restraints, ["slots", "hand"]))) { btn7 = "Pick"; }
 		btn8 = "Tug";
 		btn9 = "Yank";
 
@@ -438,11 +448,8 @@ gui(integer prmScreen) {
 		guiText += "\nTightness: " + displayTightness(_activePart);
 		if (_actionmsg) { guiText += "\n" + _actionmsg; }
 		guiText += "\n" + getSuggestedAction();
-	}
-
-	// GUI Assisted Escape
-	else if (prmScreen == 20) {
-		btn4 = "Pick";
+	} else if (prmScreen == GUI_RESCUE) {
+		if (!isSet(llJsonGetValue(_guiUser, ["handBound"]))) { btn7 = "Pick"; }
 		btn5 = "Tug";
 		btn6 = "Yank";
 
@@ -487,25 +494,6 @@ string getOwnerPronoun(string prmPlaceholder) {
 	return "";
 }
 
-integer isArmBound() {
-	return _armBoundExternal
-		|| ((integer)llJsonGetValue(_restraints, ["security", "arm", "tightness"]) > 0)
-		|| ((integer)llJsonGetValue(_restraints, ["security", "hand", "tightness"]) > 0);
-}
-
-integer isLegBound() {
-	return (integer)llJsonGetValue(_restraints, ["security", "leg", "tightness"]) > 0;
-}
-
-integer isGagged() {
-	return (integer)llJsonGetValue(_restraints, ["security", "gag", "tightness"]) > 0;
-}
-
-
-integer isBound() {
-	return isArmBound() || isLegBound() || isGagged();
-}
-
 // ===== Sets =====
 setRestraints(string prmInfo) {
 	_restraints = prmInfo;
@@ -524,6 +512,10 @@ setRestraints(string prmInfo) {
 	_escapeProgress = llJsonSetValue(_escapeProgress, ["escape", "gag", "integrity"], "0");
 	_escapeProgress = llJsonSetValue(_escapeProgress, ["escape", "gag", "tightness"], "0");
 
+	_escapeProgress = llJsonSetValue(_escapeProgress, ["escape", "crotch", "complexity"], "0");
+	_escapeProgress = llJsonSetValue(_escapeProgress, ["escape", "crotch", "integrity"], "0");
+	_escapeProgress = llJsonSetValue(_escapeProgress, ["escape", "crotch", "tightness"], "0");
+
 	_armBoundExternal = FALSE;
 	refreshPuzzle("arm", "integrity");
 	refreshPuzzle("arm", "tightness");
@@ -533,6 +525,9 @@ setRestraints(string prmInfo) {
 
 	refreshPuzzle("gag", "integrity");
 	refreshPuzzle("gag", "tightness");
+
+	refreshPuzzle("crotch", "integrity");
+	refreshPuzzle("crotch", "tightness");
 }
 
 setGender(string prmGender) {
@@ -634,12 +629,14 @@ default {
 				guiRequest("gui_owner", FALSE, guiUserID, 0);
 				return;
 			}
-			else if (guiScreen !=0 && prmText == "<<Back>>") { gui(guiScreenLast); return; }
+			else if (guiScreen != GUI_MAIN && prmText == "<<Back>>") { gui(guiScreenLast); return; }
 
-			if (guiScreen == 0) {
-					 if (prmText == "Free Arms") { get_gui("arm"); }
-				else if (prmText == "Free Legs") { get_gui("leg"); }
-				else if (prmText == "Free Gag") { get_gui("gag"); }
+			if (guiScreen == GUI_MAIN) {
+					 if (prmText == "Free Arms") { getGui("arm"); }
+				else if (prmText == "Free Legs") { getGui("leg"); }
+				else if (prmText == "Free Gag") { getGui("gag"); }
+				else if (prmText == "Free Hands") { getGui("hand"); }
+				else if (prmText == "Free Crotch") { getGui("crotch"); }
 				else if (prmText == "<<Back>>") {
 					guiRequest("gui_owner", TRUE, guiUserID, 0);
 					return;
@@ -679,6 +676,16 @@ default {
 			return;
 		}
 
+		// Decrease arousal
+		if (_arousal > 0) {
+			_arousal -= 20/4;
+
+			if (_arousal <= 0) {
+				_arousal = 0;
+				llOwnerSay("You are feeling less distracted.");
+			}
+		}
+
 		if (_stamina == _maxStamina) {
 			return;
 		}
@@ -687,6 +694,7 @@ default {
 		_escapeProgress = llJsonSetValue(_escapeProgress, ["arm", "tightness", "progress"], "0");
 		_escapeProgress = llJsonSetValue(_escapeProgress, ["leg", "tightness", "progress"], "0");
 		_escapeProgress = llJsonSetValue(_escapeProgress, ["gag", "tightness", "progress"], "0");
+		_escapeProgress = llJsonSetValue(_escapeProgress, ["crotch", "tightness", "progress"], "0");
 
 		// Refresh stamina
 		integer denominator = 4;
@@ -701,5 +709,6 @@ default {
 			_stamina = _maxStamina;
 			llOwnerSay("You are feeling fully rested.");
 		}
+
 	}
 }

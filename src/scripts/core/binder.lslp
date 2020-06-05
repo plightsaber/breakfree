@@ -16,6 +16,9 @@ init() {
 	_slots = llJsonSetValue(_slots, ["gag2"], JSON_NULL);
 	_slots = llJsonSetValue(_slots, ["gag3"], JSON_NULL);
 	_slots = llJsonSetValue(_slots, ["gag4"], JSON_NULL);
+
+	_slots = llJsonSetValue(_slots, ["crotch"], JSON_NULL);
+
 	override_restraint(_restraints);
 }
 
@@ -31,9 +34,9 @@ addRestraint(string prmJson) {
 }
 
 deployRestraints() {
+	resetPoses();
 	simpleRequest("setAttachments", llList2Json(JSON_ARRAY, getAttachments()));
 
-	resetPoses();
 	rebuild_metadata();
 	simpleRequest("setRestraints", _metadata);
 }
@@ -43,9 +46,9 @@ list getAttachments() {
 	list preventFolders = getRestraintList(_restraints, "preventAttach");
 
 	// Odd rules so complicated they need to be here. <_<
-	if (llJsonGetValue(_restraints, ["immobilizer", "uid"]) == "ropeHog") {
+	if (llJsonGetValue(_restraints, ["immobilizer", "uid"]) == "hogRope") {
 		if (isSet(llJsonGetValue(_restraints, ["elbow"]))) { bindFolders += ["legRope_hogBackTight"]; }
-		else if (llJsonGetValue(_restraints, ["wrist", "uid"]) == "ropeBox") { bindFolders += ["legRope_hogBox"]; }
+		else if (llJsonGetValue(_restraints, ["torso", "uid"]) == "boxRope") { bindFolders += ["legRope_hogBox"]; }
 		else { bindFolders += ["legRope_hogBack"]; }
 	}
 
@@ -75,9 +78,9 @@ rmSlot(string slot) {
 	_restraints = llJsonSetValue(_restraints, [slot], JSON_NULL);
 	_slots = llJsonSetValue(_slots, [slot], JSON_NULL);
 
-	// Remove ropeHog if connecting arm restraint removed
-	if (llJsonGetValue(_slots, ["immobilizer"]) == "ropeHog"
-		&& (slot == "wrist" || llJsonGetValue(restraint, ["uid"]) == "ropeBox")
+	// Remove hogRope if connecting arm restraint removed
+	if (llJsonGetValue(_slots, ["immobilizer"]) == "hogRope"
+		&& (slot == "wrist" || llJsonGetValue(restraint, ["uid"]) == "boxRope")
 	) {
 		rmSlot("immobilizer");
 	}
@@ -114,6 +117,7 @@ resetPoses() {
 	if (!isSet(poses)) {
 		poses = llJsonSetValue(poses, [JSON_APPEND], "free");
 	}
+	debug(poses);
 	simpleRequest("setArmPoses", poses);
 
 	// Leg poses
@@ -130,10 +134,12 @@ releaseRestraint(string prmType) {
 		rmSlot("torso");
 		rmSlot("elbow");
 		rmSlot("wrist");
+		rmSlot("hand");
 	} else if (prmType == "leg") {
 		rmSlot("immobilizer");
 		rmSlot("knee");
 		rmSlot("ankle");
+		rmSlot("crotch");
 	} else if (prmType == "gag") {
 		rmSlot("gag1");
 		rmSlot("gag2");
@@ -147,18 +153,18 @@ releaseRestraint(string prmType) {
 rebuild_metadata() {
 	_metadata = llJsonSetValue(_metadata, ["slots"], _slots);
 
-	integer isArmsBound = isSet(llJsonGetValue(_restraints, ["wrist"])) 
-		|| isSet(llJsonGetValue(_restraints, ["elbow"])) 
+	integer isArmsBound = isSet(llJsonGetValue(_restraints, ["wrist"]))
+		|| isSet(llJsonGetValue(_restraints, ["elbow"]))
 		|| isSet(llJsonGetValue(_restraints, ["torso"]));
 	_metadata = llJsonSetValue(_metadata, ["armBound"], (string)isArmsBound);
 
-	integer isLegsBound = isSet(llJsonGetValue(_restraints, ["ankle"])) 
-		|| isSet(llJsonGetValue(_restraints, ["knee"])) 
+	integer isLegsBound = isSet(llJsonGetValue(_restraints, ["ankle"]))
+		|| isSet(llJsonGetValue(_restraints, ["knee"]))
 		|| isSet(llJsonGetValue(_restraints, ["immobilizer"]));
 	_metadata = llJsonSetValue(_metadata, ["legBound"], (string)isLegsBound);
 
-	integer isGagged = isSet(llJsonGetValue(_restraints, ["gag1"])) 
-		|| isSet(llJsonGetValue(_restraints, ["gag2"])) 
+	integer isGagged = isSet(llJsonGetValue(_restraints, ["gag1"]))
+		|| isSet(llJsonGetValue(_restraints, ["gag2"]))
 		|| isSet(llJsonGetValue(_restraints, ["gag3"]))
 		|| isSet(llJsonGetValue(_restraints, ["gag4"]));
 	_metadata = llJsonSetValue(_metadata, ["gagged"], (string)isGagged);
@@ -172,43 +178,42 @@ rebuild_metadata() {
 	_metadata = llJsonSetValue(_metadata, ["legTetherable"], (string)searchRestraint("leg", "canTether", "1"));
 
 	_metadata = llJsonSetValue(_metadata, ["armBoundExternal"], (string)searchRestraint("arm", "type", "external"));
-	_metadata = llJsonSetValue(_metadata, ["poses"], llList2Json(JSON_ARRAY, getRestraintList("leg", "poses")));
+	_metadata = llJsonSetValue(_metadata, ["animations"], llList2Json(JSON_ARRAY, getRestraintList(_restraints, "animations")));
 
 	_metadata = llJsonSetValue(_metadata, ["security", "arm"], getSecurityDetails("arm"));
 	_metadata = llJsonSetValue(_metadata, ["security", "leg"], getSecurityDetails("leg"));
 	_metadata = llJsonSetValue(_metadata, ["security", "gag"], getSecurityDetails("gag"));
+	_metadata = llJsonSetValue(_metadata, ["security", "crotch"], getSecurityDetails("crotch"));
+	_metadata = llJsonSetValue(_metadata, ["security", "hand"], getSecurityDetails("hand"));
 }
 
 string getSecurityDetails(string prmType) {
-	string details;
+	string details = "{'complexity':0,'integrity':0,'tightness':0}";
 
 	// Tightness: Add all restraint totals for tightness
 	// Complexity: Get just the top level
 	// Integrity: Get just the top level.
 
-	// If not restrained, return nothing
-	string restraintDetails = llJsonGetValue(_restraints, [prmType]);
-	if (restraintDetails == JSON_NULL || restraintDetails == JSON_INVALID) {
-		return "{'complexity':0,'integrity':0,'tightness':0}";
-	}
+	list liSlots = getSearchSlots(prmType);
 
 	// Get details from top restraint
-	list liRestraints = llJson2List(restraintDetails);
-	string topRestraint = llList2String(liRestraints, -1);
-
+	string topRestraint = getTopRestraint(prmType);
 	details = llJsonSetValue(details, ["complexity"], llJsonGetValue(topRestraint, ["complexity"]));
 	details = llJsonSetValue(details, ["integrity"], llJsonGetValue(topRestraint, ["integrity"]));
 
 	// Get cumulative details
+	list slots = getSearchSlots(prmType);
+
 	integer index;
 	integer tightness;
-	for (index = 0; index < llGetListLength(liRestraints); index++) {
-		string restraint = llList2String(liRestraints, index);
-		tightness += (integer)llJsonGetValue(restraint, ["tightness"]);
+	for (index = 0; index < llGetListLength(slots); index++) {
+		string slot = llList2String(slots, index);
+		tightness += (integer)llJsonGetValue(_restraints, [slot, "tightness"]);
 	}
 	details = llJsonSetValue(details, ["tightness"], (string)tightness);
 
 	// Other properties
+	details = llJsonSetValue(details, ["canCut"], llJsonGetValue(topRestraint, ["canCut"]));
 	details = llJsonSetValue(details, ["canEscape"], llJsonGetValue(topRestraint, ["canEscape"]));
 
 	return details;
@@ -244,6 +249,7 @@ default {
 
 		if ("addRestraint" == function) addRestraint(value);
 		else if ("remRestraint" == function) remRestraint(value);
+		else if ("rmSlot" == function) { rmSlot(value); deployRestraints(); return; }
 		else if ("releaseRestraint" == function) releaseRestraint(value);
 		else if ("overrideRestraint" == function) override_restraint(value);
 	}

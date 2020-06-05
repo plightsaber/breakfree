@@ -1,12 +1,11 @@
 $import Modules.GeneralTools.lslm();
 $import Modules.GuiTools.lslm();
+$import Modules.RestraintTools.lslm();
 $import Modules.UserLib.lslm();
 
 integer CHANNEL_API = -9999274;
 integer TOUCH_MAX_DISTANCE = 1;
 float TOUCH_TIMEOUT = 3.0;
-
-string _restraints;
 
 // Quick Keys
 key _activeKey = NULL_KEY;
@@ -90,13 +89,6 @@ touchUser(string user) {
 	simpleRequest("setVillain", user);
 	guiRequest("gui_bind", FALSE, _activeKey, 0);
 }
-
-integer isBound() {
-	return (integer)llJsonGetValue(_restraints, ["armBound"])
-		|| (integer)llJsonGetValue(_restraints, ["legBound"])
-		|| (integer)llJsonGetValue(_restraints, ["gagged"]);
-}
-
 
 // ===== Event Controls =====
 

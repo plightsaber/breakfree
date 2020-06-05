@@ -19,6 +19,7 @@ list _userFeats = [];
 integer _isArmsBound = FALSE;
 integer _isLegsBound = FALSE;
 integer _isGagged = FALSE;
+integer _isOtherBound = FALSE;
 
 list _legPoses;
 
@@ -82,12 +83,12 @@ gui(integer prmScreen) {
 			btn1 = "Options";
 			btn4 = "Bind";
 		}
-		
+
 		if (_isLegsBound) {
 			btn6 = "Pose";
 		}
 
-		if (_isArmsBound || _isLegsBound || _isGagged) { btn5 = "Escape"; }
+		if (_isArmsBound || _isLegsBound || _isGagged || _isOtherBound) { btn5 = "Escape"; }
 		btn3 = "Stats";
 	}
 	// GUI: Stats
@@ -187,6 +188,7 @@ setRestraints(string prmJson) {
 		&& !(integer)llJsonGetValue(prmJson, ["armBoundExternal"]);
 	_isLegsBound = (integer)llJsonGetValue(prmJson, ["legBound"]);
 	_isGagged = (integer)llJsonGetValue(prmJson, ["gagged"]);
+	_isOtherBound = isSet(llJsonGetValue(prmJson, ["slots", "crotch"])) || isSet(llJsonGetValue(prmJson, ["slots", "hand"]));
 }
 
 addExp(string prmValue) {
