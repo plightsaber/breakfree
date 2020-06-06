@@ -71,26 +71,19 @@ gui(integer prmScreen) {
 	guiText = " ";
 
 	// GUI: Main
-	if (prmScreen == 0) {
+	if (prmScreen == GUI_HOME) {
 		btn3 = "<<Color>>";
 
-		if (llJsonGetValue(getCurrentRestraints(), ["ankle"]) != JSON_NULL
-			|| llJsonGetValue(_currentRestraints, ["knee"]) != JSON_NULL
-			|| llJsonGetValue(_currentRestraints, ["immobilizer"]) != JSON_NULL
-		) {
-			mpButtons += "Untie";
-		}
-
-		if (isSet(llJsonGetValue(_currentRestraints, ["crotch"]))) {
-			mpButtons += "Untie Crotch";
-		}
-
-		if (llJsonGetValue(_currentRestraints, ["ankle"]) == JSON_NULL && llJsonGetValue(_currentRestraints, ["immobilizer"]) == JSON_NULL) {
+		if (!isSet(llJsonGetValue(_currentRestraints, ["ankle"])) && !isSet(llJsonGetValue(_currentRestraints, ["immobilizer"]))) {
 			mpButtons += "Ankle";
+		} else if (!isSet(llJsonGetValue(_currentRestraints, ["immobilizer"])) && isSet(llJsonGetValue(_currentRestraints, ["ankle"]))) {
+			mpButtons += "Free Ankle";
 		}
 
-		if (llJsonGetValue(_currentRestraints, ["knee"]) == JSON_NULL && llJsonGetValue(_currentRestraints, ["immobilizer"]) == JSON_NULL) {
+		if (!isSet(llJsonGetValue(_currentRestraints, ["knee"])) && !isSet(llJsonGetValue(_currentRestraints, ["immobilizer"]))) {
 			mpButtons += "Knee";
+		} else if (!isSet(llJsonGetValue(_currentRestraints, ["immobilizer"])) && isSet(llJsonGetValue(_currentRestraints, ["knee"]))) {
+			mpButtons += "Free Knee";
 		}
 
 		if (llJsonGetValue(_currentRestraints, ["immobilizer"]) == JSON_NULL
@@ -107,10 +100,16 @@ gui(integer prmScreen) {
 			mpButtons += "Ball";
 		}
 
+		if (isSet(llJsonGetValue(_currentRestraints, ["immobilizer"]))) {
+			mpButtons += "Untie";
+		}
+
 		if ((hasFeat(_villain, "Sadist") || _rpMode)
 			&& !isSet(llJsonGetValue(_currentRestraints, ["crotch"]))
 		) {
 			mpButtons += "Crotch";
+		} else if (isSet(llJsonGetValue(_currentRestraints, ["crotch"]))) {
+			mpButtons += "Untie Crotch";
 		}
 
 		mpButtons = multipageGui(mpButtons, 2, multipageIndex);
@@ -308,6 +307,12 @@ default {
 			if (prmText == "<<Done>>") { exit("done"); return; }
 			else if (prmText == " ") { gui(guiScreen); return; }
 			else if (prmText == "<<Back>>") {
+				if (guiScreen == GUI_STYLE) { gui(0); return; }
+				if (guiScreen != GUI_HOME) { gui(guiScreenLast); return;}
+				guiRequest("gui_bind", TRUE, guiUserID, 0);
+				return;
+			}
+			else if (prmText == "<<Back>>") {
 				if (guiScreen != 0) { gui(guiScreenLast); return;}
 				guiRequest("gui_bind", TRUE, guiUserID, 0);
 				return;
@@ -317,6 +322,14 @@ default {
 
 			if (prmText == "Untie") {
 				simpleRequest("remRestraint", llJsonGetValue(getSelf(), ["part"]));
+				_resumeFunction = "setRestraints";
+				return;
+			} else if (prmText == "Free Ankle") {
+				simpleRequest("rmSlot", "ankle");
+				_resumeFunction = "setRestraints";
+				return;
+			} else if (prmText == "Free Knee") {
+				simpleRequest("rmSlot", "knee");
 				_resumeFunction = "setRestraints";
 				return;
 			} else if (prmText == "Untie Crotch") {

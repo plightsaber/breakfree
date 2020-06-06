@@ -171,10 +171,10 @@ setAvailablePoses(string prmPoses) {
 setRestraints(string prmJson) {
 	_restraints = prmJson;
 	_armsBound = (integer)llJsonGetValue(prmJson, ["armBound"]);
-	_armsTetherable = (integer)llJsonGetValue(prmJson, ["isArmTetherable"]);
+	_armsTetherable = (integer)llJsonGetValue(prmJson, ["armTetherable"]);
 	_armBoundExternal = (integer)llJsonGetValue(prmJson, ["armBoundExternal"]);
 	_legsBound = (integer)llJsonGetValue(prmJson, ["legBound"]);
-	_legsTetherable = (integer)llJsonGetValue(prmJson, ["isLegTetherable"]);
+	_legsTetherable = (integer)llJsonGetValue(prmJson, ["legTetherable"]);
 }
 
 // ===== Event Controls =====

@@ -140,7 +140,7 @@ string defineRestraint(string prmName) {
 	restraint = llJsonSetValue(restraint, ["name"], prmName);
 	restraint = llJsonSetValue(_self, ["canCut"], "1");
 	restraint = llJsonSetValue(restraint, ["canEscape"], "1");
-	restraint = llJsonSetValue(restraint, ["canTether"], "0");
+	restraint = llJsonSetValue(restraint, ["canTether"], "1");
 	restraint = llJsonSetValue(restraint, ["canUseItem"], "1");
 	restraint = llJsonSetValue(restraint, ["type"], "rope");
 

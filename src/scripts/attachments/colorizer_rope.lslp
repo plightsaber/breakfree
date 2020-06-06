@@ -37,9 +37,9 @@ setTexture(string prmInfo) {
 	integer faceIndex = 0;
 	list primitiveParams = llGetPrimitiveParams([PRIM_NORMAL, faceIndex]);
 	while (llGetListLength(primitiveParams) > 0) {
-		llSetPrimitiveParams([PRIM_NORMAL, faceIndex, texture, llList2Vector(primitiveParams, 1), <0,0,0>, 0]);	
+		llSetPrimitiveParams([PRIM_NORMAL, faceIndex, texture+"Normal", llList2Vector(primitiveParams, 1), <0,0,0>, 0]);
 		faceIndex ++;
-		primitiveParams = llGetPrimitiveParams([PRIM_NORMAL, faceIndex]);	
+		primitiveParams = llGetPrimitiveParams([PRIM_NORMAL, faceIndex]);
 	}
 
 	simpleRequest("setTexture", texture);
@@ -84,7 +84,7 @@ default {
 			RESTRAINT_ATTACHMENT = llJsonGetValue(configData, ["attachment"]);
 			RESTRAINT_COMPONENT = llJsonGetValue(configData, ["component"]);
 			RESTRAINT_NAME = llJsonGetValue(configData, ["type"]);
-			
+
 			string tmpRequest = "";
 			tmpRequest = llJsonSetValue(tmpRequest, ["attachment"], RESTRAINT_ATTACHMENT);
 			tmpRequest = llJsonSetValue(tmpRequest, ["component"], RESTRAINT_COMPONENT);

@@ -14,5 +14,5 @@ simpleRequest(string prmFunction, string prmValue) {
 }
 
 integer isSet(string jsonValue) {
-	return (jsonValue != "" && jsonValue != JSON_NULL && jsonValue != JSON_INVALID && jsonValue != "0");
+	return (jsonValue != "" && jsonValue != JSON_NULL && jsonValue != JSON_INVALID && jsonValue != "0" && jsonValue != NULL_KEY);
 }
