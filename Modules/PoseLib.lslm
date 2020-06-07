@@ -152,6 +152,20 @@ string getPoses() {
 	_poseLib = llJsonSetValue(_poseLib, ["leg", "hogFront", "poseLeft"], "hogLeft");
 	_poseLib = llJsonSetValue(_poseLib, ["leg", "hogFront", "poseRight"], "hogRight");
 	_poseLib = llJsonSetValue(_poseLib, ["leg", "hogFront", "poseFall"], JSON_NULL);
+	
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "hogKneel", "base"], "animLeg_hogKneel");
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "hogKneel", "failure"], "animLeg_hogKneel_struggle");
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "hogKneel", "success"], "animLeg_hogKneel_struggle");
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "hogKneel", "walk"], "animLeg_hogKneel_walk");
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "hogKneel", "jumpPower"], "0");
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "hogKneel", "speedBack"], "8");
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "hogKneel", "speedFwd"], "8");
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "hogKneel", "stability"], "5");
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "hogKneel", "poseUp"], JSON_NULL);
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "hogKneel", "poseDown"], JSON_NULL);
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "hogKneel", "poseLeft"], "hogRight");
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "hogKneel", "poseRight"], "hogLeft");
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "hogKneel", "poseFall"], JSON_NULL);
 
 	_poseLib = llJsonSetValue(_poseLib, ["leg", "hogLeft", "base"], "animLeg_hogLeft");
 	_poseLib = llJsonSetValue(_poseLib, ["leg", "hogLeft", "failure"], "animLeg_hogFront_struggle");
@@ -163,7 +177,7 @@ string getPoses() {
 	_poseLib = llJsonSetValue(_poseLib, ["leg", "hogLeft", "stability"], "5");
 	_poseLib = llJsonSetValue(_poseLib, ["leg", "hogLeft", "poseUp"], JSON_NULL);
 	_poseLib = llJsonSetValue(_poseLib, ["leg", "hogLeft", "poseDown"], JSON_NULL);
-	_poseLib = llJsonSetValue(_poseLib, ["leg", "hogLeft", "poseLeft"], "hogLeft");
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "hogLeft", "poseLeft"], "hogKneel");
 	_poseLib = llJsonSetValue(_poseLib, ["leg", "hogLeft", "poseRight"], "hogFront");
 	_poseLib = llJsonSetValue(_poseLib, ["leg", "hogLeft", "poseFall"], JSON_NULL);
 
@@ -172,13 +186,13 @@ string getPoses() {
 	_poseLib = llJsonSetValue(_poseLib, ["leg", "hogRight", "success"], "animLeg_hogFront_struggle");
 	_poseLib = llJsonSetValue(_poseLib, ["leg", "hogRight", "walk"], "animLeg_hogFront_walk");
 	_poseLib = llJsonSetValue(_poseLib, ["leg", "hogRight", "jumpPower"], "0");
-	_poseLib = llJsonSetValue(_poseLib, ["leg", "hogRight", "speedBack"], "8");
-	_poseLib = llJsonSetValue(_poseLib, ["leg", "hogRight", "speedFwd"], "8");
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "hogRight", "speedBack"], "9");
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "hogRight", "speedFwd"], "9");
 	_poseLib = llJsonSetValue(_poseLib, ["leg", "hogRight", "stability"], "5");
 	_poseLib = llJsonSetValue(_poseLib, ["leg", "hogRight", "poseUp"], JSON_NULL);
 	_poseLib = llJsonSetValue(_poseLib, ["leg", "hogRight", "poseDown"], JSON_NULL);
 	_poseLib = llJsonSetValue(_poseLib, ["leg", "hogRight", "poseLeft"], "hogFront");
-	_poseLib = llJsonSetValue(_poseLib, ["leg", "hogRight", "poseRight"], "hogRight");
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "hogRight", "poseRight"], "hogKneel");
 	_poseLib = llJsonSetValue(_poseLib, ["leg", "hogRight", "poseFall"], JSON_NULL);
 
 	_poseLib = llJsonSetValue(_poseLib, ["leg", "ballLeft", "base"], "animLeg_ballLeft");

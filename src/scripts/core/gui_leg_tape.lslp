@@ -78,6 +78,10 @@ gui(integer prmScreen) {
 			mpButtons += "Knee";
 		}
 
+		if (!isSet(llJsonGetValue(_currentRestraints, ["immobilizer"]))) {
+			mpButtons += "Kneel";
+		}
+
 		mpButtons = multipageGui(mpButtons, 2, multipageIndex);
 	}
 
@@ -134,6 +138,14 @@ string defineRestraint(string prmName) {
 		restraint = llJsonSetValue(restraint, ["slot"], "knee");
 		restraint = llJsonSetValue(restraint, ["poses"], llList2Json(JSON_ARRAY, liPoseStandard));
 		restraint = llJsonSetValue(restraint, ["attachments"], llList2Json(JSON_ARRAY, ["legTape_knee"]));
+	} else if (prmName == "Kneel") {
+		integrity = 15;
+		tightness = 10;
+
+		restraint = llJsonSetValue(restraint, ["uid"], "kneelTape");
+		restraint = llJsonSetValue(restraint, ["slot"], "immobilizer");
+		restraint = llJsonSetValue(restraint, ["poses"], llList2Json(JSON_ARRAY, ["hogKneel", "hogFront", "hogLeft", "hogRight"]));
+		restraint = llJsonSetValue(restraint, ["attachments"], llList2Json(JSON_ARRAY, ["legTape_kneel"]));
 	}
 
 	if (hasFeat(_villain, "Anubis")) { tightness = tightness + 2; }
