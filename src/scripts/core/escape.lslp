@@ -54,7 +54,7 @@ integer GUI_RESCUE = 20;
 
 // Escape Vars
 integer REST_TIMER = 60;
-integer _arousal;
+integer _distraction;
 integer _stamina;
 string _puzzles;
 string _escapeProgress;
@@ -99,7 +99,7 @@ integer isAssisted() { return guiUserID != llGetOwner(); }
 string action2String(integer action, string puzzleType) {
 
 	// Cause a distraction ...
-	if (roll(_arousal, 5) >= 20) { return "???"; }
+	if (roll(_distraction, 5) >= 20) { return "???"; }
 
 	if (puzzleType == "tightness") {
 		if (action == 1) { return "Twist"; }
@@ -231,14 +231,14 @@ escapeAction(string prmVerb) {
 
 	// Adjust arousal
 	if (!isAssisted() && !success && isSet(llJsonGetValue(_restraints, ["slots", "crotch"]))) {
-		_arousal++;
+		_distraction++;
 	}
 
 	// Check if anything should be escaped from
 	if (success && puzzleType == "integrity") {
 		// If being rescued by an unbound avi, every success reduces complexity
 		if (ignoreIntegrity()) {
-			_escapeProgress = llJsonSetValue(_escapeProgress, ["integrity"], "9999");
+			_escapeProgress = llJsonSetValue(_escapeProgress, [_activePart, "integrity", "progress"], "9999");
 		}
 
 		if (checkIntegrity(_activePart)) {
@@ -356,7 +356,10 @@ string displayTightness(string restraint) {
 }
 
 integer ignoreIntegrity() {
-	return (isAssisted() && !(integer)llJsonGetValue(_guiUser, ["armBound"])) || (!isAssisted() && !isArmBound());
+	return (isAssisted() && !(integer)llJsonGetValue(_guiUser, ["armBound"])) && !isSet(llJsonGetValue(_guiUser, ["handBound"]))
+		|| (!isAssisted() && !isArmBound())
+		|| isSet(llJsonGetValue(_guiUser, ["blade"]))
+	;
 }
 
 integer ignoreTightness() {
@@ -449,7 +452,7 @@ gui(integer prmScreen) {
 		if (_actionmsg) { guiText += "\n" + _actionmsg; }
 		guiText += "\n" + getSuggestedAction();
 	} else if (prmScreen == GUI_RESCUE) {
-		if (!isSet(llJsonGetValue(_guiUser, ["handBound"]))) { btn7 = "Pick"; }
+		if (!isSet(llJsonGetValue(_guiUser, ["handBound"]))) { btn4 = "Pick"; }
 		btn5 = "Tug";
 		btn6 = "Yank";
 
@@ -677,11 +680,11 @@ default {
 		}
 
 		// Decrease arousal
-		if (_arousal > 0) {
-			_arousal -= 20/4;
+		if (_distraction > 0) {
+			_distraction -= 20/4;
 
-			if (_arousal <= 0) {
-				_arousal = 0;
+			if (_distraction <= 0) {
+				_distraction = 0;
 				llOwnerSay("You are feeling less distracted.");
 			}
 		}

@@ -1,8 +1,9 @@
+$import Modules.GeneralTools.lslm();
+$import Modules.RestraintTools.lslm();
 $import Modules.UserLib.lslm();
 
 // Objects
 string _self;
-string villain;
 
 // Listener Vars
 integer CHANNEL_API = -9999274;
@@ -23,6 +24,18 @@ api(string prmJson) {
 	key apiTargetID = (key)llJsonGetValue(prmJson, ["apiTargetID"]);
 	key senderID = (key)llJsonGetValue(prmJson, ["userID"]);
 
+	// Check for general requests that don't require validation
+	if ("pingBound" == function) {
+		if (isBound()) {
+			string response = "";
+			response = llJsonSetValue(response, ["function"], "pongBound");
+			response = llJsonSetValue(response, ["bound"], "1");
+			response = llJsonSetValue(response, ["userKey"], llGetOwner());
+			llRegionSayTo(llJsonGetValue(prmJson, ["key"]), CHANNEL_API, response);
+		}
+		return;
+	}
+
 	// Validate
 	if (apiTargetID != llGetOwner()) { return; }
 
@@ -41,19 +54,6 @@ send(key prmTargetID, string prmFunction, string prmJson) {
 	prmJson = llJsonSetValue(prmJson, ["apiTargetID"], (string)prmTargetID);
 
 	llRegionSayTo(prmTargetID, CHANNEL_API, prmJson);
-}
-
-// ===== Helper Functions =====
-debug(string prmString) {
-	llOwnerSay(prmString);
-}
-
-simpleRequest(string prmFunction, string prmValue) {
-	string request = "";
-	request = llJsonSetValue(request, ["function"], prmFunction);
-	request = llJsonSetValue(request, ["value"], prmValue);
-
-	llMessageLinked(LINK_THIS, 0, request, NULL_KEY);
 }
 
 // ===== Event Controls =====
@@ -76,7 +76,9 @@ default {
 		value = llJsonGetValue(prmText, ["value"]);
 
 		if (function == "setRestraints") {
+			_restraints = value;
 			_self = llJsonSetValue(_self, ["armBound"], llJsonGetValue(value, ["armBound"]));
+			_self = llJsonSetValue(_self, ["handbound"], (string)isSet(llJsonGetValue(value, ["slots", "hand"])));
 		} else if (function == "setFeats") {
 			_self = llJsonSetValue(_self, ["feats"], value);
 		}

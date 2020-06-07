@@ -75,6 +75,7 @@ touchUser(string user) {
 	simpleRequest("resetGUI", "override");
 	_activeKey = _toucherKey;
 
+	simpleRequest("setToucher", user);
 	if (isBound()) {
 		if (_rpMode || (!toucherBound && _toucherKey == _villainKey)) {
 			guiRequest("gui_bind", FALSE, _activeKey, 0);
