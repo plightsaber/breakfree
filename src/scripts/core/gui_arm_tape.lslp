@@ -109,6 +109,14 @@ gui(integer prmScreen) {
 		}
 
 		if ((hasFeat(_villain, "Anubis") || _rpMode)
+			&& llJsonGetValue(_currentRestraints, ["elbow"]) == JSON_NULL
+			&& llJsonGetValue(_currentRestraints, ["torso"]) == JSON_NULL
+			&& llJsonGetValue(_currentRestraints, ["wrist"]) == JSON_NULL
+		) {
+			mpButtons += "Box";
+		}
+
+		if ((hasFeat(_villain, "Anubis++") || _rpMode)
 			&& !isSet(llJsonGetValue(_currentRestraints, ["hand"]))
 		) {
 			mpButtons += "Mitten";
@@ -212,6 +220,15 @@ string defineRestraint(string prmName) {
 		restraint = llJsonSetValue(restraint, ["slot"], "torso");
 		restraint = llJsonSetValue(restraint, ["poses"], llList2Json(JSON_ARRAY, liPoses));
 		restraint = llJsonSetValue(restraint, ["attachments"], llList2Json(JSON_ARRAY, liAttachments));
+	} else if (prmName == "Box") {
+		complexity = 2;
+		integrity = 30;
+		tightness = 15;
+
+		restraint = llJsonSetValue(restraint, ["uid"], "boxTape");
+		restraint = llJsonSetValue(restraint, ["slot"], "torso");
+		restraint = llJsonSetValue(restraint, ["poses"], llList2Json(JSON_ARRAY, ["box"]));
+		restraint = llJsonSetValue(restraint, ["attachments"], llList2Json(JSON_ARRAY, ["armTape_box"]));
 	} else if (prmName == "Mitten") {
 		tightness = 5;
 		integrity = 10;

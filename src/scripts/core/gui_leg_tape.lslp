@@ -63,23 +63,30 @@ gui(integer prmScreen) {
 	if (prmScreen == 0) {
 		btn3 = "<<Color>>";
 
-		if (llJsonGetValue(getCurrentRestraints(), ["ankle"]) != JSON_NULL
-			|| llJsonGetValue(_currentRestraints, ["knee"]) != JSON_NULL
-			|| llJsonGetValue(_currentRestraints, ["immobilizer"]) != JSON_NULL
-		) {
-			mpButtons += "Untie";
-		}
-
-		if (llJsonGetValue(_currentRestraints, ["ankle"]) == JSON_NULL && llJsonGetValue(_currentRestraints, ["immobilizer"]) == JSON_NULL) {
+		if (!isSet(llJsonGetValue(_currentRestraints, ["ankle"])) && !isSet(llJsonGetValue(_currentRestraints, ["immobilizer"]))) {
 			mpButtons += "Ankle";
+		} else if (!isSet(llJsonGetValue(_currentRestraints, ["immobilizer"])) && isSet(llJsonGetValue(_currentRestraints, ["ankle"]))) {
+			mpButtons += "Free Ankle";
 		}
 
-		if (llJsonGetValue(_currentRestraints, ["knee"]) == JSON_NULL && llJsonGetValue(_currentRestraints, ["immobilizer"]) == JSON_NULL) {
+		if (!isSet(llJsonGetValue(_currentRestraints, ["knee"])) && !isSet(llJsonGetValue(_currentRestraints, ["immobilizer"]))) {
 			mpButtons += "Knee";
+		} else if (!isSet(llJsonGetValue(_currentRestraints, ["immobilizer"])) && isSet(llJsonGetValue(_currentRestraints, ["knee"]))) {
+			mpButtons += "Free Knee";
 		}
 
-		if (!isSet(llJsonGetValue(_currentRestraints, ["immobilizer"]))) {
+		if (llJsonGetValue(_currentRestraints, ["immobilizer"]) == JSON_NULL) {
 			mpButtons += "Kneel";
+		}
+
+		if ((hasFeat(_villain, "Anubis+") || _rpMode)
+			&& !isSet(llJsonGetValue(_currentRestraints, ["immobilizer"]))
+		) {
+			mpButtons += "Ball";
+		}
+
+		if (isSet(llJsonGetValue(_currentRestraints, ["immobilizer"]))) {
+			mpButtons += "Untie";
 		}
 
 		mpButtons = multipageGui(mpButtons, 2, multipageIndex);
@@ -126,7 +133,7 @@ string defineRestraint(string prmName) {
 		integrity = 25;
 		tightness = 6;
 
-		restraint = llJsonSetValue(restraint, ["uid"], "ankle");
+		restraint = llJsonSetValue(restraint, ["uid"], "ankleTape");
 		restraint = llJsonSetValue(restraint, ["slot"], "ankle");
 		restraint = llJsonSetValue(restraint, ["poses"], llList2Json(JSON_ARRAY, liPoseStandard));
 		restraint = llJsonSetValue(restraint, ["attachments"], llList2Json(JSON_ARRAY, ["legTape_ankle"]));
@@ -134,7 +141,7 @@ string defineRestraint(string prmName) {
 		integrity = 25;
 		tightness = 6;
 
-		restraint = llJsonSetValue(restraint, ["uid"], "knee");
+		restraint = llJsonSetValue(restraint, ["uid"], "kneeTape");
 		restraint = llJsonSetValue(restraint, ["slot"], "knee");
 		restraint = llJsonSetValue(restraint, ["poses"], llList2Json(JSON_ARRAY, liPoseStandard));
 		restraint = llJsonSetValue(restraint, ["attachments"], llList2Json(JSON_ARRAY, ["legTape_knee"]));
@@ -146,6 +153,16 @@ string defineRestraint(string prmName) {
 		restraint = llJsonSetValue(restraint, ["slot"], "immobilizer");
 		restraint = llJsonSetValue(restraint, ["poses"], llList2Json(JSON_ARRAY, ["hogKneel", "hogFront", "hogLeft", "hogRight"]));
 		restraint = llJsonSetValue(restraint, ["attachments"], llList2Json(JSON_ARRAY, ["legTape_kneel"]));
+	} else if (prmName == "Ball") {
+		complexity = 1;
+		integrity = 15;
+		tightness = 15;
+
+		restraint = llJsonSetValue(restraint, ["uid"], "ballTape");
+		restraint = llJsonSetValue(restraint, ["slot"], "immobilizer");
+		restraint = llJsonSetValue(restraint, ["poses"], llList2Json(JSON_ARRAY, ["ballLeft", "ballRight"]));
+		restraint = llJsonSetValue(restraint, ["attachments"], llList2Json(JSON_ARRAY, ["legTape_ball"]));
+		//restraint = llJsonSetValue(restraint, ["preventAttach", JSON_APPEND], "legRope_knee"); // TODO: Add this to special bind rules?
 	}
 
 	if (hasFeat(_villain, "Anubis")) { tightness = tightness + 2; }
@@ -239,6 +256,14 @@ default {
 
 			if (prmText == "Untie") {
 				simpleRequest("remRestraint", llJsonGetValue(getSelf(), ["part"]));
+				_resumeFunction = "setRestraints";
+				return;
+			} else if (prmText == "Free Ankle") {
+				simpleRequest("rmSlot", "ankle");
+				_resumeFunction = "setRestraints";
+				return;
+			} else if (prmText == "Free Knee") {
+				simpleRequest("rmSlot", "knee");
 				_resumeFunction = "setRestraints";
 				return;
 			}

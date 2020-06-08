@@ -50,6 +50,14 @@ list getAttachments() {
 		if (isSet(llJsonGetValue(_restraints, ["elbow"]))) { bindFolders += ["legRope_hogBackTight"]; }
 		else if (llJsonGetValue(_restraints, ["torso", "uid"]) == "boxRope") { bindFolders += ["legRope_hogBox"]; }
 		else { bindFolders += ["legRope_hogBack"]; }
+	} else if ("ballRope" == llJsonGetValue(_restraints, ["immobilizer", "uid"]) || "ballTape" == llJsonGetValue(_restraints, ["immobilizer", "uid"])) {
+		debug(llJsonGetValue(_restraints, ["knee", "uid"]));
+		if ("kneeRope" == llJsonGetValue(_restraints, ["knee", "uid"])) {
+			preventFolders += "legRope_knee";
+		} else if ("kneeTape" == llJsonGetValue(_restraints, ["knee", "uid"])) {
+			bindFolders += "legTape_kneeBent";
+			preventFolders += "legTape_knee";
+		}
 	}
 
 	if (isSet(llJsonGetValue(_restraints, ["elbow"]))) {

@@ -44,6 +44,7 @@ list _feats = [
 	"Resolute+",
 	"Anubis",
 	"Anubis+",
+	"Anubis++",
 	"Rigger",
 	"Rigger+",
 	"Gag Snob",
@@ -138,47 +139,15 @@ list getAvailableFeats() {
 	list feats = ListXnotY(_feats, _userFeats);
 
 	// Remove any feats that have unmet prerequisites
-	integer plusIndex;
-	integer preIndex;
-
-	plusIndex = llListFindList(feats, ["Athletic+"]);
-	preIndex = llListFindList(feats, ["Athletic"]);
-	if (preIndex != -1 && plusIndex != -1) {
-		feats = llDeleteSubList(feats, plusIndex, plusIndex);
-	}
-
-	plusIndex = llListFindList(feats, ["Endurant+"]);
-	preIndex = llListFindList(feats, ["Endurant"]);
-	if (preIndex != -1 && plusIndex != -1) {
-		feats = llDeleteSubList(feats, plusIndex, plusIndex);
-	}
-
-	plusIndex = llListFindList(feats, ["Flexible+"]);
-	preIndex = llListFindList(feats, ["Flexible"]);
-	if (preIndex != -1 && plusIndex != -1) {
-		feats = llDeleteSubList(feats, plusIndex, plusIndex);
-	}
-
-	plusIndex = llListFindList(feats, ["Resolute+"]);
-	preIndex = llListFindList(feats, ["Resolute"]);
-	if (preIndex != -1 && plusIndex != -1) {
-		feats = llDeleteSubList(feats, plusIndex, plusIndex);
-	}
-	plusIndex = llListFindList(feats, ["Rigger+"]);
-	preIndex = llListFindList(feats, ["Rigger"]);
-	if (preIndex != -1 && plusIndex != -1) {
-		feats = llDeleteSubList(feats, plusIndex, plusIndex);
-	}
-	plusIndex = llListFindList(feats, ["Anubis+"]);
-	preIndex = llListFindList(feats, ["Anubis"]);
-	if (preIndex != -1 && plusIndex != -1) {
-		feats = llDeleteSubList(feats, plusIndex, plusIndex);
-	}
-	plusIndex = llListFindList(feats, ["Gag Snob+"]);
-	preIndex = llListFindList(feats, ["Gag Snob"]);
-	if (preIndex != -1 && plusIndex != -1) {
-		feats = llDeleteSubList(feats, plusIndex, plusIndex);
-	}
+	feats = requirePrerequisiteFeat(feats, "Athletic+", "Athletic");
+	feats = requirePrerequisiteFeat(feats, "Endurant+", "Endurant");
+	feats = requirePrerequisiteFeat(feats, "Flexible+", "Flexible");
+	feats = requirePrerequisiteFeat(feats, "Resolute+", "Resolute");
+	feats = requirePrerequisiteFeat(feats, "Sadist", "Rigger+");
+	feats = requirePrerequisiteFeat(feats, "Rigger+", "Rigger");
+	feats = requirePrerequisiteFeat(feats, "Anubis++", "Anubis+");
+	feats = requirePrerequisiteFeat(feats, "Anubis+", "Anubis");
+	feats = requirePrerequisiteFeat(feats, "Gag Snob+", "Gag Snob");
 
 	return feats;
 }
@@ -191,18 +160,6 @@ setRestraints(string prmJson) {
 	_isOtherBound = isSet(llJsonGetValue(prmJson, ["slots", "crotch"])) || isSet(llJsonGetValue(prmJson, ["slots", "hand"]));
 }
 
-addExp(string prmValue) {
-	integer addValue = (integer)prmValue;
-	if (addValue > 0) { _userExp += addValue; }
-}
-
-addFeat(string feat) {
-	_userFeats += [feat];
-	_userFeats = llListSort(_userFeats, 1, TRUE);
-	_self = llJsonSetValue(_self, ["feats"], llList2Json(JSON_ARRAY, _userFeats));
-	simpleRequest("setOwnerFeats", llList2Json(JSON_ARRAY, _userFeats));
-}
-
 integer getNextLevelExp() {
 	integer tmpLevel = getUserLevel();
 	if (tmpLevel == 0) {
@@ -210,6 +167,10 @@ integer getNextLevelExp() {
 	}
 
 	return (integer)(tmpLevel * 50 + llPow(tmpLevel,3));
+}
+
+integer getUserLevel() {
+	return llGetListLength(_userFeats);
 }
 
 setAvailablePoses(string prmPoses) {
@@ -223,13 +184,30 @@ setStats(string stats) {
 }
 
 // ===== Main Functions =====
+addExp(string prmValue) {
+	integer addValue = (integer)prmValue;
+	if (addValue > 0) { _userExp += addValue; }
+}
+
+addFeat(string feat) {
+	_userFeats += [feat];
+	_userFeats = llListSort(_userFeats, 1, TRUE);
+	_self = llJsonSetValue(_self, ["feats"], llList2Json(JSON_ARRAY, _userFeats));
+	simpleRequest("setOwnerFeats", llList2Json(JSON_ARRAY, _userFeats));
+}
+
 integer canLevelUp() {
 	return getNextLevelExp() <= _userExp
 		&& getUserLevel() < llGetListLength(_feats);
 }
 
-integer getUserLevel() {
-	return llGetListLength(_userFeats);
+list requirePrerequisiteFeat(list feats, string feat, string prerequisite) {
+	integer featIndex = llListFindList(feats, [feat]);
+	integer preIndex = llListFindList(feats, [prerequisite]);
+	if (preIndex != -1 && featIndex != -1) {
+		feats = llDeleteSubList(feats, featIndex, featIndex);
+	}
+	return feats;
 }
 
 // ===== Event Controls =====
