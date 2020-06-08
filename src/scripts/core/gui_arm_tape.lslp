@@ -214,7 +214,7 @@ string defineRestraint(string prmName) {
 			liPoses = ["back"];
 		} else if (llJsonGetValue(getCurrentRestraints(), ["wrist"]) == "frontRope" || llJsonGetValue(getCurrentRestraints(), ["wrist"]) == "frontTape") {
 			liAttachments += "armTape_front_harness";
-			liPoses = ["back"];
+			liPoses = ["front"];
 		}
 		restraint = llJsonSetValue(restraint, ["uid"], "harnessTape");
 		restraint = llJsonSetValue(restraint, ["slot"], "torso");
