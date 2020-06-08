@@ -1,6 +1,7 @@
 $import Modules.ContribLib.lslm();
 $import Modules.GuiTools.lslm();
 $import Modules.PoseLib.lslm();
+$import Modules.UserLib.lslm();
 
 // Quick Keys
 key _ownerID;
@@ -11,14 +12,17 @@ integer rpMode = FALSE;
 integer _RLV = FALSE;
 
 // Stats
-string _self;
-integer _userExp = 0;
-list _userFeats = [];
+string _owner;	// User object
+integer _ownerExp = 0;
+list _ownerFeats = [];
+
+key _statsQueryID;
 
 // Status Variables
 integer _isArmsBound = FALSE;
 integer _isLegsBound = FALSE;
 integer _isGagged = FALSE;
+integer _isHandBound = FALSE;
 integer _isOtherBound = FALSE;
 
 list _legPoses;
@@ -54,6 +58,20 @@ list _feats = [
 
 init() {
 	_ownerID = llGetOwner();
+
+	if (_owner == "" && llGetInventoryKey(".stats") != NULL_KEY) {
+		_statsQueryID = llGetNotecardLine(".stats",0);	// Load config.
+	}
+
+	_owner = llJsonSetValue(_owner, ["key"], llGetOwner());
+	_owner = llJsonSetValue(_owner, ["name"], llGetDisplayName(llGetOwner()));
+	_owner = llJsonSetValue(_owner, ["gender"], getGender(llGetOwner()));
+
+	_owner = llJsonSetValue(_owner, ["feats"], llList2Json(JSON_ARRAY, _ownerFeats));
+	_owner = llJsonSetValue(_owner, ["exp"], (string)_ownerExp);
+	_owner = llJsonSetValue(_owner, ["armBound"], (string)_isArmsBound);
+	_owner = llJsonSetValue(_owner, ["handBound"], (string)_isHandBound);
+	_owner = llJsonSetValue(_owner, ["blade"], JSON_NULL);
 }
 
 init_gui(key prmID, integer prmScreen) {
@@ -95,9 +113,8 @@ gui(integer prmScreen) {
 	// GUI: Stats
 	else if (prmScreen == GUI_STATS) {
 		guiText = "Level: " + (string)getUserLevel() + "\n";
-		guiText += "Experience: " + (string)_userExp + "/" + (string)getNextLevelExp() + "\n";
-		guiText += "Feats: " + llDumpList2String(_userFeats, ", ");
-		//guiText += "STR: " + (string)userStr + "\tDEX: " + (string)userDex + "\tINT: " + (string)userInt;
+		guiText += "Experience: " + (string)_ownerExp + "/" + (string)getNextLevelExp() + "\n";
+		guiText += "Feats: " + llDumpList2String(_ownerFeats, ", ");
 
 		if (canLevelUp()) {
 			mpButtons = getAvailableFeats();
@@ -105,10 +122,11 @@ gui(integer prmScreen) {
 		mpButtons = multipageGui(mpButtons, 3, multipageIndex);
 
 		btn1 = "<<Back>>";
+		btn3 = "Export";
 	}
 	else if (prmScreen == GUI_OPTIONS) {
 		guiText = "User Settings" + "\n";
-		guiText = "Please reference the included README for details.";
+		guiText += "Please reference the included README for details.";
 		if (rpMode) { btn4 = "☑ RP Mode"; }
 		else { btn4 = "☒ RP Mode"; }
 		if (_RLV) { btn5 = "☑ RLV"; }
@@ -136,7 +154,7 @@ gui(integer prmScreen) {
 list getAvailableFeats() {
 
 	// Remove any feats we already have
-	list feats = ListXnotY(_feats, _userFeats);
+	list feats = ListXnotY(_feats, _ownerFeats);
 
 	// Remove any feats that have unmet prerequisites
 	feats = requirePrerequisiteFeat(feats, "Athletic+", "Athletic");
@@ -157,7 +175,11 @@ setRestraints(string prmJson) {
 		&& !(integer)llJsonGetValue(prmJson, ["armBoundExternal"]);
 	_isLegsBound = (integer)llJsonGetValue(prmJson, ["legBound"]);
 	_isGagged = (integer)llJsonGetValue(prmJson, ["gagged"]);
+	_isHandBound = isSet(llJsonGetValue(prmJson, ["slots", "hand"]));
 	_isOtherBound = isSet(llJsonGetValue(prmJson, ["slots", "crotch"])) || isSet(llJsonGetValue(prmJson, ["slots", "hand"]));
+
+	_owner = llJsonSetValue(_owner, ["armBound"], (string)_isArmsBound);
+	_owner = llJsonSetValue(_owner, ["handBound"], (string)_isHandBound);
 }
 
 integer getNextLevelExp() {
@@ -170,7 +192,7 @@ integer getNextLevelExp() {
 }
 
 integer getUserLevel() {
-	return llGetListLength(_userFeats);
+	return llGetListLength(_ownerFeats);
 }
 
 setAvailablePoses(string prmPoses) {
@@ -178,26 +200,32 @@ setAvailablePoses(string prmPoses) {
 	_legPoses += getPoseBallPoseList();
 }
 
-setStats(string stats) {
-	_userExp = (integer)llJsonGetValue(stats, ["exp"]);
-	_userFeats = llJson2List(llJsonGetValue(stats, ["feats"]));
+setExp(integer exp) {
+	_ownerExp = exp;
+	_owner = llJsonSetValue(_owner, ["exp"], (string)exp);
+}
+
+setFeats(list feats) {
+	_ownerFeats = llListSort(feats, 1, TRUE);
+	_owner = llJsonSetValue(_owner, ["feats"], llList2Json(JSON_ARRAY, feats));
+	simpleRequest("setOwnerFeats", llList2Json(JSON_ARRAY, feats));
 }
 
 // ===== Main Functions =====
 addExp(string prmValue) {
+	integer experience = _ownerExp;
 	integer addValue = (integer)prmValue;
-	if (addValue > 0) { _userExp += addValue; }
+	if (addValue > 0) { experience += addValue; }
+	setExp(experience);
 }
 
 addFeat(string feat) {
-	_userFeats += [feat];
-	_userFeats = llListSort(_userFeats, 1, TRUE);
-	_self = llJsonSetValue(_self, ["feats"], llList2Json(JSON_ARRAY, _userFeats));
-	simpleRequest("setOwnerFeats", llList2Json(JSON_ARRAY, _userFeats));
+	_ownerFeats += feat;
+	setFeats(_ownerFeats);
 }
 
 integer canLevelUp() {
-	return getNextLevelExp() <= _userExp
+	return getNextLevelExp() <= _ownerExp
 		&& getUserLevel() < llGetListLength(_feats);
 }
 
@@ -225,7 +253,6 @@ execute_function(string prmFunction, string prmJson) {
 	else if (prmFunction == "setVillainKey") { _villainID = value; }
 	else if (prmFunction == "setLegPoses") { setAvailablePoses(value); }
 	else if (prmFunction == "addExp") { addExp(value); }
-	else if (prmFunction == "setStats") { setStats(value); }
 	else if (prmFunction == "setRestraints") { setRestraints(value); }
 	else if (prmFunction == "resetGUI") {
 		exit("");
@@ -233,8 +260,16 @@ execute_function(string prmFunction, string prmJson) {
 }
 
 default {
-	state_entry() {
-		init();
+	state_entry() {	init();	}
+	on_rez(integer start_param) { init(); }
+
+	dataserver(key queryID, string data) {
+		if (queryID == _statsQueryID) {
+			string exp = llJsonGetValue(data, ["exp"]);
+			string feats = llJsonGetValue(data, ["feats"]);
+			if (isSet(exp)) { setExp((integer)exp); }
+			if (isSet(feats)) { setFeats(llJson2List(feats)); }
+		}
 	}
 
 	listen(integer prmChannel, string prmName, key prmID, string prmText) {
@@ -247,7 +282,7 @@ default {
 
 			if (guiScreen == GUI_HOME) {
 				if (prmText == "Bind") {
-					simpleRequest("setVillain", _self);
+					simpleRequest("setVillain", _owner);
 					guiRequest("gui_bind", FALSE, guiUserID, 0);
 					return;
 				}
@@ -256,7 +291,14 @@ default {
 				else if (prmText == "Options") { gui(GUI_OPTIONS); }
 				else if (prmText == "Pose") { gui(GUI_POSE); }
 			} else if (guiScreen == GUI_STATS) {
-				addFeat(prmText);
+				if (prmText == "Export") {
+					string export;				
+					export = llJsonSetValue(export, ["exp"], (string)_ownerExp);
+					export = llJsonSetValue(export, ["feats"], llList2Json(JSON_ARRAY, _ownerFeats));
+					llOwnerSay(export);
+				} else {
+					addFeat(prmText);
+				}
 				gui(guiScreen);
 			} else if (guiScreen == GUI_OPTIONS) {
 				if (prmText == "☒ RP Mode") { rpMode = TRUE; simpleRequest("setRPMode", "1"); }
