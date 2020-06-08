@@ -39,7 +39,6 @@ init() {
 
 setArmPose(string uid) {
  	llRequestPermissions(llGetOwner(), PERMISSION_TRIGGER_ANIMATION);
-	debug("Setting arm pose to " + uid);
 	if (!isSet(uid)) {
 		return;	// Just keep on truckin'
 	}
@@ -64,7 +63,6 @@ setArmPose(string uid) {
 
 setLegPose(string uid) {
  	llRequestPermissions(llGetOwner(), PERMISSION_TRIGGER_ANIMATION | PERMISSION_OVERRIDE_ANIMATIONS);
-	debug("Setting leg pose to " + uid);
 	if (!isSet(uid)) {
 		return;	// Just keep on truckin'
 	}
@@ -156,7 +154,6 @@ animate(string prmAnimation) {
 }
 
 animate_mover(string prmAnimation) {
-	debug(prmAnimation);
 	llRequestPermissions(llGetOwner(), PERMISSION_TRIGGER_ANIMATION | PERMISSION_OVERRIDE_ANIMATIONS);
 
 	if (isSet(_animation_mover_current)) { llStopAnimation(_animation_mover_current); }
