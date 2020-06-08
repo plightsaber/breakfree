@@ -63,10 +63,10 @@ string getTopRestraint(string prmType) {
 		else if (isSet(llJsonGetValue(_restraints, ["knee"]))) { return llJsonGetValue(_restraints, ["knee"]); }
 		else if (isSet(llJsonGetValue(_restraints, ["ankle"]))) { return llJsonGetValue(_restraints, ["ankle"]); }
 	} else if (prmType == "gag") {
-		if (isSet(llJsonGetValue(_restraints, ["gag1"]))) { return llJsonGetValue(_restraints, ["gag1"]); }
-		else if (isSet(llJsonGetValue(_restraints, ["gag2"]))) { return llJsonGetValue(_restraints, ["gag2"]); }
+		if (isSet(llJsonGetValue(_restraints, ["gag4"]))) { return llJsonGetValue(_restraints, ["gag4"]); }
 		else if (isSet(llJsonGetValue(_restraints, ["gag3"]))) { return llJsonGetValue(_restraints, ["gag3"]); }
-		else if (isSet(llJsonGetValue(_restraints, ["gag4"]))) { return llJsonGetValue(_restraints, ["gag4"]); }
+		else if (isSet(llJsonGetValue(_restraints, ["gag2"]))) { return llJsonGetValue(_restraints, ["gag2"]); }
+		else if (isSet(llJsonGetValue(_restraints, ["gag1"]))) { return llJsonGetValue(_restraints, ["gag1"]); }
 	} else if (isSet(llJsonGetValue(_restraints, [prmType]))) {
 		return llJsonGetValue(_restraints, [prmType]);	// Return special slot
 	}
