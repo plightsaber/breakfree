@@ -324,35 +324,51 @@ refreshPuzzle(string restraint, string puzzleType) {
 	_puzzles = llJsonSetValue(_puzzles, [restraint, puzzleType], llList2Json(JSON_ARRAY, puzzle));
 }
 
-string displayTightness(string restraint) {
+string displaySecurity(string restraint) {
 	integer index;
-	integer tightness = (integer)llJsonGetValue(_restraints, ["security", restraint, "integrity"]);
+
+	integer tightness = (integer)llJsonGetValue(_restraints, ["security", restraint, "tightness"]);
+	integer integrity = (integer)llJsonGetValue(_restraints, ["security", restraint, "integrity"]) - (integer)llJsonGetValue(_escapeProgress, [restraint, "integrity", "progress"]);
+	integer complexity = (integer)llJsonGetValue(_restraints, ["security", restraint, "complexity"]) - (integer)llJsonGetValue(_escapeProgress, [restraint, "complexity", "progress"]);
+	integer security = ((tightness + integrity) * complexity)/3;
+
 	string output;
 	string char = " ";
 
-
-	if (tightness > 30) {
+	if (security > 60) {
+		char = "#";
+		security -= 60;
+		for (index = 0; index < security; index ++) { output += "!"; }
+	} else if (security > 50) {
 		char = "=";
-		tightness -= 30;
-		for (index = 0; index < tightness; index ++) { output += "#"; }
+		security -= 50;
+		for (index = 0; index < security; index ++) { output += "#"; }
+	} else if (security > 40) {
+		char = "+";
+		security -= 40;
+		for (index = 0; index < security; index ++) { output += "="; }
+	} else if (tightness > 30) {
+		char = ":";
+		security -= 30;
+		for (index = 0; index < security; index ++) { output += "+"; }
 	} else if (tightness > 20) {
-		char = "~";
-		tightness -= 20;
-		for (index = 0; index < tightness; index ++) { output += "="; }
-	} else if (tightness > 10) {
 		char = "-";
-		tightness -= 10;
-		for (index = 0; index < tightness; index ++) { output += "~"; }
+		security -= 20;
+		for (index = 0; index < security; index ++) { output += ":"; }
+	} else if (tightness > 10) {
+		char = ".";
+		security -= 10;
+		for (index = 0; index < security; index ++) { output += "-"; }
 	} else {
 		char = " ";
-		for (index = 0; index < tightness; index ++) { output += "-"; }
+		for (index = 0; index < security; index ++) { output += "."; }
 	}
 
 	while (index < 10) {
 		output += char;
 		index++;
 	}
-	return output;
+	return "[" + output + "]";
 }
 
 integer ignoreIntegrity() {
@@ -448,7 +464,7 @@ gui(integer prmScreen) {
 		btn9 = "Yank";
 
 		guiText = "Restraint: " + ToTitle(_activePart);	// TODO: Get full name of restraint
-		guiText += "\nTightness: " + displayTightness(_activePart);
+		guiText += "\nSecurity: " + displaySecurity(_activePart);
 		if (_actionmsg) { guiText += "\n" + _actionmsg; }
 		guiText += "\n" + getSuggestedAction();
 	} else if (prmScreen == GUI_RESCUE) {
@@ -457,7 +473,7 @@ gui(integer prmScreen) {
 		btn6 = "Yank";
 
 		guiText = "Restraint: " + ToTitle(_activePart);	// TODO: Get full name of restraint
-		guiText += "\nTightness: " + displayTightness(_activePart);
+		guiText += "\nTightness: " + displaySecurity(_activePart);
 		// TODO: Suggested action for feats?
 		if (_actionmsg) { guiText += "\n" + _actionmsg; }
 
