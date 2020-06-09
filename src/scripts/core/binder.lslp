@@ -5,6 +5,8 @@ $import Modules.RestraintTools.lslm();
 string _slots;		// List of UIDs ONLY for currently applied restraints
 string _metadata;
 
+string _villain;
+
 init() {
 	_slots = llJsonSetValue(_slots, ["wrist"], JSON_NULL);
 	_slots = llJsonSetValue(_slots, ["elbow"], JSON_NULL);
@@ -30,6 +32,17 @@ addRestraint(string prmJson) {
 	_restraints = llJsonSetValue(_restraints, [slot], restraint);
 	_slots = llJsonSetValue(_slots, [slot], llJsonGetValue(restraint, ["uid"]));
 
+	// You don't get experience for tying yourself up.
+	if (llGetOwner() != llJsonGetValue(_villain, ["key"])) {
+		string request;
+
+		integer tightness = (integer)llJsonGetValue(restraint, ["tightness"]);
+		integer integrity = (integer)llJsonGetValue(restraint, ["integrity"]);
+		integer complexity = (integer)llJsonGetValue(restraint, ["complexity"]);
+		integer expEarned = ((tightness+integrity)*complexity/2);
+
+		apiRequest(llJsonGetValue(_villain, ["key"]), llGetOwner(), "addExp", (string)expEarned);
+	}
 	deployRestraints();
 }
 
@@ -51,7 +64,6 @@ list getAttachments() {
 		else if (llJsonGetValue(_restraints, ["torso", "uid"]) == "boxRope") { bindFolders += ["legRope_hogBox"]; }
 		else { bindFolders += ["legRope_hogBack"]; }
 	} else if ("ballRope" == llJsonGetValue(_restraints, ["immobilizer", "uid"]) || "ballTape" == llJsonGetValue(_restraints, ["immobilizer", "uid"])) {
-		debug(llJsonGetValue(_restraints, ["knee", "uid"]));
 		if ("kneeRope" == llJsonGetValue(_restraints, ["knee", "uid"])) {
 			preventFolders += "legRope_knee";
 		} else if ("kneeTape" == llJsonGetValue(_restraints, ["knee", "uid"])) {
@@ -125,7 +137,6 @@ resetPoses() {
 	if (!isSet(poses)) {
 		poses = llJsonSetValue(poses, [JSON_APPEND], "free");
 	}
-	debug(poses);
 	simpleRequest("setArmPoses", poses);
 
 	// Leg poses
@@ -202,8 +213,6 @@ string getSecurityDetails(string prmType) {
 	// Complexity: Get just the top level
 	// Integrity: Get just the top level.
 
-	list liSlots = getSearchSlots(prmType);
-
 	// Get details from top restraint
 	string topRestraint = getTopRestraint(prmType);
 	details = llJsonSetValue(details, ["complexity"], llJsonGetValue(topRestraint, ["complexity"]));
@@ -260,5 +269,6 @@ default {
 		else if ("rmSlot" == function) { rmSlot(value); deployRestraints(); return; }
 		else if ("releaseRestraint" == function) releaseRestraint(value);
 		else if ("overrideRestraint" == function) override_restraint(value);
+		else if ("setVillain" == function) { _villain = value; }
 	}
 }

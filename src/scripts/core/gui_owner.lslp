@@ -59,6 +59,11 @@ list _feats = [
 init() {
 	_ownerID = llGetOwner();
 
+	// Reset owner if mismatched.
+	if (llJsonGetValue(_owner, ["uid"]) != _ownerID) {
+		_owner = "";
+	}
+
 	if (_owner == "" && llGetInventoryKey(".stats") != NULL_KEY) {
 		_statsQueryID = llGetNotecardLine(".stats",0);	// Load config.
 	}
@@ -213,6 +218,7 @@ setFeats(list feats) {
 
 // ===== Main Functions =====
 addExp(string prmValue) {
+	debug("Earned Experience! " + prmValue);
 	integer experience = _ownerExp;
 	integer addValue = (integer)prmValue;
 	if (addValue > 0) { experience += addValue; }
@@ -292,7 +298,7 @@ default {
 				else if (prmText == "Pose") { gui(GUI_POSE); }
 			} else if (guiScreen == GUI_STATS) {
 				if (prmText == "Export") {
-					string export;				
+					string export;
 					export = llJsonSetValue(export, ["exp"], (string)_ownerExp);
 					export = llJsonSetValue(export, ["feats"], llList2Json(JSON_ARRAY, _ownerFeats));
 					llOwnerSay(export);

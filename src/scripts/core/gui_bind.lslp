@@ -3,6 +3,7 @@ $import Modules.GuiTools.lslm();
 $import Modules.PoseLib.lslm();
 
 string self;	// JSON object
+string _villain;
 
 // General Settings
 string gender = "female";
@@ -187,6 +188,7 @@ execute_function(string prmFunction, string prmJson) {
 	else if (prmFunction == "setRestraints") { setRestraints(value); }
 	else if (prmFunction == "setLegPoses") { setAvailablePoses(value); }
 	else if (prmFunction == "addAvailableRestraint") { addAvailableRestraint(value); }
+	else if (prmFunction == "setVillain") { _villain = value; }
 	else if (prmFunction == "gui_bind") {
 		key userkey = (key)llJsonGetValue(prmJson, ["userkey"]);
 		integer screen = GUI_HOME;

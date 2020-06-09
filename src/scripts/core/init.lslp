@@ -3,7 +3,6 @@ $import Modules.GuiTools.lslm();
 $import Modules.RestraintTools.lslm();
 $import Modules.UserLib.lslm();
 
-integer CHANNEL_API = -9999274;
 integer TOUCH_MAX_DISTANCE = 1;
 float TOUCH_TIMEOUT = 3.0;
 
@@ -36,14 +35,8 @@ init(key prmID) {
 		_activeKey = prmID;
 		guiRequest("gui_owner", FALSE, _activeKey, 0);
 	} else {
-		_toucherKey = prmID;
-		// Request User Object
-		string request_toucher = "";
-		request_toucher = llJsonSetValue(request_toucher, ["function"], "getTouchInfo");
-		request_toucher = llJsonSetValue(request_toucher, ["userID"], llGetOwner());
-		request_toucher = llJsonSetValue(request_toucher, ["apiTargetID"],	_toucherKey);
-		llRegionSayTo(prmID, CHANNEL_API, request_toucher);
-		debug("Setting timer...");
+		apiRequest(prmID, llGetOwner(), "getTouchInfo", "");
+		//debug("Setting timer...");
 		llSetTimerEvent(TOUCH_TIMEOUT); // Stop Timer
 	}
 }
@@ -51,7 +44,7 @@ init(key prmID) {
 // ===== Main Functions =====
 
 touchUser(string user) {
-	debug("touchUser Event");
+	//debug("touchUser Event");
 	llSetTimerEvent(0.0);	 // Stop Timer
 
 	// Is the toucher in a reasonable range?
@@ -109,12 +102,8 @@ default {
 		}
 		value = llJsonGetValue(prmText, ["value"]);
 
-		if (function == "touch") {
-			key toucherID = (key)llJsonGetValue(value, ["userID"]);
-			init(toucherID);
-		} else if (function == "touchUser") {
-			touchUser(value);
-		}
+		if (function == "touch") { init(value);	}
+		else if (function == "touchUser") {	touchUser(value); }
 		else if (function == "setRestraints") { _restraints = value; }
 		else if (function == "setVillainKey") { _villainKey = value; }
 		else if (function == "setRPMode") { _rpMode = (integer)value; }
@@ -129,7 +118,7 @@ default {
 	}
 
 	timer() {
-		debug("Toucher not wearing BreakFree - assuming defaults.");
+		//debug("Toucher not wearing BreakFree - assuming defaults.");
 		touchUser(getDefaultUser(_toucherKey));
 	}
 }

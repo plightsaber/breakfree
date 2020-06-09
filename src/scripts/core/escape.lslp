@@ -1,3 +1,4 @@
+$import Modules.ContribLib.lslm();
 $import Modules.GeneralTools.lslm();
 $import Modules.RestraintTools.lslm();
 
@@ -78,17 +79,25 @@ string getEscapeProgress() {
 
 	_stamina = _maxStamina;
 
-	_escapeProgress = llJsonSetValue(_escapeProgress, ["arm", "complexity"], "0");
-	_escapeProgress = llJsonSetValue(_escapeProgress, ["arm", "integrity"], "0");
-	_escapeProgress = llJsonSetValue(_escapeProgress, ["arm", "tightness"], "0");
+	_escapeProgress = llJsonSetValue(_escapeProgress, ["arm", "complexity"], "{\"progress\":0,\"maxProgress\":0}");
+	_escapeProgress = llJsonSetValue(_escapeProgress, ["arm", "integrity"], "{\"progress\":0,\"maxProgress\":0}");
+	_escapeProgress = llJsonSetValue(_escapeProgress, ["arm", "tightness"], "{\"progress\":0,\"maxProgress\":0}");
 
-	_escapeProgress = llJsonSetValue(_escapeProgress, ["leg", "complexity"], "0");
-	_escapeProgress = llJsonSetValue(_escapeProgress, ["leg", "integrity"], "0");
-	_escapeProgress = llJsonSetValue(_escapeProgress, ["leg", "tightness"], "0");
+	_escapeProgress = llJsonSetValue(_escapeProgress, ["leg", "complexity"], "{\"progress\":0,\"maxProgress\":0}");
+	_escapeProgress = llJsonSetValue(_escapeProgress, ["leg", "integrity"], "{\"progress\":0,\"maxProgress\":0}");
+	_escapeProgress = llJsonSetValue(_escapeProgress, ["leg", "tightness"], "{\"progress\":0,\"maxProgress\":0}");
 
-	_escapeProgress = llJsonSetValue(_escapeProgress, ["gag", "complexity"], "0");
-	_escapeProgress = llJsonSetValue(_escapeProgress, ["gag", "integrity"], "0");
-	_escapeProgress = llJsonSetValue(_escapeProgress, ["gag", "tightness"], "0");
+	_escapeProgress = llJsonSetValue(_escapeProgress, ["gag", "complexity"], "{\"progress\":0,\"maxProgress\":0}");
+	_escapeProgress = llJsonSetValue(_escapeProgress, ["gag", "integrity"], "{\"progress\":0,\"maxProgress\":0}");
+	_escapeProgress = llJsonSetValue(_escapeProgress, ["gag", "tightness"], "{\"progress\":0,\"maxProgress\":0}");
+
+	_escapeProgress = llJsonSetValue(_escapeProgress, ["crotch", "complexity"], "{\"progress\":0,\"maxProgress\":0}");
+	_escapeProgress = llJsonSetValue(_escapeProgress, ["crotch", "integrity"], "{\"progress\":0,\"maxProgress\":0}");
+	_escapeProgress = llJsonSetValue(_escapeProgress, ["crotch", "tightness"], "{\"progress\":0,\"maxProgress\":0}");
+
+	_escapeProgress = llJsonSetValue(_escapeProgress, ["hand", "complexity"], "{\"progress\":0,\"maxProgress\":0}");
+	_escapeProgress = llJsonSetValue(_escapeProgress, ["hand", "integrity"], "{\"progress\":0,\"maxProgress\":0}");
+	_escapeProgress = llJsonSetValue(_escapeProgress, ["hand", "tightness"], "{\"progress\":0,\"maxProgress\":0}");
 
 	return _escapeProgress;
 }
@@ -180,7 +189,7 @@ escapeAction(string prmVerb) {
 	}
 
 	// Execute action
-	debug("CORRECT ACTION: " + llJsonGetValue(_puzzles, [_activePart, puzzleType, progress]));
+	//debug("CORRECT ACTION: " + llJsonGetValue(_puzzles, [_activePart, puzzleType, progress]));
 	integer success = (action == llJsonGetValue(_puzzles, [_activePart, puzzleType, progress]));
 	if (success && puzzleType == "integrity" && !ignoreTightness()) {
 		// Tightness failure
@@ -266,11 +275,23 @@ integer checkIntegrity(string restraint) {
 
 	integer integrityProgress = (integer)llJsonGetValue(_escapeProgress, [restraint, "integrity", "progress"]);
 	integer integrity = (integer)llJsonGetValue(_restraints, ["security", restraint, "integrity"]);
+	integer tightness = (integer)llJsonGetValue(_restraints, ["security", restraint, "tightness"]);
 
 	if (integrityProgress >= integrity) {
 		_actionmsg = "Your restraint suddenly feels looser!";
-		if (!isAssisted()) {
-			simpleRequest("addExp", llJsonGetValue(_restraints, ["security", restraint, "tightness"]));
+		float adjustment = 1;
+		if (ignoreTightness() && ignoreIntegrity()) {
+			adjustment = 0.3;
+		} else if (ignoreTightness() || ignoreIntegrity()) {
+			adjustment = 0.75;
+		}
+		integer expEarned = (integer)(tightness*adjustment);
+
+		if (isAssisted()) {
+			apiRequest(llJsonGetValue(_guiUser, ["key"]), llGetOwner(), "addExp", (string)expEarned);
+		} else {
+			// Earn experience in escapology!
+			simpleRequest("addExp", (string)expEarned);
 		}
 
 		// Reset puzzles
@@ -399,6 +420,18 @@ integer loseProgress(integer progress) {
 	return progress;
 }
 
+integer escapeNeedsRefresh(string newRestraints, string slotType) {
+	integer index;
+	list slots = getSearchSlots(slotType);
+	for (index = 0; index < llGetListLength(slots); index++) {
+		string slot = llList2String(slots, index);
+		if (llJsonGetValue(_restraints, ["slots", slot]) != llJsonGetValue(newRestraints, ["slots", slot])) {
+			return TRUE;
+		}
+	}
+	return FALSE;
+}
+
 // ===== GUI =====
 getGui(string prmPart) {
 	string tmpType;
@@ -515,38 +548,40 @@ string getOwnerPronoun(string prmPlaceholder) {
 
 // ===== Sets =====
 setRestraints(string prmInfo) {
+	string previousRestraints = _restraints;
+
 	_restraints = prmInfo;
-	getEscapeProgress();
+	_armBoundExternal = isSet(llJsonGetValue(prmInfo, ["armBoundExternal"]));
 
-	// TODO: Only reset progress on restraint level change?
-	_escapeProgress = llJsonSetValue(_escapeProgress, ["escape", "arm", "complexity"], "0");
-	_escapeProgress = llJsonSetValue(_escapeProgress, ["escape", "arm", "integrity"], "0");
-	_escapeProgress = llJsonSetValue(_escapeProgress, ["escape", "arm", "tightness"], "0");
+	if (escapeNeedsRefresh(previousRestraints, "arm")) {
+		refreshPuzzle("arm", "integrity");
+		refreshPuzzle("arm", "tightness");
+		refreshPuzzle("arm", "complexity");
+	}
 
-	_escapeProgress = llJsonSetValue(_escapeProgress, ["escape", "leg", "complexity"], "0");
-	_escapeProgress = llJsonSetValue(_escapeProgress, ["escape", "leg", "integrity"], "0");
-	_escapeProgress = llJsonSetValue(_escapeProgress, ["escape", "leg", "tightness"], "0");
+	if (escapeNeedsRefresh(previousRestraints, "leg")) {
+		refreshPuzzle("leg", "integrity");
+		refreshPuzzle("leg", "tightness");
+		refreshPuzzle("leg", "complexity");
+	}
 
-	_escapeProgress = llJsonSetValue(_escapeProgress, ["escape", "gag", "complexity"], "0");
-	_escapeProgress = llJsonSetValue(_escapeProgress, ["escape", "gag", "integrity"], "0");
-	_escapeProgress = llJsonSetValue(_escapeProgress, ["escape", "gag", "tightness"], "0");
+	if (escapeNeedsRefresh(previousRestraints, "gag")) {
+		refreshPuzzle("gag", "integrity");
+		refreshPuzzle("gag", "tightness");
+		refreshPuzzle("gag", "complexity");
+	}
 
-	_escapeProgress = llJsonSetValue(_escapeProgress, ["escape", "crotch", "complexity"], "0");
-	_escapeProgress = llJsonSetValue(_escapeProgress, ["escape", "crotch", "integrity"], "0");
-	_escapeProgress = llJsonSetValue(_escapeProgress, ["escape", "crotch", "tightness"], "0");
+	if (escapeNeedsRefresh(previousRestraints, "crotch")) {
+		refreshPuzzle("crotch", "integrity");
+		refreshPuzzle("crotch", "tightness");
+		refreshPuzzle("crotch", "complexity");
+	}
 
-	_armBoundExternal = FALSE;
-	refreshPuzzle("arm", "integrity");
-	refreshPuzzle("arm", "tightness");
-
-	refreshPuzzle("leg", "integrity");
-	refreshPuzzle("leg", "tightness");
-
-	refreshPuzzle("gag", "integrity");
-	refreshPuzzle("gag", "tightness");
-
-	refreshPuzzle("crotch", "integrity");
-	refreshPuzzle("crotch", "tightness");
+	if (escapeNeedsRefresh(previousRestraints, "hand")) {
+		refreshPuzzle("hand", "integrity");
+		refreshPuzzle("hand", "tightness");
+		refreshPuzzle("hand", "complexity");
+	}
 }
 
 setGender(string prmGender) {

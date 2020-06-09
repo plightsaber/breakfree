@@ -1,5 +1,4 @@
-integer CHANNEL_API = -9999274;
-
+$import Modules.GeneralTools.lslm();
 apiCall(key prmTargetID, string prmFunction, string prmJson) {
 	prmJson = llJsonSetValue(prmJson, ["function"], prmFunction);
 	prmJson = llJsonSetValue(prmJson, ["userID"], prmTargetID);
@@ -10,6 +9,6 @@ apiCall(key prmTargetID, string prmFunction, string prmJson) {
 
 default {
 	touch_start(integer total_number) {
-		apiCall(llDetectedKey(0), "touch", "");
+		apiRequest(llGetOwner(), llDetectedKey(0), "touch", "0");
 	}
 }

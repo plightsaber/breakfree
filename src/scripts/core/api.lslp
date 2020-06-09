@@ -3,26 +3,30 @@ $import Modules.RestraintTools.lslm();
 $import Modules.UserLib.lslm();
 
 // Objects
-string _self;
+string _owner;
 
 // Listener Vars
-integer CHANNEL_API = -9999274;
 integer listenID;
 
 // ===== Initializer =====
 init() {
+	// Reset owner if mismatched.
+	if (llJsonGetValue(_owner, ["uid"]) != llGetOwner()) {
+		_owner = "";
+	}
+
 	if (listenID) { llListenRemove(listenID); }
 	llListen(CHANNEL_API, "", NULL_KEY, "");
-
-	if (_self == "") { _self = getDefaultUser(llGetOwner()); }
+	if (_owner == "") { _owner = getDefaultUser(llGetOwner()); }
 }
 
 // ===== Primary Functions ====
 api(string prmJson) {
-
 	string function = llJsonGetValue(prmJson, ["function"]);
-	key apiTargetID = (key)llJsonGetValue(prmJson, ["apiTargetID"]);
-	key senderID = (key)llJsonGetValue(prmJson, ["userID"]);
+	string value = llJsonGetValue(prmJson, ["value"]);
+	if (!isSet(function)) {
+		debug("ERROR: API call missing function: " + prmJson);
+	}
 
 	// Check for general requests that don't require validation
 	if ("pingBound" == function) {
@@ -34,36 +38,30 @@ api(string prmJson) {
 			llRegionSayTo(llJsonGetValue(prmJson, ["key"]), CHANNEL_API, response);
 		}
 		return;
+	} else if ("touch" == function) {
+		simpleRequest("touch", llJsonGetValue(prmJson, ["fromKey"]));
 	}
 
 	// Validate
-	if (apiTargetID != llGetOwner()) { return; }
+	if (llJsonGetValue(prmJson, ["toKey"]) != llGetOwner()) { return; }
 
 	// Execute API Call
 	if (function == "getTouchInfo") {
-		// Check arm bound status
-		send(senderID, "touchUser", _self);
+		apiRequest(llJsonGetValue(prmJson, ["fromKey"]), llGetOwner(), "touchUser", _owner);
 	} else {
-		simpleRequest(function, prmJson);
+		if (value == JSON_INVALID) {
+			debug("WARNING: Legacy api call detected: " + prmJson);
+			value = prmJson;
+		}
+
+		simpleRequest(function, value);
 	}
-}
-
-send(key prmTargetID, string prmFunction, string prmJson) {
-	prmJson = llJsonSetValue(prmJson, ["function"], prmFunction);
-	prmJson = llJsonSetValue(prmJson, ["userID"], (string)llGetOwner());
-	prmJson = llJsonSetValue(prmJson, ["apiTargetID"], (string)prmTargetID);
-
-	llRegionSayTo(prmTargetID, CHANNEL_API, prmJson);
 }
 
 // ===== Event Controls =====
 default {
-	on_rez(integer prmStart) {
-		init();
-	}
-	state_entry() {
-		init();
-	}
+	on_rez(integer prmStart) { init(); }
+	state_entry() {	init();	}
 
 	link_message(integer prmLink, integer prmValue, string prmText, key prmID) {
 		string function;
@@ -77,10 +75,10 @@ default {
 
 		if (function == "setRestraints") {
 			_restraints = value;
-			_self = llJsonSetValue(_self, ["armBound"], llJsonGetValue(value, ["armBound"]));
-			_self = llJsonSetValue(_self, ["handbound"], (string)isSet(llJsonGetValue(value, ["slots", "hand"])));
+			_owner = llJsonSetValue(_owner, ["armBound"], llJsonGetValue(value, ["armBound"]));
+			_owner = llJsonSetValue(_owner, ["handbound"], (string)isSet(llJsonGetValue(value, ["slots", "hand"])));
 		} else if (function == "setFeats") {
-			_self = llJsonSetValue(_self, ["feats"], value);
+			_owner = llJsonSetValue(_owner, ["feats"], value);
 		}
 	}
 

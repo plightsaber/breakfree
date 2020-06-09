@@ -3,7 +3,6 @@ $import Modules.GuiTools.lslm();
 $import Modules.UserLib.lslm();
 
 // ===== Constants and Variables ===== (Thanks Bioshock <_<)
-integer CHANNEL_API = -9999274;
 integer TOUCH_MAX_DISTANCE = 1;
 float TOUCH_TIMEOUT = 3.0;
 
@@ -72,12 +71,14 @@ pingBound() {
 
 sendTouch(key userKey) {
 	_toucherKey = NULL_KEY;
-	string request = _guiUser;
-	request = llJsonSetValue(request, ["blade"], "1");
+	string value = _guiUser;
+	value = llJsonSetValue(value, ["blade"], "1");
 
+	string request;
 	request = llJsonSetValue(request, ["function"], "touchUser");
-	request = llJsonSetValue(request, ["userID"], llJsonGetValue(request, ["key"]));
-	request = llJsonSetValue(request, ["apiTargetID"], userKey);
+	request = llJsonSetValue(request, ["fromKey"], llJsonGetValue(value, ["key"]));
+	request = llJsonSetValue(request, ["toKey"], userKey);
+	request = llJsonSetValue(request, ["value"], value);
 	llRegionSayTo(userKey, CHANNEL_API, request);
 
 	_currentState = "default";
