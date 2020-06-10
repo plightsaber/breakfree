@@ -1,5 +1,6 @@
 $module ()
 
+integer CHANNEL_API = -9999274;
 integer debugging = TRUE;
 
 debug(string output){
@@ -15,4 +16,13 @@ simpleRequest(string prmFunction, string prmValue) {
 
 integer isSet(string jsonValue) {
 	return (jsonValue != "" && jsonValue != JSON_NULL && jsonValue != JSON_INVALID && jsonValue != "0" && jsonValue != NULL_KEY);
+}
+
+apiRequest(key toKey, key fromKey, string function, string value){
+	string request;
+	request = llJsonSetValue(request, ["function"], function);
+	request = llJsonSetValue(request, ["fromKey"], fromKey);
+	request = llJsonSetValue(request, ["toKey"], toKey);
+	request = llJsonSetValue(request, ["value"], value);
+	llRegionSayTo(toKey, CHANNEL_API, request);
 }

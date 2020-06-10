@@ -26,23 +26,16 @@ setColor(string prmInfo) {
 	if (validateTarget(prmInfo) == FALSE) { return; }
 	color = (vector)llJsonGetValue(prmInfo, ["color"]);
 
-	llSetLinkColor(LINK_SET, color, ALL_SIDES); // LINK_SET to color all, LINK_THIS to color prim script is located in.
+	llSetLinkColor(LINK_SET, color, 0); // LINK_SET to color all, LINK_THIS to color prim script is located in.
 	simpleRequest("setColor", (string)color);
 }
 
 setTexture(string prmInfo) {
-	if (validateTarget(prmInfo) == FALSE) { return; }
-	texture = llJsonGetValue(prmInfo, ["texture"]);
+ if (validateTarget(prmInfo) == FALSE) { return; }
+    texture = llJsonGetValue(prmInfo, ["texture"]);
 
-	integer faceIndex = 0;
-	list primitiveParams = llGetPrimitiveParams([PRIM_NORMAL, faceIndex]);
-	while (llGetListLength(primitiveParams) > 0) {
-		llSetPrimitiveParams([PRIM_NORMAL, faceIndex, texture+"Normal", llList2Vector(primitiveParams, 1), <0,0,0>, 0]);
-		faceIndex ++;
-		primitiveParams = llGetPrimitiveParams([PRIM_NORMAL, faceIndex]);
-	}
-
-	simpleRequest("setTexture", texture);
+    llSetTexture(texture, 0);
+    simpleRequest("setTexture", texture);
 }
 
 integer validateTarget(string prmInfo) {

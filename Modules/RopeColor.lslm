@@ -6,9 +6,10 @@ vector COLOR_PUREWHITE = <1.0, 1.0, 1.0>;
 vector COLOR_LBROWN = <0.725, 0.580, 0.455>;
 vector COLOR_BROWN = <0.495, 0.372, 0.298>;
 
-vector _color = COLOR_WHITE;
+string _currentColors;
 list _colors =  ["White", "Pure White", "Light Brown", "Brown"];
 list _colorVals = [COLOR_WHITE, COLOR_PUREWHITE, COLOR_LBROWN, COLOR_BROWN];
 
+string _currentTextures;
 list _textures = ["Smooth", "Braid", "Twist"];
 list _textureVals = ["blank", "ropeBraid", "ropeTwist"];

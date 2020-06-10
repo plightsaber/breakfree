@@ -8,6 +8,12 @@ $import Modules.UserLib.lslm();
 string _gender = "female";
 integer _rpMode = FALSE;
 
+integer GUI_HOME = 0;
+integer GUI_STYLE = 100;
+integer GUI_COLOR_STUFF = 101;
+integer GUI_COLOR_CLOTH = 102;
+integer GUI_TEXTURE = 111;
+
 string _villain;
 
 // Colors
@@ -21,10 +27,11 @@ vector COLOR_PINK = <1.0, 0.5, 0.5>;
 vector COLOR_YELLOW = <0.88, 0.68, 0.15>;
 vector COLOR_PURPLE = <0.5, 0.0, 0.5>;
 
-vector _color = COLOR_WHITE;
+string _currentColors;
 list _colors = ["White", "Black", "Purple", "Red", "Blue", "Green", "Pink", "Yellow", "Brown"];
 list _colorVals = [COLOR_WHITE, COLOR_BLACK, COLOR_PURPLE, COLOR_RED, COLOR_BLUE, COLOR_GREEN, COLOR_PINK, COLOR_YELLOW, COLOR_BROWN];
 
+string _currentTextures;
 list _textures = ["Smooth", "Linen", "Bandana"];
 list _textureVals = [TEXTURE_BLANK, "linen", "bandana"];
 
@@ -40,6 +47,17 @@ string getSelf() {
 }
 
 // ===== Initializer =====
+init() {
+	if (!isSet(_currentColors)) {
+		_currentColors = llJsonSetValue(_currentColors, ["cloth"], (string)COLOR_WHITE);
+		_currentColors = llJsonSetValue(_currentColors, ["stuff"], (string)COLOR_WHITE);
+	}
+	
+	if (!isSet(_currentTextures)) {
+		_currentTextures = llJsonSetValue(_currentTextures, ["cloth"], TEXTURE_BLANK);
+		_currentTextures = llJsonSetValue(_currentTextures, ["stuff"], "linen");
+	}
+}
 
 initGUI(key prmID, integer prmScreen) {
 	guiUserID = prmID;
@@ -68,7 +86,7 @@ gui(integer prmScreen) {
 	guiText = " ";
 
 	// GUI: Main
-	if (prmScreen == 0) {
+	if (prmScreen == GUI_HOME) {
 		getCurrentRestraints();
 		btn3 = "<<Style>>";
 		if (llJsonGetValue(_currentRestraints, ["gag1"]) != JSON_NULL
@@ -102,19 +120,19 @@ gui(integer prmScreen) {
 		mpButtons = multipageGui(mpButtons, 2, multipageIndex);
 	}
 	// GUI: Colorize
-	else if (prmScreen == 100) {
+	else if (prmScreen == GUI_STYLE) {
 		guiText = "Choose what you want to style.";
 		mpButtons = multipageGui(["Cloth", "Stuffing", "Texture"], 2, multipageIndex);
 	}
-	else if (prmScreen == 101) {
+	else if (prmScreen == GUI_COLOR_CLOTH) {
 		guiText = "Choose a color for the cloth.";
 		mpButtons = multipageGui(_colors, 3, multipageIndex);
 	}
-	else if (prmScreen == 102) {
+	else if (prmScreen == GUI_COLOR_STUFF) {
 		guiText = "Choose a color for the stuffing.";
 		mpButtons = multipageGui(_colors, 3, multipageIndex);
 	}
-	else if (prmScreen == 111) {
+	else if (prmScreen == GUI_TEXTURE) {
 		guiText = "Choose a texture for the gag.";
 		mpButtons = multipageGui(_textures, 3, multipageIndex);
 	}
@@ -202,10 +220,11 @@ setColorByName(string prmColorName, string prmComponent) {
 }
 
 setColor(vector prmColor, string prmComponent) {
-	_color = prmColor;
+	vector color = prmColor;
+	_currentColors = llJsonSetValue(_currentColors, [prmComponent], (string)color);
 
 	string tmpRequest = "";
-	tmpRequest = llJsonSetValue(tmpRequest, ["color"], (string)_color);
+	tmpRequest = llJsonSetValue(tmpRequest, ["color"], (string)color);
 	tmpRequest = llJsonSetValue(tmpRequest, ["attachment"], "gag");
 	tmpRequest = llJsonSetValue(tmpRequest, ["component"], prmComponent);
 	tmpRequest = llJsonSetValue(tmpRequest, ["userKey"], (string)llGetOwner());
@@ -220,6 +239,8 @@ setTextureByName(string prmTextureName, string prmComponent) {
 }
 
 setTexture(string prmTexture, string prmComponent) {
+	_currentTextures = llJsonSetValue(_currentColors, [prmComponent], prmTexture);
+
 	string tmpRequest = "";
 	tmpRequest = llJsonSetValue(tmpRequest, ["attachment"], "gag");
 	tmpRequest = llJsonSetValue(tmpRequest, ["component"], prmComponent);
@@ -250,12 +271,24 @@ execute_function(string prmFunction, string prmJson) {
 	else if (prmFunction == "getAvailableRestraints") { sendAvailabilityInfo(); }
 	else if (prmFunction == "setRPMode") { _rpMode = (integer)value; }
 	else if (prmFunction == "setVillain") { _villain = value; }
-	else if (prmFunction == "requestColor") {
+	else if (prmFunction == "setColor") { 
+		if (llJsonGetValue(value, ["attachment"]) != "gag") { return; }
+		if (!isSet(llJsonGetValue(value, ["component"]))) { return; }
+		_currentColors = llJsonSetValue(_currentColors, [llJsonGetValue(value, ["component"])], llJsonGetValue(value, ["color"]));
+	}
+	else if (prmFunction == "setTexture") { 
+		if (llJsonGetValue(value, ["attachment"]) != "gag") { return; }
+		if (!isSet(llJsonGetValue(value, ["component"]))) { return; }
+		_currentTextures = llJsonSetValue(_currentTextures, [llJsonGetValue(value, ["component"])], llJsonGetValue(value, ["texture"]));
+	}
+	else if (prmFunction == "requestStyle") {
 		if (llJsonGetValue(value, ["attachment"]) != "gag") { return; }
 		if (llJsonGetValue(value, ["name"]) != "cloth") { return; }
 		string component = llJsonGetValue(value, ["component"]);
 		if ("" == component) { component = "cloth"; }
-		setColor(_color, component);
+
+		setColor((vector)llJsonGetValue(_currentColors, [component]), component);
+		setTexture(llJsonGetValue(_currentTextures, [component]), component);
 	}
 	else if (prmFunction == "gui_gag_cloth") {
 		key userkey = (key)llJsonGetValue(prmJson, ["userkey"]);
@@ -268,12 +301,14 @@ execute_function(string prmFunction, string prmJson) {
 }
 
 default {
+	state_entry() { init(); }
+	
 	listen(integer prmChannel, string prmName, key prmID, string prmText) {
 		if (prmChannel = guiChannel) {
 			if (prmText == "<<Done>>") { exit("done"); return; }
 			else if (prmText == " ") { gui(guiScreen); return; }
 			else if (prmText == "<<Back>>") {
-				if (guiScreen == 100) { gui(0); return; }
+				if (guiScreen == 100) { gui(GUI_HOME); return; }
 				else if (guiScreen != 0) { gui(guiScreenLast); return;}
 				guiRequest("gui_bind", TRUE, guiUserID, 0);
 				return;
@@ -287,9 +322,9 @@ default {
 				return;
 			}
 
-			if (guiScreen == 0) {
+			if (guiScreen == GUI_HOME) {
 				if (prmText == "<<Style>>") {
-					gui(100);
+					gui(GUI_STYLE);
 				} else {
 					string restraint;
 					restraint = llJsonSetValue(restraint, ["type"], llJsonGetValue(getSelf(), ["part"]));
@@ -298,15 +333,15 @@ default {
 					_resumeFunction = "setRestraints";
 				}
 				return;
-			} else if (guiScreen == 100) {
-				if ("Cloth" == prmText) { gui(101); }
-				else if ("Stuffing" == prmText) { gui(102); }
-				else if ("Texture" == prmText) { gui(111); }
-			} else if (guiScreen == 101) {
+			} else if (guiScreen == GUI_STYLE) {
+				if ("Cloth" == prmText) { gui(GUI_COLOR_CLOTH); }
+				else if ("Stuffing" == prmText) { gui(GUI_COLOR_STUFF); }
+				else if ("Texture" == prmText) { gui(GUI_TEXTURE); }
+			} else if (guiScreen == GUI_COLOR_CLOTH) {
 				setColorByName(prmText, "cloth");
-			} else if (guiScreen == 102) {
-				setColorByName(prmText, "stuffing");
-			} else if (guiScreen == 111) {
+			} else if (guiScreen == GUI_COLOR_STUFF) {
+				setColorByName(prmText, "stuff");
+			} else if (guiScreen == GUI_TEXTURE) {
 				setTextureByName(prmText, "cloth");
 			}
 

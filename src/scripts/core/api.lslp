@@ -38,8 +38,6 @@ api(string prmJson) {
 			llRegionSayTo(llJsonGetValue(prmJson, ["key"]), CHANNEL_API, response);
 		}
 		return;
-	} else if ("touch" == function) {
-		simpleRequest("touch", llJsonGetValue(prmJson, ["fromKey"]));
 	}
 
 	// Validate

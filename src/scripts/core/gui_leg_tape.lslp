@@ -8,6 +8,12 @@ $import Modules.UserLib.lslm();
 string gender = "female";
 integer _rpMode = FALSE;
 
+// GUI Screens
+integer GUI_HOME = 0;
+integer GUI_STYLE = 100;
+//integer GUI_TEXTURE = 101;
+integer GUI_COLOR = 100;	// Only one option menu - share with STYLE
+
 string _villain;
 
 // Status
@@ -37,6 +43,12 @@ string getCurrentRestraints() {
 }
 
 // ===== Initializers =====
+init() {
+	if (!isSet(_currentColors)) {
+		_currentColors = llJsonSetValue(_currentColors, ["tape"], (string)COLOR_SILVER);
+	}
+}
+
 init_gui(key prmID, integer prmScreen) {
 	guiUserID = prmID;
 
@@ -60,8 +72,8 @@ gui(integer prmScreen) {
 	guiText = " ";
 
 	// GUI: Main
-	if (prmScreen == 0) {
-		btn3 = "<<Color>>";
+	if (prmScreen == GUI_HOME) {
+		btn3 = "<<Style>>";
 
 		if (!isSet(llJsonGetValue(_currentRestraints, ["ankle"])) && !isSet(llJsonGetValue(_currentRestraints, ["immobilizer"]))) {
 			mpButtons += "Ankle";
@@ -93,7 +105,7 @@ gui(integer prmScreen) {
 	}
 
 	// GUI: Colorize
-	else if (prmScreen == 100) {
+	else if (prmScreen == GUI_COLOR) {
 		guiText = "Choose a color for the leg tape.";
 		mpButtons = multipageGui(_colors, 3, multipageIndex);
 	}
@@ -179,22 +191,41 @@ sendAvailabilityInfo () {
 	simpleRequest("addAvailableRestraint", getSelf());
 }
 
-// Color Functions
-setColorByName(string prmColorName) {
-  integer tmpColorIndex = llListFindList(_colors, [prmColorName]);
-  setColor(llList2Vector(_colorVals, tmpColorIndex));
+// ===== Color Functions =====
+setColorByName(string prmColorName, string prmComponent) {
+	integer tmpColorIndex = llListFindList(_colors, [prmColorName]);
+	setColor(llList2Vector(_colorVals, tmpColorIndex), prmComponent);
 }
-setColor(vector prmColor) {
-  _color = prmColor;
 
-  string tmpRequest = "";
-  tmpRequest = llJsonSetValue(tmpRequest, ["color"], (string)_color);
-  tmpRequest = llJsonSetValue(tmpRequest, ["attachment"], llJsonGetValue(_self, ["part"]));
-  tmpRequest = llJsonSetValue(tmpRequest, ["component"], "tape");
-  tmpRequest = llJsonSetValue(tmpRequest, ["userKey"], (string)llGetOwner());
+setColor(vector color, string component) {
+	_currentColors = llJsonSetValue(_currentColors, [component], (string)color);
 
-  simpleAttachedRequest("setColor", tmpRequest);
-  simpleRequest("setColor", tmpRequest);
+	string request = "";
+	request = llJsonSetValue(request, ["color"], (string)color);
+	request = llJsonSetValue(request, ["attachment"], llJsonGetValue(getSelf(), ["part"]));
+	request = llJsonSetValue(request, ["component"], component);
+	request = llJsonSetValue(request, ["userKey"], (string)llGetOwner());
+
+	simpleAttachedRequest("setColor", request);
+	simpleRequest("setColor", request);
+}
+
+setTextureByName(string prmTextureName, string prmComponent) {
+	integer tmpTextureIndex = llListFindList(_textures, [prmTextureName]);
+	setTexture(llList2String(_textureVals, tmpTextureIndex), prmComponent);
+}
+
+setTexture(string texture, string component) {
+	_currentTextures = llJsonSetValue(_currentTextures, [component], texture);
+
+	string request = "";
+	request = llJsonSetValue(request, ["attachment"], llJsonGetValue(getSelf(), ["part"]));
+	request = llJsonSetValue(request, ["component"], component);
+	request = llJsonSetValue(request, ["texture"], texture);
+	request = llJsonSetValue(request, ["userKey"], (string)llGetOwner());
+
+	simpleAttachedRequest("setTexture", request);
+	simpleRequest("setTexture", request);
 }
 
 // ===== Gets =====
@@ -226,10 +257,14 @@ execute_function(string prmFunction, string prmJson) {
 	else if (prmFunction == "getAvailableRestraints") { sendAvailabilityInfo(); }
 	else if (prmFunction == "setRPMode") { _rpMode = (integer)value; }
 	else if (prmFunction == "setVillain") { _villain = value; }
-	else if (prmFunction == "requestColor") {
-	  if (llJsonGetValue(value, ["attachment"]) != llJsonGetValue(getSelf(), ["part"])) { return; }
-	  if (llJsonGetValue(value, ["name"]) != "tape") { return; }
-	  setColor(_color);
+	else if (prmFunction == "requestStyle") {
+	  	if (llJsonGetValue(value, ["attachment"]) != llJsonGetValue(getSelf(), ["part"])) { return; }
+	  	if (llJsonGetValue(value, ["name"]) != "tape") { return; }
+		string component = llJsonGetValue(value, ["component"]);
+		if ("" == component) { component = "tape"; }
+
+		setColor((vector)llJsonGetValue(_currentColors, [component]), component);
+		//setTexture(llJsonGetValue(_currentTextures, [component]), component);
 	}
 	else if (prmFunction == "gui_leg_tape") {
 	  key userkey = (key)llJsonGetValue(prmJson, ["userkey"]);
@@ -242,6 +277,8 @@ execute_function(string prmFunction, string prmJson) {
 }
 
 default {
+	state_entry() { init(); }
+
 	listen(integer prmChannel, string prmName, key prmID, string prmText) {
 		if (prmChannel = guiChannel) {
 			if (prmText == "<<Done>>") { exit("done"); return; }
@@ -268,9 +305,9 @@ default {
 				return;
 			}
 
-			if (guiScreen == 0) {
-				if (prmText == "<<Color>>") {
-					gui(100);
+			if (guiScreen == GUI_HOME) {
+				if (prmText == "<<Style>>") {
+					gui(GUI_STYLE);
 					return;
 				} else {
 					string restraintSet;
@@ -280,8 +317,8 @@ default {
 					_resumeFunction = "setRestraints";
 					return;
 				}
-			} else if (guiScreen == 100) {
-				setColorByName(prmText);
+			} else if (guiScreen == GUI_COLOR) {
+				setColorByName(prmText, "tape");
 				gui(guiScreen);
 				return;
 			}

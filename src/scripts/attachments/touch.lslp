@@ -9,6 +9,6 @@ apiCall(key prmTargetID, string prmFunction, string prmJson) {
 
 default {
 	touch_start(integer total_number) {
-		apiRequest(llGetOwner(), llDetectedKey(0), "touch", "0");
+		apiRequest(llGetOwner(), llDetectedKey(0), "touch", llDetectedKey(0));
 	}
 }

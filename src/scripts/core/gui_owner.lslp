@@ -218,7 +218,7 @@ setFeats(list feats) {
 
 // ===== Main Functions =====
 addExp(string prmValue) {
-	debug("Earned Experience! " + prmValue);
+	//debug("Earned Experience! " + prmValue);
 	integer experience = _ownerExp;
 	integer addValue = (integer)prmValue;
 	if (addValue > 0) { experience += addValue; }

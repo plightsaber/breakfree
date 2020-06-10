@@ -48,6 +48,15 @@ string getCurrentRestraints() {
 }
 
 // ===== Initializers =====
+init() {
+	if (!isSet(_currentColors)) {
+		_currentColors = llJsonSetValue(_currentColors, ["rope"], (string)COLOR_WHITE);
+	}
+	if (!isSet(_currentTextures)) {
+		_currentTextures = llJsonSetValue(_currentTextures, ["rope"], "ropeBraid");
+	}
+}
+
 init_gui(key prmID, integer prmScreen) {
 	guiUserID = prmID;
 
@@ -72,7 +81,7 @@ gui(integer prmScreen) {
 
 	// GUI: Main
 	if (prmScreen == GUI_HOME) {
-		btn3 = "<<Color>>";
+		btn3 = "<<Style>>";
 
 		if (!isSet(llJsonGetValue(_currentRestraints, ["ankle"])) && !isSet(llJsonGetValue(_currentRestraints, ["immobilizer"]))) {
 			mpButtons += "Ankle";
@@ -226,17 +235,17 @@ setColorByName(string prmColorName, string prmComponent) {
 	setColor(llList2Vector(_colorVals, tmpColorIndex), prmComponent);
 }
 
-setColor(vector prmColor, string prmComponent) {
-	_color = prmColor;
+setColor(vector color, string component) {
+	_currentColors = llJsonSetValue(_currentColors, [component], (string)color);
 
-	string tmpRequest = "";
-	tmpRequest = llJsonSetValue(tmpRequest, ["color"], (string)_color);
-	tmpRequest = llJsonSetValue(tmpRequest, ["attachment"], llJsonGetValue(getSelf(), ["part"]));
-	tmpRequest = llJsonSetValue(tmpRequest, ["component"], prmComponent);
-	tmpRequest = llJsonSetValue(tmpRequest, ["userKey"], (string)llGetOwner());
+	string request = "";
+	request = llJsonSetValue(request, ["color"], (string)color);
+	request = llJsonSetValue(request, ["attachment"], llJsonGetValue(getSelf(), ["part"]));
+	request = llJsonSetValue(request, ["component"], component);
+	request = llJsonSetValue(request, ["userKey"], (string)llGetOwner());
 
-	simpleAttachedRequest("setColor", tmpRequest);
-	simpleRequest("setColor", tmpRequest);
+	simpleAttachedRequest("setColor", request);
+	simpleRequest("setColor", request);
 }
 
 setTextureByName(string prmTextureName, string prmComponent) {
@@ -244,15 +253,17 @@ setTextureByName(string prmTextureName, string prmComponent) {
 	setTexture(llList2String(_textureVals, tmpTextureIndex), prmComponent);
 }
 
-setTexture(string prmTexture, string prmComponent) {
-	string tmpRequest = "";
-	tmpRequest = llJsonSetValue(tmpRequest, ["attachment"], llJsonGetValue(getSelf(), ["part"]));
-	tmpRequest = llJsonSetValue(tmpRequest, ["component"], prmComponent);
-	tmpRequest = llJsonSetValue(tmpRequest, ["texture"], prmTexture);
-	tmpRequest = llJsonSetValue(tmpRequest, ["userKey"], (string)llGetOwner());
+setTexture(string texture, string component) {
+	_currentTextures = llJsonSetValue(_currentTextures, [component], texture);
 
-	simpleAttachedRequest("setTexture", tmpRequest);
-	simpleRequest("setTexture", tmpRequest);
+	string request = "";
+	request = llJsonSetValue(request, ["attachment"], llJsonGetValue(getSelf(), ["part"]));
+	request = llJsonSetValue(request, ["component"], component);
+	request = llJsonSetValue(request, ["texture"], texture);
+	request = llJsonSetValue(request, ["userKey"], (string)llGetOwner());
+
+	simpleAttachedRequest("setTexture", request);
+	simpleRequest("setTexture", request);
 }
 
 // ===== Gets =====
@@ -284,12 +295,14 @@ execute_function(string prmFunction, string prmJson) {
 	else if (prmFunction == "getAvailableRestraints") { sendAvailabilityInfo(); }
 	else if (prmFunction == "setRPMode") { _rpMode = (integer)value; }
 	else if (prmFunction == "setVillain") { _villain = value; }
-	else if (prmFunction == "requestColor") {
+	else if (prmFunction == "requestStyle") {
 	  	if (llJsonGetValue(value, ["attachment"]) != llJsonGetValue(getSelf(), ["part"])) { return; }
 	  	if (llJsonGetValue(value, ["name"]) != "rope") { return; }
 		string component = llJsonGetValue(value, ["component"]);
 		if ("" == component) { component = "rope"; }
-		setColor(_color, component);
+
+		setColor((vector)llJsonGetValue(_currentColors, [component]), component);
+		setTexture(llJsonGetValue(_currentTextures, [component]), component);
 	}
 	else if (prmFunction == "gui_leg_rope") {
 	  key userkey = (key)llJsonGetValue(prmJson, ["userkey"]);
@@ -302,6 +315,8 @@ execute_function(string prmFunction, string prmJson) {
 }
 
 default {
+	state_entry() { init(); }
+
 	listen(integer prmChannel, string prmName, key prmID, string prmText) {
 		if (prmChannel = guiChannel) {
 			if (prmText == "<<Done>>") { exit("done"); return; }
@@ -338,8 +353,8 @@ default {
 				return;
 			}
 			if (guiScreen == GUI_HOME) {
-				if (prmText == "<<Color>>") {
-					gui(100);
+				if (prmText == "<<Style>>") {
+					gui(GUI_STYLE);
 					return;
 				} else {
 					string restraintSet;

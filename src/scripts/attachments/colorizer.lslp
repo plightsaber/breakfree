@@ -1,6 +1,6 @@
-// ===== Variables =====
-integer CHANNEL_API = -9999274;
+$import Modules.GeneralTools.lslm();
 
+// ===== Variables =====
 integer CHANNEL_ATTACHMENT = -9999277;
 string RESTRAINT_ATTACHMENT = "";
 string RESTRAINT_COMPONENT = "";
@@ -31,11 +31,11 @@ setColor(string prmInfo) {
 }
 
 setTexture(string prmInfo) {
-	if (validateTarget(prmInfo) == FALSE) { return; }
-	texture = llJsonGetValue(prmInfo, ["texture"]);
+ if (validateTarget(prmInfo) == FALSE) { return; }
+    texture = llJsonGetValue(prmInfo, ["texture"]);
 
-	llSetTexture(texture, ALL_SIDES);
-	simpleRequest("setTexture", texture);
+    llSetTexture(texture, ALL_SIDES);
+    simpleRequest("setTexture", texture);
 }
 
 integer validateTarget(string prmInfo) {
@@ -43,28 +43,6 @@ integer validateTarget(string prmInfo) {
 	if (llJsonGetValue(prmInfo, ["component"]) != RESTRAINT_COMPONENT) { return FALSE; }
 	if (llJsonGetValue(prmInfo, ["userKey"]) != (string)llGetOwner()) { return FALSE; }
 	return TRUE;
-}
-
-
-// ===== Other Functions =====
-debug(string output) {
-	// TODO: global enable/disable?
-	llOwnerSay(output);
-}
-
-apiCall(key prmTargetID, string prmFunction, string prmJson) {
-	prmJson = llJsonSetValue(prmJson, ["function"], prmFunction);
-	prmJson = llJsonSetValue(prmJson, ["userKey"], llGetOwner());
-	prmJson = llJsonSetValue(prmJson, ["apiTargetID"], (string)prmTargetID);
-
-	llRegionSayTo(prmTargetID, CHANNEL_API, prmJson);
-}
-
-simpleRequest(string prmFunction, string prmValue) {
-	string request = "";
-	request = llJsonSetValue(request, ["function"], prmFunction);
-	request = llJsonSetValue(request, ["value"], prmValue);
-	llMessageLinked(LINK_THIS, 0, request, NULL_KEY);
 }
 
 // ===== Event Controls =====
@@ -76,13 +54,13 @@ default {
 		if (queryID == configQueryID) {
 			RESTRAINT_ATTACHMENT = llJsonGetValue(configData, ["attachment"]);
 			RESTRAINT_COMPONENT = llJsonGetValue(configData, ["component"]);
-			RESTRAINT_NAME = llJsonGetValue(configData, ["type"]);
-			
-			string tmpRequest = "";
-			tmpRequest = llJsonSetValue(tmpRequest, ["attachment"], RESTRAINT_ATTACHMENT);
-			tmpRequest = llJsonSetValue(tmpRequest, ["component"], RESTRAINT_COMPONENT);
-			tmpRequest = llJsonSetValue(tmpRequest, ["name"], RESTRAINT_NAME);
-			apiCall(llGetOwner(), "requestColor", tmpRequest);
+			RESTRAINT_NAME = llJsonGetValue(configData, ["name"]);
+
+			string request = "";
+			request = llJsonSetValue(request, ["attachment"], RESTRAINT_ATTACHMENT);
+			request = llJsonSetValue(request, ["component"], RESTRAINT_COMPONENT);
+			request = llJsonSetValue(request, ["name"], RESTRAINT_NAME);
+			apiRequest(llGetOwner(), llGetOwner(), "requestStyle", request);
 		}
 	}
 

@@ -27,11 +27,11 @@ init() {
 integer isCallTarget(string json) {
 	string attachment = llJsonGetValue(json, ["attachment"]);
 	string component = llJsonGetValue(json, ["component"]);
-	string type = llJsonGetValue(json, ["type"]);
+	string userKey = llJsonGetValue(json, ["userKey"]);
 
 	if (RESTRAINT_ATTACHMENT != attachment) { return FALSE; }
 	if (RESTRAINT_COMPONENT != component) { return FALSE; }
-	if (RESTRAINT_NAME != type) { return FALSE; }
+	if (llGetOwner() != userKey) { return FALSE; }
 
 	return TRUE;
 }
