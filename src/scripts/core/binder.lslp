@@ -25,7 +25,6 @@ init() {
 }
 
 addRestraint(string prmJson) {
-	string type = llJsonGetValue(prmJson, ["type"]);
 	string restraint = llJsonGetValue(prmJson, ["restraint"]);
 	string slot = llJsonGetValue(restraint, ["slot"]);
 

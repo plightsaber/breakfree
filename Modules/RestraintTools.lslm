@@ -76,7 +76,7 @@ string getTopRestraint(string prmType) {
 
 list getSearchSlots(string prmType) {
 	if (prmType == "arm") {
-		return ["wrist", "elbow", "torso"];
+		return ["wrist", "elbow", "torso", "armExternal"];
 	} else if (prmType == "leg") {
 		return ["ankle", "knee", "immobilizer"];
 	} else if (prmType == "gag") {

@@ -1,8 +1,15 @@
+$import Modules.GeneralTools.lslm();
+$import Modules.UserLib.lslm();
+
+////// BREAKFREE /////
+integer _armBound;
+integer _listenID;
+
 ////////////////////////////////////////////////////////////////////////////////
 list lDefault = [" ", "Main...", " "];    // the 3 lower buttons, "Main..." must
                                         // always be the middle one, the left
-                                        // and right ones are " ", or "<<" 
-                                        // and ">>" respectively, or custom 
+                                        // and right ones are " ", or "<<"
+                                        // and ">>" respectively, or custom
                                         // labels if absolutely needed
 
 list lCustom = [];     // <-- YOUR BUTTONS HERE
@@ -11,7 +18,7 @@ list lCustom = [];     // <-- YOUR BUTTONS HERE
 
 
 ////////////////////////////////////////////////////////////////////////////////
-integer DEBUG_LEVEL = 0;    // set to > 0 if you want to show debug messages of 
+integer DEBUG_LEVEL = 0;    // set to > 0 if you want to show debug messages of
                             // level <= DEBUG_LEVEL (see the DEBUGN() function)
                             // set to 0 for no debug at all
                             // here 5 and upper will show function calls
@@ -34,26 +41,6 @@ integer nIndent = 0;    // indentation for debugging purposes
 
 
 ////////////////////////////////////////////////////////////////////////////////
-integer CHANNEL_API = -9999274;
-////////////////////////////////////////////////////////////////////////////////
-
-
-
-
-
-////////////////////////////////////////////////////////////////////////////////
-apiCall(string prmFunction, string prmJson) {
-  string request = "";
-  request = llJsonSetValue(prmJson, ["function"], prmFunction);
-  request = llJsonSetValue(request, ["apiTargetID"], (string)llGetOwner());
-  llRegionSayTo(llGetOwner(), CHANNEL_API, request);
-}
-////////////////////////////////////////////////////////////////////////////////
-
-
-
-
-////////////////////////////////////////////////////////////////////////////////
 DEBUG (string msg) {
     // Won't do anything if DEBUG_LEVEL == 0
     if (DEBUG_LEVEL) DEBUGN (1, msg);
@@ -71,7 +58,7 @@ DEBUGN (integer level, string msg) {
         for (i=0; i<nIndent; ++i) {
             indent = (indent="") + indent + "|       ";
         }
-        llOwnerSay (llGetScriptName() + "   " + indent + msg 
+        llOwnerSay (llGetScriptName() + "   " + indent + msg
         + "   <lvl " + (string)level + ", " + (string)llGetFreeMemory() + " b>");
     }
 }
@@ -112,17 +99,17 @@ string Iif (integer expr, string right, string wrong) {
 
 ////////////////////////////////////////////////////////////////////////////////
 Menu (key id) {
-    // shows a menu, sets a listening channel, a listen handle and a 
+    // shows a menu, sets a listening channel, a listen handle and a
     // 60 seconds timeout
     DEBUGF (1, "Menu", [id]);
     llListenRemove (nDialogHandle);
     nDialogChannel = - (100000+(integer)llFrand(900000.0));
     nDialogHandle = llListen (nDialogChannel, "", id, "");
-    
+
     string hdr = "\n";
-    
+
     hdr += "Your BreakFree Integration is successfully installed";
-    
+
     DEBUGN (10, "Dialog " + hdr);
     DEBUGN (10, "Dialog [" + llList2CSV (lDefault + lCustom) + "]");
     llDialog (id, hdr, lDefault + lCustom, nDialogChannel);
@@ -140,6 +127,10 @@ Init () {
     nDialogTimeout = 0;
     llOwnerSay (llGetScriptName () + " ready");
     DEBUGF (0, "Init", []);
+
+    // BREAKFREE
+	if (_listenID) { llListenRemove(_listenID); }
+	_listenID = llListen(CHANNEL_API, "", NULL_KEY, "");
 }
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -154,9 +145,9 @@ default {
         Init ();
         DEBUGF (0, "state_entry", []);
     }
-    
-    
-    
+
+
+
     listen(integer channel, string name, key id, string msg) {
         DEBUGF (1, "listen", [channel, name, id, msg]);
         if (channel == nDialogChannel) {
@@ -169,20 +160,39 @@ default {
                 llMessageLinked (LINK_SET, 0, "Toucher", id);
             }
             else {
-                // Don't set remenu to 0 unless absolutely necessary 
+                // Don't set remenu to 0 unless absolutely necessary
                 // (when you don't want the menu to reopen after clicking)
-                integer remenu = 1; 
+                integer remenu = 1;
                 // YOUR CODE HERE >>>
                 // <<< YOUR CODE HERE
                 // Reopen menu for this plugin
                 if (remenu) Menu (id);
             }
         }
+
+        // BREAKFREE
+        if (channel = _listenID) {
+			string function = llJsonGetValue(msg, ["function"]);
+			string value = llJsonGetValue(msg, ["value"]);
+			if (!isSet(function)) {
+				debug("ERROR: API call missing function: " + msg);
+				return;
+			}
+
+			if (function == "getTouchInfo") {
+				string user = getDefaultUser(llGetOwner());
+				user = llJsonSetValue(user, ["armBound"], (string)_armBound);
+				apiRequest(llJsonGetValue(msg, ["fromKey"]), llGetOwner(), "touchUser", user);
+			}
+
+        }
+
+
         DEBUGF (0, "listen", [channel, name, id, msg]);
     }
-    
-    
-    
+
+
+
     link_message(integer sender_num, integer num, string str, key id) {
 //~         DEBUGF (1, "link_message", [sender_num, num, str, id]);
         if (str=="Lockable") {
@@ -203,9 +213,8 @@ default {
                 nLock = 0;
                 kHolder = NULL_KEY;
                 // BF BEGIN
-                string apiJson = "";
-                apiJson = llJsonSetValue(apiJson, ["type"], "arm");
-                apiCall("releaseRestraint", apiJson);
+                _armBound = FALSE;
+                apiRequest(llGetOwner(), llGetOwner(), "rmSlot", "armExternal");
                 // BF END
             }
             else if (num > 0) { // lock
@@ -214,14 +223,19 @@ default {
                 nLock = num;
                 kHolder = id;
                 // BF BEGIN
+                _armBound = TRUE;
                 string apiJson = "";
-                apiJson = llJsonSetValue(apiJson, ["type"], "arm");
-                apiJson = llJsonSetValue(apiJson, ["restraint"], "{\"type\":\"external\"}");
-                apiCall("overrideRestraint", apiJson);
+                string restraint;
+                restraint = llJsonSetValue(restraint, ["uid"], "RealRestraint");
+                restraint = llJsonSetValue(restraint, ["name"], "RealRestraint");
+                restraint = llJsonSetValue(restraint, ["type"], "external");
+                restraint = llJsonSetValue(restraint, ["slot"], "armExternal");
+
+                apiRequest(llGetOwner(), llGetOwner(), "addRestraint", llJsonSetValue(apiJson, ["restraint"], restraint));
                 // BF END
             }
             else if (num == -21) { // periodical report from Lockable
-                // Terminate the dialog listener if we have waited too long 
+                // Terminate the dialog listener if we have waited too long
                 // (user probably pressed "Ignore" on the menu)
                 if (nDialogTimeout > 0) {
                     --nDialogTimeout;
@@ -324,7 +338,7 @@ default {
 //~ - /Escapes: number of times the captive escaped by their own means (note : it should have been after "BestEscapeTimeInSeconds", but historically was not included in the reports before
 //~ - ,Keyholder_UUID: UUID of the keyholder, NULL_KEY if nobody has the key (v1.31)
 //~ - /Keyholder_name: Display name of the keyholder at the time it was known (could be different now) (v1.31)
-//~     
+//~
 
 
 //~ ////////////////////////////////////////////////////////////////////////
