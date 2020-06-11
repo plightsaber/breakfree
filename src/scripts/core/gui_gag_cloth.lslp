@@ -239,7 +239,7 @@ setTextureByName(string prmTextureName, string prmComponent) {
 }
 
 setTexture(string prmTexture, string prmComponent) {
-	_currentTextures = llJsonSetValue(_currentColors, [prmComponent], prmTexture);
+	_currentTextures = llJsonSetValue(_currentTextures, [prmComponent], prmTexture);
 
 	string tmpRequest = "";
 	tmpRequest = llJsonSetValue(tmpRequest, ["attachment"], "gag");
