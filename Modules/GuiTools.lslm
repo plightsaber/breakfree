@@ -14,7 +14,7 @@ integer guiChannel;
 integer guiScreen;
 integer guiScreenLast;
 string guiText;
-integer guiTimeout = 30;
+integer guiTimeout = 60;
 
 exit(string prmReason) {
   llListenRemove(guiID);
