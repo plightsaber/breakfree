@@ -60,7 +60,7 @@ init() {
 	_ownerID = llGetOwner();
 
 	// Reset owner if mismatched.
-	if (llJsonGetValue(_owner, ["uid"]) != _ownerID) {
+	if (llJsonGetValue(_owner, ["key"]) != _ownerID) {
 		_owner = "";
 	}
 
