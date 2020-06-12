@@ -7,17 +7,14 @@ string getDefaultUser(key userKey) {
 	user = llJsonSetValue(user, ["name"], llGetDisplayName(userKey));
 	user = llJsonSetValue(user, ["gender"], getGender(userKey));
 
-	// Attributes
-	user = llJsonSetValue(user, ["str"], "1");
-	user = llJsonSetValue(user, ["dex"], "1");
-	user = llJsonSetValue(user, ["int"], "1");
-
 	// Skills
-	list skills;
-	user = llJsonSetValue(user, ["skills"], llList2Json(JSON_ARRAY, skills));
+	list feats;
+	user = llJsonSetValue(user, ["feats"], llList2Json(JSON_ARRAY, feats));
 
 	// Bound Status
-	user = llJsonSetValue(user, ["armBound"], "free");
+	user = llJsonSetValue(user, ["armBound"], "0");
+	user = llJsonSetValue(user, ["handBound"], "0");
+	user = llJsonSetValue(user, ["blade"], "0");
 
 	return user;
 }

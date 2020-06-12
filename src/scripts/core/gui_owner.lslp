@@ -213,6 +213,7 @@ setExp(integer exp) {
 setFeats(list feats) {
 	_ownerFeats = llListSort(feats, 1, TRUE);
 	_owner = llJsonSetValue(_owner, ["feats"], llList2Json(JSON_ARRAY, feats));
+	simpleRequest("setOwner", _owner);
 	simpleRequest("setOwnerFeats", llList2Json(JSON_ARRAY, feats));
 }
 

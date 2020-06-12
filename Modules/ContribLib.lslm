@@ -8,3 +8,15 @@ list ListXnotY(list lx, list ly) {// return elements in X list that are not in Y
 			lz += llList2List(lx,i,i);
 	return lz;
 }
+
+string ToTitle(string src){
+  list words = llParseString2List(llToLower(src),[],[".",";","?","!","\""," ","\n"]);
+  integer ll = llGetListLength(words);
+  integer lc = (-1);
+  string word = "";
+  while (((++lc) < ll)) {
+    string cap = llToUpper(llGetSubString((word = llList2String(words,lc)),0,0));
+    (words = llListReplaceList(words,[(cap + llDeleteSubString(word,0,0))],lc,lc));
+  }
+  return llDumpList2String(words,"");
+}

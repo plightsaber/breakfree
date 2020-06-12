@@ -3,7 +3,8 @@ $import Modules.GuiTools.lslm();
 $import Modules.RestraintTools.lslm();
 $import Modules.UserLib.lslm();
 
-integer TOUCH_MAX_DISTANCE = 1;
+float TOUCH_BOUND_MAX_DISTANCE = 1.5;
+float TOUCH_MAX_DISTANCE = 3.0;
 float TOUCH_TIMEOUT = 3.0;
 
 // Quick Keys
@@ -35,6 +36,7 @@ init(key prmID) {
 		_activeKey = prmID;
 		guiRequest("gui_owner", FALSE, _activeKey, 0);
 	} else {
+		_toucherKey = prmID;
 		apiRequest(prmID, llGetOwner(), "getTouchInfo", "");
 		//debug("Setting timer...");
 		llSetTimerEvent(TOUCH_TIMEOUT); // Stop Timer
@@ -48,29 +50,33 @@ touchUser(string user) {
 	llSetTimerEvent(0.0);	 // Stop Timer
 
 	// Is the toucher in a reasonable range?
-	_toucherKey = (key)llJsonGetValue(user, ["key"]);
-	vector toucherPos = llList2Vector(llGetObjectDetails(_toucherKey, [OBJECT_POS]), 0);
+	key userKey = (key)llJsonGetValue(user, ["key"]);
+	vector toucherPos = llList2Vector(llGetObjectDetails(userKey, [OBJECT_POS]), 0);
 
 	integer toucherDistance = llAbs(llFloor(llVecDist(toucherPos, llGetPos())));
 	integer toucherBound = (integer)llJsonGetValue(user, ["armBound"]);
 
+	float checkDistance;
+	if (toucherBound) { checkDistance = TOUCH_BOUND_MAX_DISTANCE; }
+	else { checkDistance = TOUCH_MAX_DISTANCE; }
+
 	if (toucherDistance > TOUCH_MAX_DISTANCE) {
 		// TODO: Get preferred username
-		llRegionSayTo(_toucherKey, 0, llGetDisplayName(llGetOwner()) + " is too far away.");
+		llRegionSayTo(userKey, 0, llGetDisplayName(llGetOwner()) + " is too far away.");
 		return;
 	}
 
 	if (toucherBound && !isBound()) {
-		llRegionSayTo(_toucherKey, 0, "You can't do that while bound.");
+		llRegionSayTo(userKey, 0, "You can't do that while bound.");
 		return;
 	}
 
 	simpleRequest("resetGUI", "override");
-	_activeKey = _toucherKey;
+	_activeKey = userKey;
 
 	simpleRequest("setToucher", user);
 	if (isBound()) {
-		if (_rpMode || (!toucherBound && _toucherKey == _villainKey)) {
+		if (_rpMode || (!toucherBound && _activeKey == _villainKey)) {
 			guiRequest("gui_bind", FALSE, _activeKey, 0);
 			return;
 		}

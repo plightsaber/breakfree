@@ -3,26 +3,40 @@ $module ()
 integer CHANNEL_API = -9999274;
 integer debugging = TRUE;
 
-debug(string output){
+debug(string output)
+{
 	if (debugging) llOwnerSay(output);
 }
 
-simpleRequest(string prmFunction, string prmValue) {
-	string request = "";
-	request = llJsonSetValue(request, ["function"], prmFunction);
-	request = llJsonSetValue(request, ["value"], prmValue);
-	llMessageLinked(LINK_THIS, 0, request, NULL_KEY);
-}
-
-integer isSet(string jsonValue) {
-	return (jsonValue != "" && jsonValue != JSON_NULL && jsonValue != JSON_INVALID && jsonValue != "0" && jsonValue != NULL_KEY);
-}
-
-apiRequest(key toKey, key fromKey, string function, string value){
+apiRequest(key toKey, key fromKey, string function, string value)
+{
 	string request;
 	request = llJsonSetValue(request, ["function"], function);
 	request = llJsonSetValue(request, ["fromKey"], fromKey);
 	request = llJsonSetValue(request, ["toKey"], toKey);
 	request = llJsonSetValue(request, ["value"], value);
 	llRegionSayTo(toKey, CHANNEL_API, request);
+}
+
+simpleRequest(string function, string value) 
+{
+	string request = "";
+	request = llJsonSetValue(request, ["function"], function);
+	request = llJsonSetValue(request, ["value"], value);
+	llMessageLinked(LINK_THIS, 0, request, NULL_KEY);
+}
+
+integer isSet(string jsonValue) 
+{
+	return (jsonValue != "" && jsonValue != JSON_NULL && jsonValue != JSON_INVALID && jsonValue != "0" && jsonValue != NULL_KEY);
+}
+
+integer roll(integer dice, integer sides) 
+{
+	integer result = 0;
+	integer i;
+	for (i = 0; i < dice; i++) {
+		result += llCeil(llFrand(sides));
+	}
+	return result;
 }
