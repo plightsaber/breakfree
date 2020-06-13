@@ -223,25 +223,23 @@ string getPoses() {
 	_poseLib = llJsonSetValue(_poseLib, ["leg", "ballRight", "poseRight"], "ballLeft");
 	_poseLib = llJsonSetValue(_poseLib, ["leg", "ballRight", "poseFall"], JSON_NULL);
 
-	_poseLib = llJsonSetValue(_poseLib, ["leg", "poseball00", "base"], "animLeg_poseball_00");
-	_poseLib = llJsonSetValue(_poseLib, ["leg", "poseball00", "poseUp"], "poseball03");
-	_poseLib = llJsonSetValue(_poseLib, ["leg", "poseball00", "poseDown"], "poseball01");
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "pbBed01", "base"], "animLeg_pbBed_001");
 
-	_poseLib = llJsonSetValue(_poseLib, ["leg", "poseball01", "base"], "animLeg_poseball_01");
-	_poseLib = llJsonSetValue(_poseLib, ["leg", "poseball01", "poseUp"], "poseball00");
-	_poseLib = llJsonSetValue(_poseLib, ["leg", "poseball01", "poseDown"], "poseball0");
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "pbChair01", "base"], "animLeg_pbChair_001");
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "pbChair01", "poseUp"], "pbChair03");
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "pbChair01", "poseDown"], "pbSit02");
 
-	_poseLib = llJsonSetValue(_poseLib, ["leg", "poseball02", "base"], "animLeg_poseball_02");
-	_poseLib = llJsonSetValue(_poseLib, ["leg", "poseball02", "poseUp"], "poseball01");
-	_poseLib = llJsonSetValue(_poseLib, ["leg", "poseball02", "poseDown"], "poseball03");
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "pbChair02", "base"], "animLeg_pbChair_002");
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "pbChair02", "poseUp"], "pbChair01");
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "pbChair02", "poseDown"], "pbChair03");
 
-	_poseLib = llJsonSetValue(_poseLib, ["leg", "poseball03", "base"], "animLeg_poseball_03");
-	_poseLib = llJsonSetValue(_poseLib, ["leg", "poseball03", "poseUp"], "poseball02");
-	_poseLib = llJsonSetValue(_poseLib, ["leg", "poseball03", "poseDown"], "poseball00");
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "pbChair03", "base"], "animLeg_pbChair_003");
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "pbChair03", "poseUp"], "pbChair02");
+	_poseLib = llJsonSetValue(_poseLib, ["leg", "pbChair03", "poseDown"], "pbChair01");
 
 	return _poseLib;
 }
 
 list getPoseBallPoseList() {
-	return ["poseball00", "poseball01", "poseball02", "poseball03"];
+	return ["pbStand01", "pbChair01", "pbChair02", "pbChair03"];
 }
