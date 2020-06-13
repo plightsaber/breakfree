@@ -64,7 +64,11 @@ gui(integer prmScreen)
 	guiText = " ";
 
 	if (prmScreen == 0 && ((integer)llJsonGetValue(CONFIG, ["gagOnly"]))) {
-		guiRequest("escape_gag", FALSE, guiUserID, 0);
+		if (!isSet(llJsonGetValue(_restraints, ["gagged"]))) {
+			return;
+		}
+
+		getGui("gag");
 		return;
 	}
 
@@ -229,8 +233,8 @@ integer checkComplexity()
 	integer complexity = (integer)llJsonGetValue(_restraints, ["security", _activePart, "complexity"]);
 
 	if (complexityProgress >= complexity) {
-		// Reset puzzle and progress
-		refreshPuzzle("complexity");
+		_escapeProgress = JSON_NULL;
+		_puzzles = JSON_NULL;
 
 		llWhisper(0, getOwnerName() + " is freed from " + getOwnerPronoun("her") + " " + _activePart + " restraints.");
 		simpleRequest("remRestraint", _activePart);
