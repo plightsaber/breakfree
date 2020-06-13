@@ -229,6 +229,9 @@ integer checkComplexity()
 	integer complexity = (integer)llJsonGetValue(_restraints, ["security", _activePart, "complexity"]);
 
 	if (complexityProgress >= complexity) {
+		// Reset puzzle and progress
+		refreshPuzzle("complexity");
+
 		llWhisper(0, getOwnerName() + " is freed from " + getOwnerPronoun("her") + " " + _activePart + " restraints.");
 		simpleRequest("remRestraint", _activePart);
 		guiScreen = GUI_HOME;	// Exit the current screen when restraint level is removed
@@ -519,8 +522,8 @@ list generatePuzzle(integer length) {
 refreshPuzzle(string puzzleType) {
 	string restraint = _activePart;
 
-	_escapeProgress = llJsonSetValue(_escapeProgress, [puzzleType, "progress"], "0");
 	_escapeProgress = llJsonSetValue(_escapeProgress, [puzzleType, "maxProgress"], "0");
+	updateProgress(puzzleType, 0);
 
 	string securityLevel = llJsonGetValue(_restraints, ["security", restraint, puzzleType]);
 	if (!isSet(securityLevel)) {
