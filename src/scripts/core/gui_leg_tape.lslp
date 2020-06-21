@@ -131,7 +131,7 @@ string defineRestraint(string prmName) {
 
 	// Type-specific values
 	restraint = llJsonSetValue(restraint, ["name"], prmName);
-	restraint = llJsonSetValue(_self, ["canCut"], "1");
+	restraint = llJsonSetValue(restraint, ["canCut"], "1");
 	restraint = llJsonSetValue(restraint, ["canEscape"], "1");
 	restraint = llJsonSetValue(restraint, ["canTether"], "0");
 	restraint = llJsonSetValue(restraint, ["canUseItem"], "1");

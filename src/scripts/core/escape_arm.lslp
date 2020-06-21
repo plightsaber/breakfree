@@ -25,12 +25,14 @@ getEscapeData(string restraint)
 setRestraints(string restraints) {
 	list slots = getSearchSlots(RESTRAINT_TYPE);
 	integer index;
+
 	for (index = 0; index < llGetListLength(slots); ++index) {
 		string slot = llList2String(slots, index);
 		if (llJsonGetValue(_restraints, ["slots", slot]) != llJsonGetValue(restraints, ["slots", slot])) {
 			// Refresh puzzles and progress on restraint change
 			_progress = JSON_NULL;
 			_puzzles = JSON_NULL;
+			index = llGetListLength(slots); // Break the loop
 		}
 	}
 

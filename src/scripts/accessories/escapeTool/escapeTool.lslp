@@ -3,6 +3,7 @@ $import Modules.GuiTools.lslm();
 $import Modules.UserLib.lslm();
 
 // ===== Constants and Variables ===== (Thanks Bioshock <_<)
+string TOOL_TYPE = "blade";		// blade | cropper | pick
 integer TOUCH_MAX_DISTANCE = 1;
 float TOUCH_TIMEOUT = 3.0;
 
@@ -29,8 +30,8 @@ init(key userKey) {
 	// Request User Object
 	string request = "";
 	request = llJsonSetValue(request, ["function"], "getTouchInfo");
-	request = llJsonSetValue(request, ["userID"], llGetKey());
-	request = llJsonSetValue(request, ["apiTargetID"],	_toucherKey);
+	request = llJsonSetValue(request, ["fromKey"], llGetKey());
+	request = llJsonSetValue(request, ["toKey"], _toucherKey);
 
 	_currentState = "getTouchInfo";
 	llRegionSayTo(_toucherKey, CHANNEL_API, request);
@@ -72,7 +73,7 @@ pingBound() {
 sendTouch(key userKey) {
 	_toucherKey = NULL_KEY;
 	string value = _guiUser;
-	value = llJsonSetValue(value, ["blade"], "1");
+	value = llJsonSetValue(value, [TOOL_TYPE], "1");
 
 	string request;
 	request = llJsonSetValue(request, ["function"], "touchUser");
@@ -109,7 +110,7 @@ default {
 			_boundUserNames += llGetDisplayName(llJsonGetValue(message, ["userKey"]));
 			return;
 		} else if ("getTouchInfo" == _currentState) {
-			_guiUser = message;
+			_guiUser = llJsonGetValue(message, ["value"]);
 			pingBound();
 			return;
 		}

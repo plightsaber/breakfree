@@ -12,6 +12,8 @@ key _activeKey = NULL_KEY;
 key _toucherKey;
 key _villainKey;
 
+string _owner;
+
 // Settings
 integer _rpMode = FALSE;
 
@@ -34,6 +36,7 @@ init(key prmID) {
 	if (prmID == llGetOwner()) {
 		simpleRequest("resetGUI", "override");
 		_activeKey = prmID;
+		simpleRequest("setToucher", _owner);
 		guiRequest("gui_owner", FALSE, _activeKey, 0);
 	} else {
 		_toucherKey = prmID;
@@ -76,7 +79,7 @@ touchUser(string user) {
 
 	simpleRequest("setToucher", user);
 	if (isBound()) {
-		if (_rpMode || (!toucherBound && _activeKey == _villainKey)) {
+		if (_rpMode || (!toucherBound && _activeKey == _villainKey) && _activeKey != llGetOwner()) {
 			guiRequest("gui_bind", FALSE, _activeKey, 0);
 			return;
 		}
@@ -110,6 +113,7 @@ default {
 
 		if (function == "touch") { init(value);	}
 		else if (function == "touchUser") {	touchUser(value); }
+		else if (function == "setOwner") { _owner = value; }
 		else if (function == "setRestraints") { _restraints = value; }
 		else if (function == "setVillainKey") { _villainKey = value; }
 		else if (function == "setRPMode") { _rpMode = (integer)value; }

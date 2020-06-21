@@ -229,8 +229,10 @@ string getSecurityDetails(string prmType) {
 	details = llJsonSetValue(details, ["tightness"], (string)tightness);
 
 	// Other properties
+	details = llJsonSetValue(details, ["canCrop"], llJsonGetValue(topRestraint, ["canCrop"]));
 	details = llJsonSetValue(details, ["canCut"], llJsonGetValue(topRestraint, ["canCut"]));
 	details = llJsonSetValue(details, ["canEscape"], llJsonGetValue(topRestraint, ["canEscape"]));
+	details = llJsonSetValue(details, ["canPick"], llJsonGetValue(topRestraint, ["canPick"]));
 
 	return details;
 }

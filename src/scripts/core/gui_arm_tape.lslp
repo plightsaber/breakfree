@@ -147,7 +147,7 @@ string defineRestraint(string prmName) {
 
 	// Type-specific values
 	restraint = llJsonSetValue(restraint, ["name"], prmName);
-	restraint = llJsonSetValue(_self, ["canCut"], "1");
+	restraint = llJsonSetValue(restraint, ["canCut"], "1");
 	restraint = llJsonSetValue(restraint, ["canEscape"], "1");
 	restraint = llJsonSetValue(restraint, ["canTether"], "0");
 	restraint = llJsonSetValue(restraint, ["canUseItem"], "1");
@@ -202,15 +202,12 @@ string defineRestraint(string prmName) {
 
 		list liAttachments;
 		list liPoses;
-		if (llJsonGetValue(getCurrentRestraints(), ["elbow"]) != JSON_NULL) {
+		if (llJsonGetValue(getCurrentRestraints(), ["elbow"]) != JSON_NULL || llJsonGetValue(getCurrentRestraints(), ["wrist"]) == "backCuff") {
 			liAttachments += "armTape_backTight_harness";
-			liPoses = ["backTight"];
 		} else if (llJsonGetValue(getCurrentRestraints(), ["wrist"]) == "backRope" || llJsonGetValue(getCurrentRestraints(), ["wrist"]) == "backTape") {
 			liAttachments += "armTape_back_harness";
-			liPoses = ["back"];
-		} else if (llJsonGetValue(getCurrentRestraints(), ["wrist"]) == "frontRope" || llJsonGetValue(getCurrentRestraints(), ["wrist"]) == "frontTape") {
+		} else if (llJsonGetValue(getCurrentRestraints(), ["wrist"]) == "frontRope" || llJsonGetValue(getCurrentRestraints(), ["wrist"]) == "frontTape" || llJsonGetValue(getCurrentRestraints(), ["wrist"]) == "frontCuff") {
 			liAttachments += "armTape_front_harness";
-			liPoses = ["front"];
 		}
 		restraint = llJsonSetValue(restraint, ["uid"], "harnessTape");
 		restraint = llJsonSetValue(restraint, ["slot"], "torso");
@@ -335,7 +332,7 @@ execute_function(string prmFunction, string prmJson) {
 
 default {
 	state_entry() { init(); }
-	
+
 	listen(integer prmChannel, string prmName, key prmID, string prmText) {
 		if (prmChannel = guiChannel) {
 			if (prmText == "<<Done>>") { exit("done"); return; }

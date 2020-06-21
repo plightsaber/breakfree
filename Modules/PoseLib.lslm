@@ -8,8 +8,10 @@ string getPoses() {
 	// Arm poses
 	_poseLib = llJsonSetValue(_poseLib, ["arm", "sides", "base"], "animArm_sides");
 	_poseLib = llJsonSetValue(_poseLib, ["arm", "back", "base"], "animArm_back");
+	_poseLib = llJsonSetValue(_poseLib, ["arm", "backLoose", "base"], "animArm_backLoose");
 	_poseLib = llJsonSetValue(_poseLib, ["arm", "backTight", "base"], "animArm_backTight");
 	_poseLib = llJsonSetValue(_poseLib, ["arm", "front", "base"], "animArm_front");
+	_poseLib = llJsonSetValue(_poseLib, ["arm", "frontLoose", "base"], "animArm_frontLoose");
 	_poseLib = llJsonSetValue(_poseLib, ["arm", "box", "base"], "animArm_box");
 
 	// Leg poses

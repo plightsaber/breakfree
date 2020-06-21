@@ -74,8 +74,8 @@ default {
 		if (function == "setRestraints") {
 			_restraints = value;
 			_owner = llJsonSetValue(_owner, ["armBound"], llJsonGetValue(value, ["armBound"]));
-			_owner = llJsonSetValue(_owner, ["handbound"], (string)isSet(llJsonGetValue(value, ["slots", "hand"])));
-		} else if (function == "setFeats") {
+			_owner = llJsonSetValue(_owner, ["handBound"], (string)isSet(llJsonGetValue(value, ["slots", "hand"])));
+		} else if (function == "setOwnerFeats") {
 			_owner = llJsonSetValue(_owner, ["feats"], value);
 		}
 	}

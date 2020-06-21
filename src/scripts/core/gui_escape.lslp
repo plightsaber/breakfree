@@ -91,9 +91,24 @@ gui(integer prmScreen)
 		btn4 = "Twist";
 		btn5 = "Struggle";
 		btn6 = "Thrash";
+
 		if (!isSet(llJsonGetValue(_restraints, ["slots", "hand"]))) { btn7 = "Pick"; }
 		btn8 = "Tug";
 		btn9 = "Yank";
+
+		// Lockpick Verb overrides
+		if (isPicking() && !isSet(llJsonGetValue(_restraints, ["slots", "hand"]))) {
+			btn7 = "Poke";
+			btn8 = "Sweep";
+			btn9 = "Turn";
+		}
+
+		// Blade / Cropper Verb overrides
+		if (isCutting() && !isSet(llJsonGetValue(_restraints, ["slots", "hand"]))) {
+			btn7 = "Slice";
+			btn8 = "Dice";
+			btn9 = "Rend";
+		}
 
 		guiText = "Restraint: " + ToTitle(_activePart);	// TODO: Get full name of restraint
 		guiText += "\nSecurity: " + displaySecurity(_activePart);
@@ -104,8 +119,23 @@ gui(integer prmScreen)
 		btn5 = "Tug";
 		btn6 = "Yank";
 
+		// Lockpick Verb overrides
+		if (isPicking() && !isSet(llJsonGetValue(_restraints, ["slots", "hand"]))) {
+			btn4 = "Poke";
+			btn5 = "Sweep";
+			btn6 = "Turn";
+		}
+
+		// Blade / Cropper Verb overrides
+		if (isCutting() && !isSet(llJsonGetValue(_restraints, ["slots", "hand"]))) {
+			btn7 = "Slice";
+			btn8 = "Dice";
+			btn9 = "Rend";
+		}
+
 		guiText = "Restraint: " + ToTitle(_activePart);	// TODO: Get full name of restraint
-		guiText += "\nTightness: " + displaySecurity(_activePart);
+		guiText += "\nSecurity: " + displaySecurity(_activePart);
+		guiText += "\n" + getSuggestedAction();
 		// TODO: Suggested action for feats?
 		if (_actionMsg) { guiText += "\n" + _actionMsg; }
 
@@ -173,27 +203,29 @@ string displaySecurity(string restraint)
 
 string getSuggestedAction()
 {
-	if (isAssisted()) {
-		return "";
-	}
+	integer eidetic = hasFeat(_guiUser, "Eidetic");
+	integer intuitive = hasFeat(_guiUser, "Intuitive");
 
-	integer eidetic = hasFeat(_owner, "Eidetic");
-	integer intuitive = hasFeat(_owner, "Intuitive");
-
+	// Check tightness vs integrity suggestion
+	string puzzleType = "tightness";
 	integer progress = (integer)llJsonGetValue(_escapeProgress, ["tightness", "progress"]);
 	integer tightness = (integer)llJsonGetValue(_restraints, ["security", _activePart, "tightness"]);
 	integer maxProgress = (integer)llJsonGetValue(_escapeProgress, ["tightness", "maxProgress"]);
 
-	if ((progress >= tightness || ignoreTightness()) && !intuitive) {
-		return "You think it is time to break free!";
-	} else if (maxProgress > progress && eidetic && !ignoreTightness()) {
-		return "You think you should try to " + action2String((integer)llJsonGetValue(_puzzles, ["tightness", progress]), "tightness");
-	} else if (intuitive) {
-		string puzzleType = "tightness";
-		if (progress >= tightness || ignoreTightness()) {
-			puzzleType = "integrity";
-		}
+	if (ignoreTightness() || progress >= tightness) {
+		puzzleType = "integrity";
+		progress = (integer)llJsonGetValue(_escapeProgress, ["integrity", "progress"]);
+		tightness = (integer)llJsonGetValue(_restraints, ["security", _activePart, "integrity"]);
+		maxProgress = (integer)llJsonGetValue(_escapeProgress, ["integrity", "maxProgress"]);
+	}
 
+	if ("integrity" == puzzleType && !intuitive && !isPicking()) {
+		return "You think it is time to break free!";
+	} else if (isPicking() && "integrity" == puzzleType && !intuitive) {
+		return "You think it is time to pick the lock!";
+	} else if (maxProgress > progress && eidetic) {
+		return "You think you should try to " + action2String((integer)llJsonGetValue(_puzzles, [puzzleType, progress]), puzzleType);
+	} else if (intuitive) {
 		integer action1 = (integer)llJsonGetValue(_puzzles, [puzzleType, progress]);
 		integer action2;
 		do {
@@ -219,6 +251,18 @@ string action2String(integer action, string puzzleType)
 		else if (action == 2) { return "Struggle"; }
 		else if (action == 3) { return "Thrash"; }
 	} else if (puzzleType == "integrity") {
+		if (isPicking()) {
+			if (action == 1) { return "Poke"; }
+			else if (action == 2) { return "Sweep"; }
+			else if (action == 3) { return "Turn"; }
+		}
+
+		if (isCutting()) {
+			if (action == 1) { return "Slice"; }
+			else if (action == 2) { return "Dice"; }
+			else if (action == 3) { return "Rend"; }
+		}
+
 		if (action == 3) { return "Pick"; }
 		else if (action == 2) { return "Tug"; }
 		else if (action == 1) { return "Yank"; }
@@ -301,6 +345,9 @@ escapeAction(string prmVerb)
 	integer exertion;
 	string  puzzleType;
 
+	integer isCutting = 0;
+	integer isPicking = 0;
+
 	// TODO: Central definition?
 	if (prmVerb == "Twist") { action = "1"; exertion = 3; puzzleType = "tightness"; }
 	else if (prmVerb == "Struggle") { action = "2"; exertion = 4; puzzleType = "tightness"; }
@@ -309,6 +356,14 @@ escapeAction(string prmVerb)
 	else if (prmVerb == "Pick") { action = "3"; exertion = 2; puzzleType = "integrity";}
 	else if (prmVerb == "Tug") { action = "2"; exertion = 5; puzzleType = "integrity";}
 	else if (prmVerb == "Yank") { action = "1"; exertion = 5; puzzleType = "integrity";}
+
+	else if ("Poke" == prmVerb) { action = "1"; exertion = 2; puzzleType = "integrity"; isPicking = TRUE;}
+	else if ("Sweep" == prmVerb) { action = "2"; exertion = 2; puzzleType = "integrity"; isPicking = TRUE;}
+	else if ("Turn" == prmVerb) { action = "3"; exertion = 2; puzzleType = "integrity"; isPicking = TRUE;}
+
+	else if ("Slice" == prmVerb) { action = "1"; exertion = 2; puzzleType = "integrity"; isCutting = TRUE;}
+	else if ("Dice" == prmVerb) { action = "2"; exertion = 2; puzzleType = "integrity"; isCutting = TRUE;}
+	else if ("Rend" == prmVerb) { action = "3"; exertion = 2; puzzleType = "integrity"; isCutting = TRUE;}
 
 	integer maxProgress = (integer)llJsonGetValue(_escapeProgress, [puzzleType, "maxProgress"]);
 	integer progress = (integer)llJsonGetValue(_escapeProgress, [puzzleType, "progress"]);
@@ -330,7 +385,7 @@ escapeAction(string prmVerb)
 		}
 
 		// Escapability
-		if (!(integer)llJsonGetValue(_restraints, ["security", _activePart, "canEscape"])) {
+		if (!(integer)llJsonGetValue(_restraints, ["security", _activePart, "canEscape"]) && !isPicking && !isCutting) {
 			success = FALSE;
 		}
 	}
@@ -359,6 +414,10 @@ escapeAction(string prmVerb)
 		_actionMsg = "Your " + prmVerb + " didn't help.";
 		if (!isAssisted() && progress > 0 && puzzleType == "tightness") {
 			progress = loseProgress(progress);
+		}
+
+		if ("integrity" == puzzleType && isPicking) {
+			progress = 0;
 		}
 	}
 	updateProgress(puzzleType, progress);
@@ -423,7 +482,8 @@ integer ignoreIntegrity()
 {
 	return (isAssisted() && !(integer)llJsonGetValue(_guiUser, ["armBound"])) && !isSet(llJsonGetValue(_guiUser, ["handBound"]))
 		|| (!isAssisted() && !isArmBound())
-		|| isSet(llJsonGetValue(_guiUser, ["blade"]))
+		|| (isSet(llJsonGetValue(_guiUser, ["blade"])) && isSet(llJsonGetValue(_restraints, ["security", _activePart, "canCut"])))
+		|| (isSet(llJsonGetValue(_guiUser, ["cropper"])) && isSet(llJsonGetValue(_restraints, ["security", _activePart, "canCrop"])))
 	;
 }
 
@@ -435,6 +495,24 @@ integer ignoreTightness()
 integer isAssisted()
 {
 	return guiUserID != llGetOwner();
+}
+
+integer isCutting()
+{
+	if (isSet(llJsonGetValue(_restraints, ["security", _activePart, "canCut"])) && isSet(llJsonGetValue(_guiUser, ["blade"]))) {
+		return TRUE;
+	}
+
+	if (isSet(llJsonGetValue(_restraints, ["security", _activePart, "canCrop"])) && isSet(llJsonGetValue(_guiUser, ["cropper"]))) {
+		return TRUE;
+	}
+	return FALSE;
+}
+
+integer isPicking()
+{
+	return isSet(llJsonGetValue(_restraints, ["security", _activePart, "canPick"]))
+		&& isSet(llJsonGetValue(_guiUser, ["pick"]));
 }
 
 integer loseProgress(integer progress) {
