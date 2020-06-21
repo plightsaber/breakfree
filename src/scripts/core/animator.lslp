@@ -102,6 +102,13 @@ setArmPoses(string prmPoses) {
 
 setLegPoses(string prmPoses) {
 	_legPoses = llJson2List(prmPoses);
+
+	// Add poseBall overrides as valid poses unless freed
+	if (llListFindList(_legPoses, ["free"]) == -1) {
+		_legPoses += getPoseBallPoseList();	
+	}
+
+	// Remove current pose and set to default if current pose no longer valid
 	if (llListFindList(_legPoses, [_legPose]) == -1) {
 		setLegPose(llList2String(_legPoses, 0));
 	}
