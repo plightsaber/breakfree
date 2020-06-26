@@ -1,3 +1,5 @@
+$import Modules.GeneralTools.lslm();
+
 // ===== Variables =====
 integer CHANNEL_GAGCHAT = 9994240;
 integer CHANNEL_GAGEMOTE = 9994241;
@@ -5,6 +7,7 @@ integer CHANNEL_GAGEMOTE = 9994241;
 integer gagChatID;
 integer emoteChatID;
 
+integer _gagged;
 integer mouthOpen;
 integer mouthGarbled;
 integer mouthMuffled;
@@ -19,7 +22,7 @@ init() {
 	if (emoteChatID) { llListenRemove(emoteChatID); }
 	emoteChatID = llListen(CHANNEL_GAGEMOTE, "", llGetOwner(), "");
 
-	if (isGagged()) {
+	if (_gagged) {
 		llOwnerSay("@redirchat:" + (string)CHANNEL_GAGCHAT + "=add");
 		llOwnerSay("@rediremote:" + (string)CHANNEL_GAGEMOTE + "=add");
 		llListenControl(gagChatID, TRUE);
@@ -29,16 +32,17 @@ init() {
 // ===== Main Function =====
 setRestraints(string prmJson) {
 	_currentRestraints = prmJson;
-	if ("0" == llJsonGetValue(_currentRestraints, ["gagged"])) {
+	_gagged = isSet(llJsonGetValue(_currentRestraints, ["gagged"]));
+	if (!_gagged) {
 		llOwnerSay("@redirchat:" + (string)CHANNEL_GAGCHAT + "=rem");
 		llOwnerSay("@rediremote:" + (string)CHANNEL_GAGEMOTE + "=rem");
 		llListenControl(gagChatID, FALSE);
 		return;
 	}
-	mouthOpen = ("1" == llJsonGetValue(_currentRestraints, ["mouthOpen"]));
-	mouthGarbled = ("1" == llJsonGetValue(_currentRestraints, ["speechGarbled"]));
-	mouthMuffled = ("1" == llJsonGetValue(_currentRestraints, ["speechMuffled"]));
-	mouthSealed = ("1" == llJsonGetValue(_currentRestraints, ["speechSealed"]));
+	mouthOpen = (isSet(llJsonGetValue(_currentRestraints, ["mouthOpen"])));
+	mouthGarbled = (isSet(llJsonGetValue(_currentRestraints, ["speechGarbled"])));
+	mouthMuffled = (isSet(llJsonGetValue(_currentRestraints, ["speechMuffled"])));
+	mouthSealed = (isSet(llJsonGetValue(_currentRestraints, ["speechSealed"])));
 	if (mouthOpen || mouthGarbled || mouthMuffled || mouthSealed) {
 		llOwnerSay("@redirchat:" + (string)CHANNEL_GAGCHAT + "=add");
 		llOwnerSay("@rediremote:" + (string)CHANNEL_GAGEMOTE + "=add");
@@ -142,16 +146,6 @@ convertSpeech(string strOriginal) {
 	llSetObjectName(llGetDisplayName(llGetOwner())); // TODO: Get Name
 	llWhisper(0, strNew);
 	llSetObjectName(object_name);
-}
-
-integer isGagged() {
-	return mouthOpen || mouthGarbled || mouthMuffled || mouthSealed;
-}
-
-// ===== Other Functions =====
-debug(string output) {
-	// TODO: global enable/disable?
-	llOwnerSay(output);
 }
 
 // ===== Event Controls =====

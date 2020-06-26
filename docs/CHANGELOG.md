@@ -16,3 +16,4 @@
 - Escape-item menu entry now defaults to Escape menu when using on self
 - Touchers now use feats when using the dialogs of other avis
 - Security display now resets when rebound after a successful escape
+- Fix garbler sometimes treating avi as gagged after logging back in even if not gagged
