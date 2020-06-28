@@ -22,6 +22,7 @@ string getSelf() {
 
 	_self = llJsonSetValue(_self, ["name"], "Tape");
 	_self = llJsonSetValue(_self, ["part"], "gag");
+	_self = llJsonSetValue(_self, ["type"], "tape");
 	_self = llJsonSetValue(_self, ["hasColor"], "1");
 	return _self;
 }
@@ -131,7 +132,7 @@ string defineRestraint(string prmName) {
 
 	// Type-specific values
 	gag = llJsonSetValue(gag, ["name"], prmName);
-	gag = llJsonSetValue(gag, ["type"], "tape");
+	gag = llJsonSetValue(gag, ["type"], llJsonGetValue(getSelf(), ["type"]));
 	gag = llJsonSetValue(gag, ["canEscape"], "1");
 	gag = llJsonSetValue(gag, ["canCut"], "1");
 
@@ -144,35 +145,35 @@ string defineRestraint(string prmName) {
 		integrity = 2;
 		tightness = 3;
 
-		gag = llJsonSetValue(gag, ["uid"], "stuff");
+		gag = llJsonSetValue(gag, ["uid"], "stuff_cloth");
 		gag = llJsonSetValue(gag, ["slot"], "gag1");
 		gag = llJsonSetValue(gag, ["canCut"], "0");
 		gag = llJsonSetValue(gag, ["mouthOpen"], "1");
-		gag = llJsonSetValue(gag, ["attachments", JSON_APPEND], "gStuff");
+		gag = llJsonSetValue(gag, ["attachments", JSON_APPEND], "gag_cloth_stuff");
 	} else if (prmName == "Simple") {
 		complexity = 1;
 		integrity = 10;
 		tightness = 5;
 
-		gag = llJsonSetValue(gag, ["uid"], "tapeSimple");
+		gag = llJsonSetValue(gag, ["uid"], "simple_tape");
 		gag = llJsonSetValue(gag, ["speechSealed"], "1");
 		gag = llJsonSetValue(gag, ["slot"], "gag2");
-		if (_mouthOpen) { gag = llJsonSetValue(gag, ["attachments", JSON_APPEND], "gTapeStuffed"); }
-		else { gag = llJsonSetValue(gag, ["attachments", JSON_APPEND], "gTapeSimple"); }
+		if (_mouthOpen) { gag = llJsonSetValue(gag, ["attachments", JSON_APPEND], "gag_tape_stuffed"); }
+		else { gag = llJsonSetValue(gag, ["attachments", JSON_APPEND], "gag_tape_simple"); }
 	} else if (prmName == "Heavy") {
 		complexity = 2;
 		integrity = 10;
 		tightness = 5;
 
-		gag = llJsonSetValue(gag, ["uid"], "tapeHeavy");
+		gag = llJsonSetValue(gag, ["uid"], "heavy_tape");
 		gag = llJsonSetValue(gag, ["speechSealed"], "1");
 		gag = llJsonSetValue(gag, ["slot"], "gag3");
 		gag = llJsonSetValue(gag, ["complexity"], "2");
 		gag = llJsonSetValue(gag, ["integrity"], "10");
 		gag = llJsonSetValue(gag, ["tightness"], "5");
-		gag = llJsonSetValue(gag, ["attachments", JSON_APPEND], "gTapeHeavy");
-		gag = llJsonSetValue(gag, ["preventAttach", JSON_APPEND], "gTapeSimple");
-		gag = llJsonSetValue(gag, ["preventAttach", JSON_APPEND], "gTapeStuffed");
+		gag = llJsonSetValue(gag, ["attachments", JSON_APPEND], "gag_tape_heavy");
+		gag = llJsonSetValue(gag, ["preventAttach", JSON_APPEND], "gag_tape_simple");
+		gag = llJsonSetValue(gag, ["preventAttach", JSON_APPEND], "gag_tape_stuffed");
 	}
 
 	if (hasFeat(_villain, "Anubis")) { tightness = tightness + 2; }

@@ -57,29 +57,34 @@ list getAttachments() {
 	list bindFolders = getRestraintList(_restraints, "attachments");
 	list preventFolders = getRestraintList(_restraints, "preventAttach");
 
-	// Odd rules so complicated they need to be here. <_<
-	if (llJsonGetValue(_restraints, ["immobilizer", "uid"]) == "hogRope") {
-		if (isSet(llJsonGetValue(_restraints, ["elbow"]))) { bindFolders += ["legRope_hogBackTight"]; }
-		else if (llJsonGetValue(_restraints, ["torso", "uid"]) == "boxRope") { bindFolders += ["legRope_hogBox"]; }
-		else { bindFolders += ["legRope_hogBack"]; }
-	} else if ("ballRope" == llJsonGetValue(_restraints, ["immobilizer", "uid"]) || "ballTape" == llJsonGetValue(_restraints, ["immobilizer", "uid"])) {
-		if ("kneeRope" == llJsonGetValue(_restraints, ["knee", "uid"])) {
-			preventFolders += "legRope_knee";
-		} else if ("kneeTape" == llJsonGetValue(_restraints, ["knee", "uid"])) {
-			bindFolders += "legTape_kneeBent";
-			preventFolders += "legTape_knee";
-		}
+	// Use bent knee restraints for certain positions
+	string kneeRestraint = llJsonGetValue(_restraints, ["knee"]);
+	string immobilizer = llJsonGetValue(_restraints, ["immobilizer", "uid"]);
+	if (isSet(kneeRestraint) && isSet(immobilizer) &&
+		(llSubStringIndex(immobilizer, "hog") != -1 || llSubStringIndex(immobilizer, "ball") != -1 || llSubStringIndex(immobilizer, "kneel") != -1)
+	) {
+		// Add/Remove attachment by pattern.  You hopefully named everything to proper convention!
+		string attachName = "leg_" + llJsonGetValue(kneeRestraint, ["type"]) + "_knee";
+		preventFolders += attachName;
+		bindFolders += attachName + "Bent";
 	}
 
+	// Hogtie connectors
+	if ("hog_rope" == immobilizer) {
+		if (isSet(llJsonGetValue(_restraints, ["elbow"]))) { bindFolders += ["leg_rope_hogBackTight"]; }
+		else if (llJsonGetValue(_restraints, ["torso", "uid"]) == "box_rope") { bindFolders += ["leg_rope_hogBox"]; }
+		else { bindFolders += ["leg_rope_hogBack"]; }
+	}
+
+	// Change meshes for back => backTight pose
 	if (isSet(llJsonGetValue(_restraints, ["elbow"]))) {
-		// Update wrist restraints to alternate mesh for pose
 		string wrist = llJsonGetValue(_restraints, ["wrist", "uid"]);
-		if (wrist == "backRope") {
-			bindFolders += "armRope_backTight_wrist";
-			preventFolders += "armRope_back_wrist";
-		} else if (wrist == "backTape") {
-			bindFolders += "armTape_backTight_wrist";
-			preventFolders += "armTape_back_wrist";
+		if (wrist == "back_rope") {
+			bindFolders += "arm_rope_backTight_wrist";
+			preventFolders += "arm_rope_back_wrist";
+		} else if (wrist == "back_tape") {
+			bindFolders += "arm_tape_backTight_wrist";
+			preventFolders += "arm_tape_back_wrist";
 		}
 	}
 
@@ -97,9 +102,9 @@ rmSlot(string slot) {
 	_restraints = llJsonSetValue(_restraints, [slot], JSON_NULL);
 	_slots = llJsonSetValue(_slots, [slot], JSON_NULL);
 
-	// Remove hogRope if connecting arm restraint removed
-	if (llJsonGetValue(_slots, ["immobilizer"]) == "hogRope"
-		&& (slot == "wrist" || llJsonGetValue(restraint, ["uid"]) == "boxRope")
+	// Remove hog_rope if connecting arm restraint removed
+	if (llJsonGetValue(_slots, ["immobilizer"]) == "hog_rope"
+		&& (slot == "wrist" || llJsonGetValue(restraint, ["uid"]) == "box_rope")
 	) {
 		rmSlot("immobilizer");
 	}

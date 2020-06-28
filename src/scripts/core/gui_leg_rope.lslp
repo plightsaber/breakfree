@@ -27,6 +27,7 @@ string getSelf() {
 
 	_self = llJsonSetValue(_self, ["name"], "Rope");
 	_self = llJsonSetValue(_self, ["part"], "leg");
+	_self = llJsonSetValue(_self, ["type"], "rope");
 	_self = llJsonSetValue(_self, ["hasColor"], "1");
 	return _self;
 }
@@ -96,15 +97,15 @@ gui(integer prmScreen) {
 		}
 
 		if (llJsonGetValue(_currentRestraints, ["immobilizer"]) == JSON_NULL
-			&& llJsonGetValue(_currentRestraints, ["ankle"]) == "ankleRope"
-			&& (llJsonGetValue(_currentRestraints, ["torso"]) == "boxRope" || llJsonGetValue(_currentRestraints, ["wrist"]) == "backRope")
+			&& llJsonGetValue(_currentRestraints, ["ankle"]) == "ankle_rope"
+			&& (llJsonGetValue(_currentRestraints, ["torso"]) == "box_rope" || llJsonGetValue(_currentRestraints, ["wrist"]) == "back_rope")
 		) {
 			mpButtons += "Hog";
 		}
 
 		if ((hasFeat(_villain, "Rigger+") || _rpMode)
 			&& !isSet(llJsonGetValue(_currentRestraints, ["immobilizer"]))
-			&& "kneeRope" == llJsonGetValue(_currentRestraints, ["knee"])
+			&& "knee_rope" == llJsonGetValue(_currentRestraints, ["knee"])
 		) {
 			mpButtons += "Ball";
 		}
@@ -163,7 +164,7 @@ string defineRestraint(string prmName) {
 	restraint = llJsonSetValue(restraint, ["canEscape"], "1");
 	restraint = llJsonSetValue(restraint, ["canTether"], "1");
 	restraint = llJsonSetValue(restraint, ["canUseItem"], "1");
-	restraint = llJsonSetValue(restraint, ["type"], "rope");
+	restraint = llJsonSetValue(restraint, ["type"], llJsonGetValue(getSelf(), ["type"]));
 
 	integer complexity;
 	integer integrity;
@@ -174,25 +175,25 @@ string defineRestraint(string prmName) {
 		integrity = 5;
 		tightness = 6;
 
-		restraint = llJsonSetValue(restraint, ["uid"], "ankleRope");
+		restraint = llJsonSetValue(restraint, ["uid"], "ankle_rope");
 		restraint = llJsonSetValue(restraint, ["slot"], "ankle");
 		restraint = llJsonSetValue(restraint, ["poses"], llList2Json(JSON_ARRAY, liPoseStandard));
-		restraint = llJsonSetValue(restraint, ["attachments"], llList2Json(JSON_ARRAY, ["legRope_ankle"]));
+		restraint = llJsonSetValue(restraint, ["attachments"], llList2Json(JSON_ARRAY, ["leg_rope_ankle"]));
 	} else if (prmName == "Knee") {
 		complexity = 3;
 		integrity = 5;
 		tightness = 6;
 
-		restraint = llJsonSetValue(restraint, ["uid"], "kneeRope");
+		restraint = llJsonSetValue(restraint, ["uid"], "knee_rope");
 		restraint = llJsonSetValue(restraint, ["slot"], "knee");
 		restraint = llJsonSetValue(restraint, ["poses"], llList2Json(JSON_ARRAY, liPoseStandard));
-		restraint = llJsonSetValue(restraint, ["attachments"], llList2Json(JSON_ARRAY, ["legRope_knee"]));
+		restraint = llJsonSetValue(restraint, ["attachments"], llList2Json(JSON_ARRAY, ["leg_rope_knee"]));
 	} else if (prmName == "Hog") {
 		complexity = 2;
 		integrity = 5;
 		tightness = 10;
 
-		restraint = llJsonSetValue(restraint, ["uid"], "hogRope");
+		restraint = llJsonSetValue(restraint, ["uid"], "hog_rope");
 		restraint = llJsonSetValue(restraint, ["slot"], "immobilizer");
 		restraint = llJsonSetValue(restraint, ["poses"], llList2Json(JSON_ARRAY, ["hogFront", "hogLeft", "hogRight"]));
 	} else if (prmName == "Ball") {
@@ -200,19 +201,19 @@ string defineRestraint(string prmName) {
 		integrity = 5;
 		tightness = 15;
 
-		restraint = llJsonSetValue(restraint, ["uid"], "ballRope");
+		restraint = llJsonSetValue(restraint, ["uid"], "ball_rope");
 		restraint = llJsonSetValue(restraint, ["slot"], "immobilizer");
 		restraint = llJsonSetValue(restraint, ["poses"], llList2Json(JSON_ARRAY, ["ballLeft", "ballRight"]));
-		restraint = llJsonSetValue(restraint, ["attachments"], llList2Json(JSON_ARRAY, ["legRope_ball"]));
-		restraint = llJsonSetValue(restraint, ["preventAttach", JSON_APPEND], "legRope_knee");
+		restraint = llJsonSetValue(restraint, ["attachments"], llList2Json(JSON_ARRAY, ["leg_rope_ball"]));
+		restraint = llJsonSetValue(restraint, ["preventAttach", JSON_APPEND], "leg_rope_knee");
 	} else if (prmName == "Crotch") {
 		complexity = 2;
 		integrity = 5;
 		tightness = 20;
 
-		restraint = llJsonSetValue(restraint, ["uid"], "crotchRope");
+		restraint = llJsonSetValue(restraint, ["uid"], "crotch_rope");
 		restraint = llJsonSetValue(restraint, ["slot"], "crotch");
-		restraint = llJsonSetValue(restraint, ["attachments"], llList2Json(JSON_ARRAY, ["legRope_crotch"]));
+		restraint = llJsonSetValue(restraint, ["attachments"], llList2Json(JSON_ARRAY, ["leg_rope_crotch"]));
 	}
 
 	if (hasFeat(_villain, "Rigger")) { integrity = integrity+5; }

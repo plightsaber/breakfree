@@ -26,6 +26,7 @@ string getSelf() {
 
 	_self = llJsonSetValue(_self, ["name"], "Tape");
 	_self = llJsonSetValue(_self, ["part"], "arm");
+	_self = llJsonSetValue(_self, ["type"], "tape");
 	_self = llJsonSetValue(_self, ["hasColor"], "1");
 	return _self;
 }
@@ -93,7 +94,7 @@ gui(integer prmScreen) {
 
 		if (!isSet(llJsonGetValue(_currentRestraints, ["elbow"]))
 			&& !isSet(llJsonGetValue(_currentRestraints, ["torso"]))
-			&& ("backTape" == llJsonGetValue(_currentRestraints, ["wrist"]) || "backRope" == llJsonGetValue(_currentRestraints, ["wrist"]))
+			&& (llSubStringIndex(llJsonGetValue(_currentRestraints, ["wrist"]), "back") != -1 && "backCuff" != llJsonGetValue(_currentRestraints, ["wrist"]))
 		) {
 			mpButtons += "Elbow";
 		}
@@ -161,30 +162,30 @@ string defineRestraint(string prmName) {
 		integrity = 20;
 		tightness = 5;
 
-		restraint = llJsonSetValue(restraint, ["uid"], "sidesTape");
+		restraint = llJsonSetValue(restraint, ["uid"], "sides_tape");
 		restraint = llJsonSetValue(restraint, ["slot"], "torso");
 		restraint = llJsonSetValue(restraint, ["poses"], llList2Json(JSON_ARRAY, ["sides"]));
-		restraint = llJsonSetValue(restraint, ["attachments"], llList2Json(JSON_ARRAY, ["armTape_sides"]));
+		restraint = llJsonSetValue(restraint, ["attachments"], llList2Json(JSON_ARRAY, ["arm_tape_sides"]));
 	} else if (prmName == "Front") {
 		integrity = 20;
 		tightness = 4;
 
-		restraint = llJsonSetValue(restraint, ["uid"], "frontTape");
+		restraint = llJsonSetValue(restraint, ["uid"], "front_tape");
 		restraint = llJsonSetValue(restraint, ["slot"], "wrist");
 		restraint = llJsonSetValue(restraint, ["poses"], llList2Json(JSON_ARRAY, ["front"]));
-		restraint = llJsonSetValue(restraint, ["attachments"], llList2Json(JSON_ARRAY, ["armTape_front_wrist"]));
+		restraint = llJsonSetValue(restraint, ["attachments"], llList2Json(JSON_ARRAY, ["arm_tape_front_wrist"]));
 	} else if (prmName == "Back") {
 		integrity = 20;
 		tightness = 4;
 
 		string pose = "back";
-		list liAttachments = ["armTape_back_wrist"];
+		list liAttachments = ["arm_tape_back_wrist"];
 		if (llJsonGetValue(getCurrentRestraints(), ["elbow"]) != JSON_NULL) {
 			pose = "backTight";
-			liAttachments = ["armTape_backTight_wrist"];
+			liAttachments = ["arm_tape_backTight_wrist"];
 		}
 
-		restraint = llJsonSetValue(restraint, ["uid"], "backTape");
+		restraint = llJsonSetValue(restraint, ["uid"], "back_tape");
 		restraint = llJsonSetValue(restraint, ["slot"], "wrist");
 		restraint = llJsonSetValue(restraint, ["poses"], llList2Json(JSON_ARRAY, [pose]));
 		restraint = llJsonSetValue(restraint, ["attachments"], llList2Json(JSON_ARRAY, liAttachments));
@@ -192,24 +193,29 @@ string defineRestraint(string prmName) {
 		integrity = 25;
 		tightness = 8;
 
-		restraint = llJsonSetValue(restraint, ["uid"], "elbowTape");
+		restraint = llJsonSetValue(restraint, ["uid"], "elbow_tape");
 		restraint = llJsonSetValue(restraint, ["slot"], "elbow");
 		restraint = llJsonSetValue(restraint, ["poses"], llList2Json(JSON_ARRAY, ["backTight"]));
-		restraint = llJsonSetValue(restraint, ["attachments"], llList2Json(JSON_ARRAY, ["armTape_backTight_elbow"]));
+		restraint = llJsonSetValue(restraint, ["attachments"], llList2Json(JSON_ARRAY, ["arm_tape_backTight_elbow"]));
 	} else if (prmName == "Harness") {
 		integrity = 30;
 		tightness = 6;
 
 		list liAttachments;
 		list liPoses;
-		if (llJsonGetValue(getCurrentRestraints(), ["elbow"]) != JSON_NULL || llJsonGetValue(getCurrentRestraints(), ["wrist"]) == "backCuff") {
-			liAttachments += "armTape_backTight_harness";
-		} else if (llJsonGetValue(getCurrentRestraints(), ["wrist"]) == "backRope" || llJsonGetValue(getCurrentRestraints(), ["wrist"]) == "backTape") {
-			liAttachments += "armTape_back_harness";
-		} else if (llJsonGetValue(getCurrentRestraints(), ["wrist"]) == "frontRope" || llJsonGetValue(getCurrentRestraints(), ["wrist"]) == "frontTape" || llJsonGetValue(getCurrentRestraints(), ["wrist"]) == "frontCuff") {
-			liAttachments += "armTape_front_harness";
+		string wristRestraintId = llJsonGetValue(getCurrentRestraints(), ["wrist"]);
+		if (llJsonGetValue(getCurrentRestraints(), ["elbow"]) != JSON_NULL
+			|| wristRestraintId == "backCuff"
+			|| wristRestraintId == "backZip"
+		) {
+			liAttachments += "arm_tape_backTight_harness";
+		} else if (llSubStringIndex(wristRestraintId, "back") != -1) {
+			liAttachments += "arm_tape_back_harness";
+		} else if (llSubStringIndex(wristRestraintId, "front") != -1) {
+			liAttachments += "arm_tape_front_harness";
 		}
-		restraint = llJsonSetValue(restraint, ["uid"], "harnessTape");
+
+		restraint = llJsonSetValue(restraint, ["uid"], "harness_tape");
 		restraint = llJsonSetValue(restraint, ["slot"], "torso");
 		restraint = llJsonSetValue(restraint, ["poses"], llList2Json(JSON_ARRAY, liPoses));
 		restraint = llJsonSetValue(restraint, ["attachments"], llList2Json(JSON_ARRAY, liAttachments));
@@ -218,18 +224,18 @@ string defineRestraint(string prmName) {
 		integrity = 30;
 		tightness = 15;
 
-		restraint = llJsonSetValue(restraint, ["uid"], "boxTape");
+		restraint = llJsonSetValue(restraint, ["uid"], "box_tape");
 		restraint = llJsonSetValue(restraint, ["slot"], "torso");
 		restraint = llJsonSetValue(restraint, ["poses"], llList2Json(JSON_ARRAY, ["box"]));
-		restraint = llJsonSetValue(restraint, ["attachments"], llList2Json(JSON_ARRAY, ["armTape_box"]));
+		restraint = llJsonSetValue(restraint, ["attachments"], llList2Json(JSON_ARRAY, ["arm_tape_box"]));
 	} else if (prmName == "Mitten") {
 		tightness = 5;
 		integrity = 10;
 
-		restraint = llJsonSetValue(restraint, ["uid"], "mittenTape");
+		restraint = llJsonSetValue(restraint, ["uid"], "mitten_tape");
 		restraint = llJsonSetValue(restraint, ["slot"], "hand");
 		restraint = llJsonSetValue(restraint, ["animations"], "animHand_fist");
-		restraint = llJsonSetValue(restraint, ["attachments"], llList2Json(JSON_ARRAY, ["armTape_mitten"]));
+		restraint = llJsonSetValue(restraint, ["attachments"], llList2Json(JSON_ARRAY, ["arm_tape_mitten"]));
 	}
 
 	if (hasFeat(_villain, "Anubis")) { tightness = tightness + 2; }

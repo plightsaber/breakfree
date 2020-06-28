@@ -42,6 +42,7 @@ string getSelf() {
 
 	_self = llJsonSetValue(_self, ["name"], "Cloth");
 	_self = llJsonSetValue(_self, ["part"], "gag");
+	_self = llJsonSetValue(_self, ["type"], "cloth");
 	_self = llJsonSetValue(_self, ["hasColor"], "1");
 	return _self;
 }
@@ -52,7 +53,7 @@ init() {
 		_currentColors = llJsonSetValue(_currentColors, ["cloth"], (string)COLOR_WHITE);
 		_currentColors = llJsonSetValue(_currentColors, ["stuff"], (string)COLOR_WHITE);
 	}
-	
+
 	if (!isSet(_currentTextures)) {
 		_currentTextures = llJsonSetValue(_currentTextures, ["cloth"], TEXTURE_BLANK);
 		_currentTextures = llJsonSetValue(_currentTextures, ["stuff"], "linen");
@@ -157,7 +158,7 @@ string defineRestraint(string prmName) {
 
 	// Type-specific values
 	gag = llJsonSetValue(gag, ["name"], prmName);
-	gag = llJsonSetValue(gag, ["type"], "knot");
+	gag = llJsonSetValue(gag, ["type"], llJsonGetValue(getSelf(), ["type"]));
 	gag = llJsonSetValue(gag, ["canEscape"], "1");
 
 	integer complexity;
@@ -169,21 +170,21 @@ string defineRestraint(string prmName) {
 		integrity = 2;
 		tightness = 3;
 
-		gag = llJsonSetValue(gag, ["uid"], "stuff");
+		gag = llJsonSetValue(gag, ["uid"], "stuff_cloth");
 		gag = llJsonSetValue(gag, ["slot"], "gag1");
 		gag = llJsonSetValue(gag, ["canCut"], "0");
 		gag = llJsonSetValue(gag, ["mouthOpen"], "1");
-		gag = llJsonSetValue(gag, ["attachments", JSON_APPEND], "gStuff");
+		gag = llJsonSetValue(gag, ["attachments", JSON_APPEND], "gag_cloth_stuff");
 	} else if (prmName == "Cleave") {
 		complexity = 3;
 		integrity = 5;
 		tightness = 5;
 
 		list attachments;
-		if (_mouthOpen) { attachments += ["gCleaveStuff"]; }
-		else { attachments += ["gCleave"]; }
+		if (_mouthOpen) { attachments += ["gag_cleaveStuff"]; }
+		else { attachments += ["gag_cleave"]; }
 
-		gag = llJsonSetValue(gag, ["uid"], "cleave");
+		gag = llJsonSetValue(gag, ["uid"], "cleave_cloth");
 		gag = llJsonSetValue(gag, ["speechGarbled"], "1");
 		gag = llJsonSetValue(gag, ["slot"], "gag2");
 		gag = llJsonSetValue(gag, ["canCut"], "1");
@@ -193,14 +194,14 @@ string defineRestraint(string prmName) {
 		integrity = 5;
 		tightness = 5;
 
-		gag = llJsonSetValue(gag, ["uid"], "otn");
+		gag = llJsonSetValue(gag, ["uid"], "otn_cloth");
 		gag = llJsonSetValue(gag, ["speechMuffled"], "1");
 		gag = llJsonSetValue(gag, ["slot"], "gag4");
 		gag = llJsonSetValue(gag, ["canCut"], "1");
-		gag = llJsonSetValue(gag, ["attachments", JSON_APPEND], "gOTN");
-		gag = llJsonSetValue(gag, ["preventAttach", JSON_APPEND], "gCleave");
-		gag = llJsonSetValue(gag, ["preventAttach", JSON_APPEND], "gCleaveStuff");
-		gag = llJsonSetValue(gag, ["preventAttach", JSON_APPEND], "gBall");
+		gag = llJsonSetValue(gag, ["attachments", JSON_APPEND], "gag_cloth_OTN");
+		gag = llJsonSetValue(gag, ["preventAttach", JSON_APPEND], "gag_cloth_cleave");
+		gag = llJsonSetValue(gag, ["preventAttach", JSON_APPEND], "gag_cloth_cleaveStuff");
+		gag = llJsonSetValue(gag, ["preventAttach", JSON_APPEND], "gag_device_ball");
 	}
 
 	if (hasFeat(_villain, "Gag Snob")) { integrity = integrity + 5; }
@@ -271,12 +272,12 @@ execute_function(string prmFunction, string prmJson) {
 	else if (prmFunction == "getAvailableRestraints") { sendAvailabilityInfo(); }
 	else if (prmFunction == "setRPMode") { _rpMode = (integer)value; }
 	else if (prmFunction == "setVillain") { _villain = value; }
-	else if (prmFunction == "setColor") { 
+	else if (prmFunction == "setColor") {
 		if (llJsonGetValue(value, ["attachment"]) != "gag") { return; }
 		if (!isSet(llJsonGetValue(value, ["component"]))) { return; }
 		_currentColors = llJsonSetValue(_currentColors, [llJsonGetValue(value, ["component"])], llJsonGetValue(value, ["color"]));
 	}
-	else if (prmFunction == "setTexture") { 
+	else if (prmFunction == "setTexture") {
 		if (llJsonGetValue(value, ["attachment"]) != "gag") { return; }
 		if (!isSet(llJsonGetValue(value, ["component"]))) { return; }
 		_currentTextures = llJsonSetValue(_currentTextures, [llJsonGetValue(value, ["component"])], llJsonGetValue(value, ["texture"]));
@@ -302,7 +303,7 @@ execute_function(string prmFunction, string prmJson) {
 
 default {
 	state_entry() { init(); }
-	
+
 	listen(integer prmChannel, string prmName, key prmID, string prmText) {
 		if (prmChannel = guiChannel) {
 			if (prmText == "<<Done>>") { exit("done"); return; }

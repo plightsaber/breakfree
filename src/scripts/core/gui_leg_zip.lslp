@@ -13,7 +13,7 @@ string _self;
 // ===== Initializers =====
 init() {
 	if (!isSet(_currentColors)) {
-		_currentColors = llJsonSetValue(_currentColors, ["cuff"], (string)COLOR_SILVER);
+		_currentColors = llJsonSetValue(_currentColors, ["zip"], (string)COLOR_WHITE);
 	}
 }
 
@@ -31,44 +31,47 @@ string getSelf()
 {
 	if (_self != "") return _self;
 
-	_self = llJsonSetValue(_self, ["name"], "Cuff");
-	_self = llJsonSetValue(_self, ["part"], "arm");
-	_self = llJsonSetValue(_self, ["type"], "cuff");
+	_self = llJsonSetValue(_self, ["name"], "Zip");
+	_self = llJsonSetValue(_self, ["part"], "leg");
+	_self = llJsonSetValue(_self, ["type"], "zip");
 	return _self;
 }
 
 string defineRestraint(string name)
 {
 	string restraint;
+	list liPoseStandard = ["stand", "kneel", "sit", "sitLeft", "sitRight", "groundFront", "groundLeft", "groundRight", "groundBack"];
 
 	// Type-specific values
 	restraint = llJsonSetValue(restraint, ["name"], name);
 	restraint = llJsonSetValue(restraint, ["canCrop"], "1");
-	restraint = llJsonSetValue(restraint, ["canCut"], "0");
-	restraint = llJsonSetValue(restraint, ["canPick"], "1");
-	restraint = llJsonSetValue(restraint, ["canEscape"], "0");
+	restraint = llJsonSetValue(restraint, ["canCut"], "1");
+	restraint = llJsonSetValue(restraint, ["canPick"], "0");
+	restraint = llJsonSetValue(restraint, ["canEscape"], "1");
 	restraint = llJsonSetValue(restraint, ["canTether"], "0");
 	restraint = llJsonSetValue(restraint, ["canUseItem"], "1");
-	restraint = llJsonSetValue(restraint, ["type"], "cuff");
+	restraint = llJsonSetValue(restraint, ["type"], llJsonGetValue(getSelf(), ["type"]));
 
 	integer complexity = 1;
-	integer integrity = 15;
+	integer integrity;
 	integer tightness;
 
-	if ("Front" == name) {
-		tightness = 3;
+	if (name == "Ankle") {
+		integrity = 25;
+		tightness = 6;
 
-		restraint = llJsonSetValue(restraint, ["uid"], "front_cuff");
-		restraint = llJsonSetValue(restraint, ["slot"], "wrist");
-		restraint = llJsonSetValue(restraint, ["poses"], llList2Json(JSON_ARRAY, ["frontLoose"]));
-		restraint = llJsonSetValue(restraint, ["attachments"], llList2Json(JSON_ARRAY, ["arm_cuff_wristRight", "arm_cuff_wristLeft", "arm_cuff_frontChain"]));
-	} else if ("Back" == name) {
-		tightness = 4;
+		restraint = llJsonSetValue(restraint, ["uid"], "ankle_zip");
+		restraint = llJsonSetValue(restraint, ["slot"], "ankle");
+		restraint = llJsonSetValue(restraint, ["poses"], llList2Json(JSON_ARRAY, liPoseStandard));
+		restraint = llJsonSetValue(restraint, ["attachments"], llList2Json(JSON_ARRAY, ["leg_zip_ankle"]));
+	} else if (name == "Knee") {
+		integrity = 25;
+		tightness = 6;
 
-		restraint = llJsonSetValue(restraint, ["uid"], "back_cuff");
-		restraint = llJsonSetValue(restraint, ["slot"], "wrist");
-		restraint = llJsonSetValue(restraint, ["poses"], llList2Json(JSON_ARRAY, ["backLoose"]));
-		restraint = llJsonSetValue(restraint, ["attachments"], llList2Json(JSON_ARRAY, ["arm_cuff_wristRight", "arm_cuff_wristLeft", "arm_cuff_backChain"]));
+		restraint = llJsonSetValue(restraint, ["uid"], "knee_zip");
+		restraint = llJsonSetValue(restraint, ["slot"], "knee");
+		restraint = llJsonSetValue(restraint, ["poses"], llList2Json(JSON_ARRAY, liPoseStandard));
+		restraint = llJsonSetValue(restraint, ["attachments"], llList2Json(JSON_ARRAY, ["leg_zip_knee"]));
 	}
 
 	restraint = llJsonSetValue(restraint, ["complexity"], (string)complexity);
@@ -115,28 +118,28 @@ gui(integer screen)
 
 	// GUI: Main
 	if (screen == GUI_HOME) {
-		 btn3 = "<<Style>>";	// Cuffs have no style at the moment
+		 btn3 = "<<Style>>";	// Zips have no style at the moment
 
-		if (isSet(llJsonGetValue(_restraints, ["slots", "wrist"]))
-			|| isSet(llJsonGetValue(_restraints, ["slots", "elbow"]))
-			|| isSet(llJsonGetValue(_restraints, ["slots", "torso"]))
-		) {
-			mpButtons += "Untie";
+		if (!isSet(llJsonGetValue(_restraints, ["slots", "ankle"])) && !isSet(llJsonGetValue(_restraints, ["slots", "immobilizer"]))) {
+			mpButtons += "Ankle";
+		} else if (!isSet(llJsonGetValue(_restraints, ["slots", "immobilizer"])) && isSet(llJsonGetValue(_restraints, ["slots", "ankle"]))) {
+			mpButtons += "Free Ankle";
 		}
 
-		if (isSet(llJsonGetValue(_restraints, ["slots", "hand"]))) { mpButtons += "Free Hands"; }
+		if (!isSet(llJsonGetValue(_restraints, ["slots", "knee"])) && !isSet(llJsonGetValue(_restraints, ["slots", "immobilizer"]))) {
+			mpButtons += "Knee";
+		} else if (!isSet(llJsonGetValue(_restraints, ["slots", "immobilizer"])) && isSet(llJsonGetValue(_restraints, ["slots", "knee"]))) {
+			mpButtons += "Free Knee";
+		}
 
-		if (!isSet(llJsonGetValue(_restraints, ["slots", "wrist"])) && !isSet(llJsonGetValue(_restraints, ["slots", "torso"]))) {
-			if (!isSet(llJsonGetValue(_restraints, ["slots", "elbow"]))) {
-				mpButtons += "Front";
-			}
-			mpButtons += "Back";
+		if (isSet(llJsonGetValue(_restraints, ["slots", "immobilizer"]))) {
+			mpButtons += "Untie";
 		}
 
 		mpButtons = multipageGui(mpButtons, 2, multipageIndex);
 	}
 	else if (screen == GUI_COLOR) {
-		guiText = "Choose a color for the arm cuffs.";
+		guiText = "Choose a color for the leg zip ties.";
 		mpButtons = multipageGui(_colors, 3, multipageIndex);
 	}
 
@@ -165,9 +168,9 @@ executeFunction(string function, string json)
 	}
 	else if ("requestStyle" == function) {
 		if (llJsonGetValue(value, ["attachment"]) != llJsonGetValue(getSelf(), ["part"])) { return; }
-		if (llJsonGetValue(value, ["name"]) != "cuff") { return; }
+		if (llJsonGetValue(value, ["name"]) != "zip") { return; }
 		string component = llJsonGetValue(value, ["component"]);
-		if ("" == component) { component = "cuff"; }
+		if ("" == component) { component = "zip"; }
 
 		setColor((vector)llJsonGetValue(_currentColors, [component]), component);
 	}
@@ -175,7 +178,7 @@ executeFunction(string function, string json)
 		_restraints = value;
 		return;
 	}
-	else if ("gui_arm_cuff" == function) {
+	else if ("gui_leg_zip" == function) {
 		key userkey = (key)llJsonGetValue(json, ["userkey"]);
 		integer screen = 0;
 		if ((integer)llJsonGetValue(json, ["restorescreen"]) && guiScreenLast) { screen = guiScreenLast;}
@@ -227,8 +230,12 @@ default {
 				simpleRequest("remRestraint", llJsonGetValue(getSelf(), ["part"]));
 				_resumeFunction = "setRestraints";
 				return;
-			} else if (message == "Free Hands") {
-				simpleRequest("rmSlot", "hand");
+			} else if (message == "Free Ankle") {
+				simpleRequest("rmSlot", "ankle");
+				_resumeFunction = "setRestraints";
+				return;
+			} else if (message == "Free Knee") {
+				simpleRequest("rmSlot", "knee");
 				_resumeFunction = "setRestraints";
 				return;
 			}
@@ -246,7 +253,7 @@ default {
 					return;
 				}
 			} else if (guiScreen == GUI_COLOR) {
-				setColorByName(message, "cuff");
+				setColorByName(message, "zip");
 				gui(guiScreen);
 				return;
 			}

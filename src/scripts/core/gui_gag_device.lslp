@@ -34,6 +34,7 @@ string getSelf() {
 
 	_self = llJsonSetValue(_self, ["name"], "Device");
 	_self = llJsonSetValue(_self, ["part"], "gag");
+	_self = llJsonSetValue(_self, ["type"], "device");
 	_self = llJsonSetValue(_self, ["hasColor"], "1");
 	return _self;
 }
@@ -128,8 +129,10 @@ string defineRestraint(string prmName) {
 	string gag;
 
 	gag = llJsonSetValue(gag, ["name"], prmName);
+	gag = llJsonSetValue(gag, ["type"], llJsonGetValue(getSelf(), ["type"]));
+
 	if (prmName == "Ballgag") {
-		gag = llJsonSetValue(gag, ["uid"], "ballgag");
+		gag = llJsonSetValue(gag, ["uid"], "ball_device");
 		gag = llJsonSetValue(gag, ["speechGarbled"], "1");
 		gag = llJsonSetValue(gag, ["slot"], "gag1");
 		gag = llJsonSetValue(gag, ["canCut"], "0");
@@ -139,7 +142,7 @@ string defineRestraint(string prmName) {
 		gag = llJsonSetValue(gag, ["complexity"], "2");
 		gag = llJsonSetValue(gag, ["integrity"], "10");
 		gag = llJsonSetValue(gag, ["tightness"], "3");
-		gag = llJsonSetValue(gag, ["attachments", JSON_APPEND], "gBall");
+		gag = llJsonSetValue(gag, ["attachments", JSON_APPEND], "gag_device_ball");
 	}
 
 	return gag;
