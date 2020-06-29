@@ -5,6 +5,7 @@
 - Alternate animations for avis with narrow shoulders (Kemono)
 - Handcuffs with unique lockable escape path
 - Hero dialog now checks feats to give rescue suggestions
+- LockGuard and LockMeister scripts added to rope wrist and leg restraints to better furniture interaction
 - Pick (Lock pick) and Cropper (bolt cutters) escape item scripts added
 - Zip ties for arms and legs.
 
