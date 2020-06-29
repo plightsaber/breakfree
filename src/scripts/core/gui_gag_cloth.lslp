@@ -109,6 +109,7 @@ gui(integer prmScreen) {
 		if (llJsonGetValue(_currentRestraints, ["gag2"]) == JSON_NULL
 			&& llJsonGetValue(_currentRestraints, ["gag3"]) == JSON_NULL
 			&& llJsonGetValue(_currentRestraints, ["gag4"]) == JSON_NULL
+			&& llJsonGetValue(_currentRestraints, ["gag1"]) != "ball_device"
 		) {
 			mpButtons += "Cleave";
 		}
