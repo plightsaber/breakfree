@@ -181,8 +181,8 @@ string defineRestraint(string prmName) {
 		tightness = 5;
 
 		list attachments;
-		if (_mouthOpen) { attachments += ["gag_cleaveStuff"]; }
-		else { attachments += ["gag_cleave"]; }
+		if (_mouthOpen) { attachments += ["gag_cloth_cleaveStuff"]; }
+		else { attachments += ["gag_cloth_cleave"]; }
 
 		gag = llJsonSetValue(gag, ["uid"], "cleave_cloth");
 		gag = llJsonSetValue(gag, ["speechGarbled"], "1");
