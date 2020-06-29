@@ -15,6 +15,7 @@
 
 ### Fixed
 - Adding or changing restraints no longer resets current pose if set to a PoseBall pose
+- Animations will self-refresh after being interrupted by sitting/standing from PoseBall
 - "Tightness" relabeled "Security" in Hero dialog to match Escape dialog terminology
 - Escape-item menu entry now defaults to Escape menu when using on self
 - Fix garbler sometimes treating avi as gagged after logging back in even if not gagged

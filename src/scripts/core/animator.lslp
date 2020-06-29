@@ -6,6 +6,9 @@ $import Modules.PoseLib.lslm();
 string _self;  // JSON object
 
 // Global Variables
+
+float ANIM_REFRESH_INTERVAL = 0.2;
+
 list _animations;	// Other animations set by restraints. (ie. mitten hands)
 string _animation_arm_base;
 string _animation_arm_success;
@@ -27,14 +30,8 @@ list _armPoses;		// A list of valid poses for the current restraint
 string _armPose;	// The currently set arm pose
 
 init() {
-	llRequestPermissions(llGetOwner(), PERMISSION_TRIGGER_ANIMATION);
-	if (isSet(_animation_arm_base)) { llStartAnimation(_animation_arm_base); }
-	if (isSet(_animation_leg_base)) { llStartAnimation(_animation_leg_base); }
-	if (_mouthOpen) {
-		llStartAnimation("express_open_mouth");
-		llStartAnimation("animOpenMouthBento");
-		llSetTimerEvent(0.2);
-	}
+	refreshAnimations();
+	llSetTimerEvent(ANIM_REFRESH_INTERVAL);
 }
 
 setArmPose(string uid) {
@@ -105,7 +102,7 @@ setLegPoses(string prmPoses) {
 
 	// Add poseBall overrides as valid poses unless freed
 	if (llListFindList(_legPoses, ["free"]) == -1) {
-		_legPoses += getPoseBallPoseList();	
+		_legPoses += getPoseBallPoseList();
 	}
 
 	// Remove current pose and set to default if current pose no longer valid
@@ -121,9 +118,7 @@ setRestraints(string prmJson) {
 	if (_mouthOpen) {
 		llStartAnimation("express_open_mouth");
 		llStartAnimation("animOpenMouthBento");
-		llSetTimerEvent(0.2);
 	} else {
-		llSetTimerEvent(0.0);
 		llStopAnimation("express_open_mouth");
 		llStopAnimation("animOpenMouthBento");
 	}
@@ -180,8 +175,19 @@ animate_mover(string prmAnimation) {
 	if (isSet(_animation_mover_current)) { llStartAnimation(_animation_mover_current); }
 }
 
-// ===== Event Controls =====
+refreshAnimations()
+{
+	llRequestPermissions(llGetOwner(), PERMISSION_TRIGGER_ANIMATION);
+	if (_mouthOpen) {
+		llStartAnimation("express_open_mouth");
+		llStartAnimation("animOpenMouthBento");
+	}
 
+	if (isSet(_animation_arm_base)) { llStartAnimation(_animation_arm_base); }
+	if (isSet(_animation_leg_base)) { llStartAnimation(_animation_leg_base); }
+}
+
+// ===== Event Controls =====
 default {
 	state_entry() { init(); }
   	on_rez(integer prmStart) { init(); }
@@ -205,9 +211,6 @@ default {
   	}
 
   	timer() {
-		if (_mouthOpen) {
-		  	llRequestPermissions(llGetOwner(), PERMISSION_TRIGGER_ANIMATION);
-  			llStartAnimation("express_open_mouth");
-		}
+		refreshAnimations();
   	}
 }
