@@ -202,11 +202,13 @@ default {
 		value = llJsonGetValue(prmText, ["value"]);
 
 		if (function == "setArmPose") { setArmPose(value); }
-		else if (function == "setArmPoses") { setArmPoses(value); }
 		else if (function == "animate") { animate(value); }
 		else if (function == "animate_mover") { animate_mover(value); }
+		else if (function == "setPoses") {
+			setArmPoses(llJsonGetValue(value, ["arm"]));
+			setLegPoses(llJsonGetValue(value, ["leg"]));
+		}
 		else if (function == "setLegPose") { setLegPose(value); }
-		else if (function == "setLegPoses") { setLegPoses(value); }
 		else if (function == "setRestraints") { setRestraints(value); }
   	}
 

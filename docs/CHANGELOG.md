@@ -12,6 +12,7 @@
 ### Changed
 - Action verbs for cutting changed to unique values
 - Restraint folders renamed for ease of dynamic identification in code
+- Performance improvements for deploying restraint changes
 
 ### Fixed
 - Adding or changing restraints no longer resets current pose if set to a PoseBall pose

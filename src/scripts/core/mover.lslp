@@ -119,7 +119,7 @@ executeFunction(string function, string prmJson) {
 
 	if (function == "setLegPose") { setLegPose(value, FALSE); }
 	else if (function == "setRestraints") { setRestraints(prmJson); }
-	else if (function == "setLegPoses") { setLegPoses(value); }
+	else if (function == "setPoses") { setLegPoses(llJsonGetValue(value, ["leg"])); }
 	else if (function == "tetherTo") { tetherTo(value); }
 	else if (function == "tetherPull") { updateAviTetherPos(TRUE); }
 }

@@ -186,7 +186,7 @@ execute_function(string prmFunction, string prmJson) {
 	}
 	if (prmFunction == "setGender") { setGender(value); }
 	else if (prmFunction == "setRestraints") { setRestraints(value); }
-	else if (prmFunction == "setLegPoses") { setAvailablePoses(value); }
+	else if (prmFunction == "setPoses") { setAvailablePoses(llJsonGetValue(value, ["leg"])); }
 	else if (prmFunction == "addAvailableRestraint") { addAvailableRestraint(value); }
 	else if (prmFunction == "setVillain") { _villain = value; }
 	else if (prmFunction == "gui_bind") {

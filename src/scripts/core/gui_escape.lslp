@@ -22,6 +22,7 @@ string  _escapeProgress;
 string  _owner;
 string  _guiUser;
 string  _puzzles;
+string  _security;
 
 string  _actionMsg;
 string  _resumeFunction;
@@ -81,9 +82,9 @@ gui(integer prmScreen)
 		// Reset previous screen
 		guiScreenLast = 0;
 
-		if (isSet(llJsonGetValue(_restraints, ["security", "arm", "tightness"]))) { btn4 = "Free Arms"; }
-		if (isSet(llJsonGetValue(_restraints, ["security", "leg", "tightness"]))) { btn5 = "Free Legs"; }
-		if (isSet(llJsonGetValue(_restraints, ["security", "gag", "tightness"]))) { btn6 = "Free Gag"; }
+		if (isSet(llJsonGetValue(_security, ["arm", "tightness"]))) { btn4 = "Free Arms"; }
+		if (isSet(llJsonGetValue(_security, ["leg", "tightness"]))) { btn5 = "Free Legs"; }
+		if (isSet(llJsonGetValue(_security, ["gag", "tightness"]))) { btn6 = "Free Gag"; }
 		if (isSet(llJsonGetValue(_restraints, ["slots", "hand"]))) { btn7 = "Free Hands"; }
 		if (isSet(llJsonGetValue(_restraints, ["slots", "crotch"]))) { btn8 = "Free Crotch"; }
 
@@ -157,9 +158,9 @@ string displaySecurity(string restraint)
 {
 	integer index;
 
-	integer tightness = (integer)llJsonGetValue(_restraints, ["security", restraint, "tightness"]);
-	integer integrity = (integer)llJsonGetValue(_restraints, ["security", restraint, "integrity"]) - (integer)llJsonGetValue(_escapeProgress, ["integrity", "progress"]);
-	integer complexity = (integer)llJsonGetValue(_restraints, ["security", restraint, "complexity"]) - (integer)llJsonGetValue(_escapeProgress, ["complexity", "progress"]);
+	integer tightness = (integer)llJsonGetValue(_security, [restraint, "tightness"]);
+	integer integrity = (integer)llJsonGetValue(_security, [restraint, "integrity"]) - (integer)llJsonGetValue(_escapeProgress, ["integrity", "progress"]);
+	integer complexity = (integer)llJsonGetValue(_security, [restraint, "complexity"]) - (integer)llJsonGetValue(_escapeProgress, ["complexity", "progress"]);
 	integer security = ((tightness + integrity) * complexity)/3;
 
 	string output;
@@ -209,13 +210,13 @@ string getSuggestedAction()
 	// Check tightness vs integrity suggestion
 	string puzzleType = "tightness";
 	integer progress = (integer)llJsonGetValue(_escapeProgress, ["tightness", "progress"]);
-	integer tightness = (integer)llJsonGetValue(_restraints, ["security", _activePart, "tightness"]);
+	integer tightness = (integer)llJsonGetValue(_security, [_activePart, "tightness"]);
 	integer maxProgress = (integer)llJsonGetValue(_escapeProgress, ["tightness", "maxProgress"]);
 
 	if (ignoreTightness() || progress >= tightness) {
 		puzzleType = "integrity";
 		progress = (integer)llJsonGetValue(_escapeProgress, ["integrity", "progress"]);
-		tightness = (integer)llJsonGetValue(_restraints, ["security", _activePart, "integrity"]);
+		tightness = (integer)llJsonGetValue(_security, [_activePart, "integrity"]);
 		maxProgress = (integer)llJsonGetValue(_escapeProgress, ["integrity", "maxProgress"]);
 	}
 
@@ -274,7 +275,7 @@ string action2String(integer action, string puzzleType)
 integer checkComplexity()
 {
 	integer complexityProgress = (integer)llJsonGetValue(_escapeProgress, ["complexity", "progress"]);
-	integer complexity = (integer)llJsonGetValue(_restraints, ["security", _activePart, "complexity"]);
+	integer complexity = (integer)llJsonGetValue(_security, [_activePart, "complexity"]);
 
 	if (complexityProgress >= complexity) {
 		_escapeProgress = JSON_NULL;
@@ -283,7 +284,7 @@ integer checkComplexity()
 		llWhisper(0, getOwnerName() + " is freed from " + getOwnerPronoun("her") + " " + _activePart + " restraints.");
 		simpleRequest("remRestraint", _activePart);
 		guiScreen = GUI_HOME;	// Exit the current screen when restraint level is removed
-		_resumeFunction = "setRestraints";
+		_resumeFunction = "setSecurity";
 		return TRUE;
 	}
 
@@ -293,8 +294,8 @@ integer checkComplexity()
 integer checkIntegrity()
 {
 	integer integrityProgress = (integer)llJsonGetValue(_escapeProgress, ["integrity", "progress"]);
-	integer integrity = (integer)llJsonGetValue(_restraints, ["security", _activePart, "integrity"]);
-	integer tightness = (integer)llJsonGetValue(_restraints, ["security", _activePart, "tightness"]);
+	integer integrity = (integer)llJsonGetValue(_security, [_activePart, "integrity"]);
+	integer tightness = (integer)llJsonGetValue(_security, [_activePart, "tightness"]);
 
 	if (integrityProgress >= integrity) {
 		_actionMsg = "Your restraint suddenly feels looser!";
@@ -367,7 +368,7 @@ escapeAction(string prmVerb)
 
 	integer maxProgress = (integer)llJsonGetValue(_escapeProgress, [puzzleType, "maxProgress"]);
 	integer progress = (integer)llJsonGetValue(_escapeProgress, [puzzleType, "progress"]);
-	integer tightness = (integer)llJsonGetValue(_restraints, ["security", _activePart, "tightness"]);
+	integer tightness = (integer)llJsonGetValue(_security, [_activePart, "tightness"]);
 
 	if (!isAssisted() && isArmBound()) {
 		stamina = _stamina - exertion;
@@ -385,14 +386,14 @@ escapeAction(string prmVerb)
 		}
 
 		// Escapability
-		if (!(integer)llJsonGetValue(_restraints, ["security", _activePart, "canEscape"]) && !isPicking && !isCutting) {
+		if (!(integer)llJsonGetValue(_security, [_activePart, "canEscape"]) && !isPicking && !isCutting) {
 			success = FALSE;
 		}
 	}
 
 	// Set escape progress
 	if (prmVerb == "Thrash"
-		&& (integer)llJsonGetValue(_restraints, ["security", _activePart, "canEscape"])
+		&& (integer)llJsonGetValue(_security, [_activePart, "canEscape"])
 		&& checkThrash()
 	) {
 		_actionMsg = "You think you've made some unexpected progress.";
@@ -482,8 +483,8 @@ integer ignoreIntegrity()
 {
 	return (isAssisted() && !(integer)llJsonGetValue(_guiUser, ["armBound"])) && !isSet(llJsonGetValue(_guiUser, ["handBound"]))
 		|| (!isAssisted() && !isArmBound())
-		|| (isSet(llJsonGetValue(_guiUser, ["blade"])) && isSet(llJsonGetValue(_restraints, ["security", _activePart, "canCut"])))
-		|| (isSet(llJsonGetValue(_guiUser, ["cropper"])) && isSet(llJsonGetValue(_restraints, ["security", _activePart, "canCrop"])))
+		|| (isSet(llJsonGetValue(_guiUser, ["blade"])) && isSet(llJsonGetValue(_security, [_activePart, "canCut"])))
+		|| (isSet(llJsonGetValue(_guiUser, ["cropper"])) && isSet(llJsonGetValue(_security, [_activePart, "canCrop"])))
 	;
 }
 
@@ -499,11 +500,11 @@ integer isAssisted()
 
 integer isCutting()
 {
-	if (isSet(llJsonGetValue(_restraints, ["security", _activePart, "canCut"])) && isSet(llJsonGetValue(_guiUser, ["blade"]))) {
+	if (isSet(llJsonGetValue(_security, [_activePart, "canCut"])) && isSet(llJsonGetValue(_guiUser, ["blade"]))) {
 		return TRUE;
 	}
 
-	if (isSet(llJsonGetValue(_restraints, ["security", _activePart, "canCrop"])) && isSet(llJsonGetValue(_guiUser, ["cropper"]))) {
+	if (isSet(llJsonGetValue(_security, [_activePart, "canCrop"])) && isSet(llJsonGetValue(_guiUser, ["cropper"]))) {
 		return TRUE;
 	}
 	return FALSE;
@@ -511,7 +512,7 @@ integer isCutting()
 
 integer isPicking()
 {
-	return isSet(llJsonGetValue(_restraints, ["security", _activePart, "canPick"]))
+	return isSet(llJsonGetValue(_security, [_activePart, "canPick"]))
 		&& isSet(llJsonGetValue(_guiUser, ["pick"]));
 }
 
@@ -557,6 +558,11 @@ setRestraints(string restraints)
 {
 	simpleRequest("resetRecoveryTimer", (string)REST_TIMER);
 	_restraints = restraints;
+}
+
+setSecurity(string security)
+{
+	_security = security;
 }
 
 updateDistraction(integer distraction)
@@ -607,7 +613,7 @@ refreshPuzzle(string puzzleType) {
 	_escapeProgress = llJsonSetValue(_escapeProgress, [puzzleType, "maxProgress"], "0");
 	updateProgress(puzzleType, 0);
 
-	string securityLevel = llJsonGetValue(_restraints, ["security", restraint, puzzleType]);
+	string securityLevel = llJsonGetValue(_security, [restraint, puzzleType]);
 	if (!isSet(securityLevel)) {
 		_puzzles = llJsonSetValue(_puzzles, [puzzleType], JSON_NULL);
 		return;
@@ -635,6 +641,7 @@ executeFunction(string function, string json)
 	else if (function == "setEscapeDistraction") { _distraction = (integer)value; }
 	else if (function == "setEscapeStamina") { _stamina = (integer)value; }
 	else if (function == "setRestraints") { setRestraints(value); }
+	else if (function == "setSecurity") { setSecurity(value); }
 	else if (function == "setToucher") { _guiUser = value; }
 	else if (function == "gui_escape") {
 		integer screen = 0;

@@ -235,7 +235,7 @@ execute_function(string prmFunction, string prmJson) {
 		init_gui(userkey, (integer)value);
 	}
 	else if (prmFunction == "setVillainKey") { _villainID = value; }
-	else if (prmFunction == "setLegPoses") { setAvailablePoses(value); }
+	else if (prmFunction == "setPoses") { setAvailablePoses(llJsonGetValue(value, ["leg"])); }
 	else if (prmFunction == "addExp") { addExp(value); }
 	else if (prmFunction == "setRestraints") { setRestraints(value); }
 	else if (prmFunction == "resetGUI") {
@@ -246,7 +246,7 @@ execute_function(string prmFunction, string prmJson) {
 default {
 	state_entry() {	init();	}
 	on_rez(integer start_param) { init(); }
-	
+
 	touch_start(integer num_detected) {
 		if (llDetectedKey(0) != llGetOwner()) {
 			return;	// Only access by owner

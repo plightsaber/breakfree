@@ -3,8 +3,6 @@ $import Modules.GeneralTools.lslm();
 $import Modules.RestraintTools.lslm();
 
 string _slots;		// List of UIDs ONLY for currently applied restraints
-string _metadata;
-
 string _villain;
 
 init() {
@@ -48,9 +46,8 @@ addRestraint(string prmJson) {
 deployRestraints() {
 	resetPoses();
 	simpleRequest("setAttachments", llList2Json(JSON_ARRAY, getAttachments()));
-
 	rebuild_metadata();
-	simpleRequest("setRestraints", _metadata);
+	rebuild_security();
 }
 
 list getAttachments() {
@@ -133,23 +130,23 @@ remRestraint(string prmType) {
 
 resetPoses() {
 	string poses;
-	string topRestraint;
+	string poseRequest;
 
 	// Arm poses
-	topRestraint = getTopRestraint("arm");
-	poses = llJsonGetValue(topRestraint, ["poses"]);
+	poses = llJsonGetValue(getTopRestraint("arm"), ["poses"]);
 	if (!isSet(poses)) {
 		poses = llJsonSetValue(poses, [JSON_APPEND], "free");
 	}
-	simpleRequest("setArmPoses", poses);
+	poseRequest = llJsonSetValue(poseRequest, ["arm"], poses);
 
 	// Leg poses
-	topRestraint = getTopRestraint("leg");
-	poses = llJsonGetValue(topRestraint, ["poses"]);
+	poses = llJsonGetValue(getTopRestraint("leg"), ["poses"]);
 	if (!isSet(poses)) {
 		poses = llJsonSetValue(poses, [JSON_APPEND], "free");
 	}
-	simpleRequest("setLegPoses", poses);
+	poseRequest = llJsonSetValue(poseRequest, ["leg"], poses);
+
+	simpleRequest("setPoses", poseRequest);
 }
 
 releaseRestraint(string prmType) {
@@ -173,41 +170,57 @@ releaseRestraint(string prmType) {
 	deployRestraints();
 }
 
+rebuild_security()
+{
+	string security;
+	security = llJsonSetValue(security, ["security", "arm"], getSecurityDetails("arm"));
+	security = llJsonSetValue(security, ["security", "leg"], getSecurityDetails("leg"));
+	security = llJsonSetValue(security, ["security", "gag"], getSecurityDetails("gag"));
+	security = llJsonSetValue(security, ["security", "crotch"], getSecurityDetails("crotch"));
+	security = llJsonSetValue(security, ["security", "hand"], getSecurityDetails("hand"));
+
+	simpleRequest("setSecurity", security);
+}
+
 rebuild_metadata() {
-	_metadata = llJsonSetValue(_metadata, ["slots"], _slots);
+	string metadata;
+	metadata = llJsonSetValue(metadata, ["slots"], _slots);
 
 	integer isArmsBound = isSet(llJsonGetValue(_restraints, ["wrist"]))
 		|| isSet(llJsonGetValue(_restraints, ["elbow"]))
 		|| isSet(llJsonGetValue(_restraints, ["torso"]));
-	_metadata = llJsonSetValue(_metadata, ["armBound"], (string)isArmsBound);
+	metadata = llJsonSetValue(metadata, ["armBound"], (string)isArmsBound);
 
 	integer isLegsBound = isSet(llJsonGetValue(_restraints, ["ankle"]))
 		|| isSet(llJsonGetValue(_restraints, ["knee"]))
 		|| isSet(llJsonGetValue(_restraints, ["immobilizer"]));
-	_metadata = llJsonSetValue(_metadata, ["legBound"], (string)isLegsBound);
+	metadata = llJsonSetValue(metadata, ["legBound"], (string)isLegsBound);
 
 	integer isGagged = isSet(llJsonGetValue(_restraints, ["gag1"]))
 		|| isSet(llJsonGetValue(_restraints, ["gag2"]))
 		|| isSet(llJsonGetValue(_restraints, ["gag3"]))
 		|| isSet(llJsonGetValue(_restraints, ["gag4"]));
-	_metadata = llJsonSetValue(_metadata, ["gagged"], (string)isGagged);
+	metadata = llJsonSetValue(metadata, ["gagged"], (string)isGagged);
 
-	_metadata = llJsonSetValue(_metadata, ["mouthOpen"], (string)searchRestraint("gag", "mouthOpen", "1"));
-	_metadata = llJsonSetValue(_metadata, ["speechGarbled"], (string)searchRestraint("gag", "speechGarbled", "1"));
-	_metadata = llJsonSetValue(_metadata, ["speechMuffled"], (string)searchRestraint("gag", "speechMuffled", "1"));
-	_metadata = llJsonSetValue(_metadata, ["speechSealed"], (string)searchRestraint("gag", "speechSealed", "1"));
+	if (isGagged) {
+		metadata = llJsonSetValue(metadata, ["mouthOpen"], (string)searchRestraint("gag", "mouthOpen", "1"));
+		metadata = llJsonSetValue(metadata, ["speechGarbled"], (string)searchRestraint("gag", "speechGarbled", "1"));
+		metadata = llJsonSetValue(metadata, ["speechMuffled"], (string)searchRestraint("gag", "speechMuffled", "1"));
+		metadata = llJsonSetValue(metadata, ["speechSealed"], (string)searchRestraint("gag", "speechSealed", "1"));
+	} else {
+		metadata = llJsonSetValue(metadata, ["mouthOpen"], "0");
+		metadata = llJsonSetValue(metadata, ["speechGarbled"], "0");
+		metadata = llJsonSetValue(metadata, ["speechMuffled"], "0");
+		metadata = llJsonSetValue(metadata, ["speechSealed"], "0");
+	}
 
-	_metadata = llJsonSetValue(_metadata, ["armTetherable"], (string)searchRestraint("arm", "canTether", "1"));
-	_metadata = llJsonSetValue(_metadata, ["legTetherable"], (string)searchRestraint("leg", "canTether", "1"));
+	metadata = llJsonSetValue(metadata, ["armTetherable"], (string)searchRestraint("arm", "canTether", "1"));
+	metadata = llJsonSetValue(metadata, ["legTetherable"], (string)searchRestraint("leg", "canTether", "1"));
 
-	_metadata = llJsonSetValue(_metadata, ["armBoundExternal"], (string)searchRestraint("arm", "type", "external"));
-	_metadata = llJsonSetValue(_metadata, ["animations"], llList2Json(JSON_ARRAY, getRestraintList(_restraints, "animations")));
+	metadata = llJsonSetValue(metadata, ["armBoundExternal"], (string)searchRestraint("arm", "type", "external"));
+	metadata = llJsonSetValue(metadata, ["animations"], llList2Json(JSON_ARRAY, getRestraintList(_restraints, "animations")));
 
-	_metadata = llJsonSetValue(_metadata, ["security", "arm"], getSecurityDetails("arm"));
-	_metadata = llJsonSetValue(_metadata, ["security", "leg"], getSecurityDetails("leg"));
-	_metadata = llJsonSetValue(_metadata, ["security", "gag"], getSecurityDetails("gag"));
-	_metadata = llJsonSetValue(_metadata, ["security", "crotch"], getSecurityDetails("crotch"));
-	_metadata = llJsonSetValue(_metadata, ["security", "hand"], getSecurityDetails("hand"));
+	simpleRequest("setRestraints", metadata);
 }
 
 string getSecurityDetails(string prmType) {
