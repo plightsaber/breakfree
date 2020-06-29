@@ -20,6 +20,7 @@
 - "Tightness" relabeled "Security" in Hero dialog to match Escape dialog terminology
 - Escape-item menu entry now defaults to Escape menu when using on self
 - Fix garbler sometimes treating avi as gagged after logging back in even if not gagged
+- Fix pbBed01 animation not triggering
 - Prevent cleave gagging avis who are ball gagged
 - Security display now resets when rebound after a successful escape
 - Touchers now use feats when using the dialogs of other avis

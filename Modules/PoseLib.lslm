@@ -243,5 +243,5 @@ string getPoses() {
 }
 
 list getPoseBallPoseList() {
-	return ["pbStand01", "pbChair01", "pbChair02", "pbChair03"];
+	return ["pbBed01", "pbChair01", "pbChair02", "pbChair03"];
 }
