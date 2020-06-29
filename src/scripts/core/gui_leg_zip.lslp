@@ -133,7 +133,7 @@ gui(integer screen)
 		}
 
 		if (isSet(llJsonGetValue(_restraints, ["slots", "immobilizer"]))) {
-			mpButtons += "Untie";
+			mpButtons += "Release";
 		}
 
 		mpButtons = multipageGui(mpButtons, 2, multipageIndex);
@@ -226,7 +226,7 @@ default {
 			else if (message == "Next >>") { multipageIndex ++; gui(guiScreen); return; }
 			else if (message == "<< Previous") { multipageIndex --; gui(guiScreen); return; }
 
-			if (message == "Untie") {
+			if (message == "Release") {
 				simpleRequest("remRestraint", llJsonGetValue(getSelf(), ["part"]));
 				_resumeFunction = "setRestraints";
 				return;

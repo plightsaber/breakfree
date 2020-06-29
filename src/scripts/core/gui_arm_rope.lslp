@@ -82,7 +82,7 @@ gui(integer prmScreen) {
 			|| llJsonGetValue(_currentRestraints, ["elbow"]) != JSON_NULL
 			|| llJsonGetValue(_currentRestraints, ["torso"]) != JSON_NULL
 		) {
-			mpButtons += "Untie";
+			mpButtons += "Release";
 		}
 
 		if (llJsonGetValue(_currentRestraints, ["wrist"]) == JSON_NULL && llJsonGetValue(_currentRestraints, ["torso"]) == JSON_NULL) {
@@ -350,7 +350,7 @@ default {
 			else if (prmText == "Next >>") { multipageIndex ++; gui(guiScreen); return; }
 			else if (prmText == "<< Previous") { multipageIndex --; gui(guiScreen); return; }
 
-			if (prmText == "Untie") {
+			if (prmText == "Release") {
 				simpleRequest("remRestraint", llJsonGetValue(getSelf(), ["part"]));
 				_resumeFunction = "setRestraints";
 				return;

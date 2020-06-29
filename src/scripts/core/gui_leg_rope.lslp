@@ -111,7 +111,7 @@ gui(integer prmScreen) {
 		}
 
 		if (isSet(llJsonGetValue(_currentRestraints, ["immobilizer"]))) {
-			mpButtons += "Untie";
+			mpButtons += "Release";
 		}
 
 		if ((hasFeat(_villain, "Sadist") || _rpMode)
@@ -336,7 +336,7 @@ default {
 			else if (prmText == "Next >>") { multipageIndex ++; gui(guiScreen); return; }
 			else if (prmText == "<< Previous") { multipageIndex --; gui(guiScreen); return; }
 
-			if (prmText == "Untie") {
+			if (prmText == "Release") {
 				simpleRequest("remRestraint", llJsonGetValue(getSelf(), ["part"]));
 				_resumeFunction = "setRestraints";
 				return;

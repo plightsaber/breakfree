@@ -128,7 +128,7 @@ gui(integer screen)
 			|| isSet(llJsonGetValue(_restraints, ["slots", "elbow"]))
 			|| isSet(llJsonGetValue(_restraints, ["slots", "torso"]))
 		) {
-			mpButtons += "Untie";
+			mpButtons += "Release";
 		}
 
 		if (isSet(llJsonGetValue(_restraints, ["slots", "hand"]))) { mpButtons += "Free Hands"; }
@@ -237,7 +237,7 @@ default {
 			else if (message == "Next >>") { multipageIndex ++; gui(guiScreen); return; }
 			else if (message == "<< Previous") { multipageIndex --; gui(guiScreen); return; }
 
-			if (message == "Untie") {
+			if (message == "Release") {
 				simpleRequest("remRestraint", llJsonGetValue(getSelf(), ["part"]));
 				_resumeFunction = "setRestraints";
 				return;
