@@ -173,11 +173,11 @@ releaseRestraint(string prmType) {
 rebuild_security()
 {
 	string security;
-	security = llJsonSetValue(security, ["security", "arm"], getSecurityDetails("arm"));
-	security = llJsonSetValue(security, ["security", "leg"], getSecurityDetails("leg"));
-	security = llJsonSetValue(security, ["security", "gag"], getSecurityDetails("gag"));
-	security = llJsonSetValue(security, ["security", "crotch"], getSecurityDetails("crotch"));
-	security = llJsonSetValue(security, ["security", "hand"], getSecurityDetails("hand"));
+	security = llJsonSetValue(security, ["arm"], getSecurityDetails("arm"));
+	security = llJsonSetValue(security, ["leg"], getSecurityDetails("leg"));
+	security = llJsonSetValue(security, ["gag"], getSecurityDetails("gag"));
+	security = llJsonSetValue(security, ["crotch"], getSecurityDetails("crotch"));
+	security = llJsonSetValue(security, ["hand"], getSecurityDetails("hand"));
 
 	simpleRequest("setSecurity", security);
 }
