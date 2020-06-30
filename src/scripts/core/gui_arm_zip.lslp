@@ -142,7 +142,7 @@ gui(integer screen)
 
 		if (!isSet(llJsonGetValue(_restraints, ["slots", "elbow"]))
 			&& !isSet(llJsonGetValue(_restraints, ["slots", "torso"]))
-			&& (llSubStringIndex(llJsonGetValue(_restraints, ["slots", "wrist"]), "back") != -1 && "backCuff" != llJsonGetValue(_restraints, ["slots", "wrist"]))
+			&& (llSubStringIndex(llJsonGetValue(_restraints, ["wrist"]), "back") != -1 && "back_cuff" != llJsonGetValue(_restraints, ["wrist"]))
 		) {
 			mpButtons += "Elbow";
 		}

@@ -92,7 +92,7 @@ gui(integer prmScreen) {
 
 		if (llJsonGetValue(_currentRestraints, ["elbow"]) == JSON_NULL
 			&& llJsonGetValue(_currentRestraints, ["torso"]) == JSON_NULL
-			&& (llSubStringIndex(llJsonGetValue(_currentRestraints, ["wrist"]), "back") != -1 && "backCuff" != llJsonGetValue(_currentRestraints, ["wrist"]))
+			&& (llSubStringIndex(llJsonGetValue(_currentRestraints, ["wrist"]), "back") != -1 && "back_cuff" != llJsonGetValue(_currentRestraints, ["wrist"]))
 		) {
 			mpButtons += "Elbow";
 		}
