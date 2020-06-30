@@ -4,6 +4,8 @@ Thanks for using the BreakFree restraint system!  Here's a few things you should
 
 Installation
 ------------
+!! The first thing you should do is attach the BreakFree object you received.  It should appear as an invisible cylinder around your torso.  Once attached, Right click on it and select EDIT.  On the CONTENT tab, click RESET SCRIPTS.  You need to do this to properly initialize ownership over the BreakFree object. If you don't, various strange things may happen.
+
 Since BreakFree is highly modular, it relies on RLV queries to attach the restraints as required.  As such, you need to do the following to make sure that BreakFree works properly.
 * Use RLV-compatible viewer.
 * Make sure all your restraint folders are in a folder named "BreakFree" the top-level #RLV directory in your Inventory.
@@ -12,6 +14,7 @@ As of BreakFree 4.0, there are too many restraint folders to deliver in one pack
 * BF Restraints (rope)
 * BF Restraints (tape)
 * BF Restraints (gags)
+* BF Restraints (other)
 
 When you are done your directory tree should look something like this:
 My Inventory
@@ -50,6 +53,7 @@ Allows you to change your position if you are bound and have multiple poses avai
 You can customize how your BreakFree set behaves. While unbound, you will have an "Options" button when touching your BreakFree object.
 * RP Mode - When enabled, the escape game is disabled and any avi has full access to your restraints. Additionally, all restraint types and positions will be available.
 * RLV - When enabled, BreakFree will activate RLV locks when you are bound.
+* LOCKS - When enabled, certain restraints will require a lock pick to remove.
 
 #### Stats
 See "Stats (Experience & Feats) for more detail.
@@ -63,7 +67,7 @@ This dialog appears when you touch a different avi's BreakFree object and:
 * You have the ability to bind three areas: Arms, Legs, and Gag.
 * Clicking through these menus, you then choose a material to bind with.
 * After choosing an area and a material, you can choose the position or slot to bind the avi in.  Certain slots or positions block others, or occasionally open new binding possibilities.  Mix and match and explore the options to make your victim secure.
-* Color: You also may have a dialog option to style the active area / material.  Click and select from a few colors or textures to customize the look of the restraints.
+* You also may have a dialog option to STYLE the active area / material.  Click and select from a few colors or textures to customize the look of the restraints.
 
 #### Tether
 Certain positions allow you to tether the avi.  While tethered, an avi has a limited radius of movement from the origin of the tether.
@@ -122,14 +126,28 @@ Here are a list of feats you can learn:
 
 * Anubis:     +2 tightness for every tape restraint. Additionally unlocks TAPE BOX TIE
 * Anubis+:    +2 tightness for every tape restraint. Additionally unlocks TAPE BALL TIE
-* Anibis++:	  Unlocks TAPE MITTEN
-* Rigger:     +5 integrity for every rope restraint.  Additionally unlocks ROPE BOX TIE
-* Rigger+:    +1 complexity for every rope restraint. Additionally unlocks ROPE BALL TIE
+* Anubis++:	  Unlocks TAPE MITTEN
 * Gag Snob:   +5 integrity for every gag
 * Gag Snob+:  +1 complexity for every gag
-* Sadist:     Unlocks CROTCH TIE
+* Rigger:     +5 integrity for every rope restraint.  Additionally unlocks ROPE BOX TIE
+* Rigger+:    +1 complexity for every rope restraint. Additionally unlocks ROPE BALL TIE
+* Sadist:     Unlocks CROTCH TIE (requires Rigger+)
 
 Any feat noted with a "+". Is an upgraded version of the feat.  An avi needs the non-plus version of the feat before learning the upgraded version.  Noted effects of these feats are cumulative.
+
+### Import / Export Stats (UPGRADES)
+When a new version of BreakFree is released or if you want to perform a full reset of your scripts, ALL YOUR EXPERIENCE AND FEATS WILL BE LOST.  It can take a long time gaining feats, so you likely don't want to do it all over again.  To export and import your stats (or to save your progress just-in-case), this is what you need to do.
+* Attach the BreakFree version you want to get your save your stats from
+* Bring up the STATS page from the Owner Dialog
+* Click Export
+* Copy the message you receive on the public channel.  It should look something like this: {"exp":200,"feats":["Flexible"]}
+* Detach the old BreakFree version and attach the new one. (If not upgrading to a new version, you can skip this step)
+* Right click on the BreakFree object and click EDIT
+* On the CONTENT tab, find the notecard ".stats" and open it
+* Replace the contents with the message you copied from the public channel
+* Click RESET SCRIPTS
+
+Now your BreakFree system should reinitialize with your previous progress intact.
 
 Escape System
 -------------
@@ -165,16 +183,23 @@ If you have not loosened the tightness of your restraint enough, even a correct 
 
 Accessories
 -----------
-Certain items can affect your escape.  Included with your BreakFree product is an official BreakFree knife.  While you are holding it or are near by, you can click it and choose a nearby bound Avi to free (including yourself).  While using a knife, any successful INTEGRITY action will reduce the restraint's COMPLEXITY.
+### Escape Tools (updated in 4.1.0)
+Certain items can affect your escape.  Included with your BreakFree product is an official BreakFree knife, bobby pin, and bolt cropper.  While you are holding it or are near by, you can click it and choose a nearby bound Avi to free (including yourself).  While using a knife or bolt cropper, any successful INTEGRITY action will reduce the restraint's COMPLEXITY.  Using a bobby pin will allow you to pick any locks.
 
-Anyone can also click the knife to remove it from the world or detach it from your avi.  So keep them well hidden if you are relying on them to escape!
+Anyone can also click the escape tool to remove it from the world or detach it from your avi.  So keep them well hidden if you are relying on them to escape!
 
-Along with the included knife a standalone script "blade" is included for use on other sharp objects you may want to make or use.
-!! The script includes logic that self-deletes the object when REMOVE is selected.  DO NOT USE on any non-copyable items you do not currently have a backup for. !!
+Along with the included tools is a script "escapeTool" is included for use on other objects you may want to make or use.  By default it is set to "blade" as the type, but you can edit the script to change the TOOL_TYPE to "blade", "cropper" or "pick" to match the type of tool you're including it in.
+
+!! The script includes logic that self-deletes the object when REMOVE is selected.  DO NOT USE on any non-copyable items you do not currently have a backup for.
+
+### Domme HUD
+So you want to be better at binding people without the risk of reciprocation?  That's just unfair!  We aren't here to judge though, so if you are one of THOSE people, included is a HUD attachment that allows you to level up without wearing the restraint set.
 
 RealRestraints Plug-in
 ----------------------
-If you want to use BreakFree along with a RealRestraints product, we recommend you install the included script into the main RealRestraint attachment (the one that attaches to (r forearm). No other action is required, just drag-and-drop!
+If you prefer to use a RealRestraint product but still want to interact with a BreakFree user, we recommend you install the included script into the main RealRestraint attachment (the one that attaches to (r forearm). No other action is required, just drag-and-drop!
+
+This script will track whether or not your arms are bound and change your interaction with any avi wearing BreakFree accordingly.
 
 Contribute!
 -----------
