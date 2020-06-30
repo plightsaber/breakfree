@@ -6,6 +6,7 @@
 - Handcuffs with unique lockable escape path
 - Hero dialog now checks feats to give rescue suggestions
 - LockGuard and LockMeister scripts added to rope wrist and leg restraints to better furniture interaction
+- Owner option to disable lock pick requirement for cuffs
 - Pick (Lock pick) and Cropper (bolt cutters) escape item scripts added
 - Zip ties for arms and legs.
 

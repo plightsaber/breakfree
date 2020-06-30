@@ -9,6 +9,7 @@ key _villainID;
 
 // Settings
 integer rpMode = FALSE;
+integer _lockable = TRUE;
 integer _RLV = FALSE;
 
 // Stats
@@ -132,10 +133,16 @@ gui(integer prmScreen) {
 	else if (prmScreen == GUI_OPTIONS) {
 		guiText = "User Settings" + "\n";
 		guiText += "Please reference the included README for details.";
-		if (rpMode) { btn4 = "☑ RP Mode"; }
-		else { btn4 = "☒ RP Mode"; }
-		if (_RLV) { btn5 = "☑ RLV"; }
-		else { btn5 = "☒ RLV"; }
+
+		if (rpMode) { mpButtons += "☑ RP Mode"; }
+		else { mpButtons += "☒ RP Mode"; }
+
+		if (_RLV) { mpButtons += "☑ RLV"; }
+		else { mpButtons += "☒ RLV"; }
+
+		if (_lockable) { mpButtons += "☑ Lockable"; }
+		else { mpButtons += "☒ Lockable"; }
+
 		btn1 = "<<Back>>";
 	}
 	else if (prmScreen == GUI_POSE) {
@@ -312,6 +319,8 @@ default {
 				else if (prmText == "☑ RP Mode") { rpMode = FALSE; simpleRequest("setRPMode", "0"); }
 				else if (prmText == "☒ RLV") { _RLV = TRUE; simpleRequest("setRLV", "1"); }
 				else if (prmText == "☑ RLV") { _RLV = FALSE; simpleRequest("setRLV", "0"); }
+				else if (prmText == "☒ Lockable") { _lockable = TRUE; simpleRequest("setLockable", "1"); }
+				else if (prmText == "☑ Lockable") { _lockable = FALSE; simpleRequest("setLockable", "0"); }
 				gui(guiScreen);
 			} else if (guiScreen == GUI_POSE) {
 				simpleRequest("setLegPose", prmText);

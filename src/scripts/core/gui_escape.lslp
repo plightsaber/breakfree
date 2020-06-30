@@ -13,6 +13,8 @@ integer GUI_RESCUE = 101;
 
 key     _configQueryID;
 
+integer _lockable = TRUE;
+
 integer _distraction;
 integer _stamina;
 integer _maxStamina = 100;
@@ -272,6 +274,12 @@ string action2String(integer action, string puzzleType)
 	return "ERROR: UNKNOWN ACTION:" + (string)(action);
 }
 
+integer canEscape()
+{
+	return !_lockable
+		|| (isSet(llJsonGetValue(_security, [_activePart, "canEscape"])) && isSet(llJsonGetValue(_security, [_activePart, "canPick"])));
+}
+
 integer checkComplexity()
 {
 	integer complexityProgress = (integer)llJsonGetValue(_escapeProgress, ["complexity", "progress"]);
@@ -386,14 +394,14 @@ escapeAction(string prmVerb)
 		}
 
 		// Escapability
-		if (!(integer)llJsonGetValue(_security, [_activePart, "canEscape"]) && !isPicking && !isCutting) {
+		if (!canEscape() && !isPicking && !isCutting) {
 			success = FALSE;
 		}
 	}
 
 	// Set escape progress
 	if (prmVerb == "Thrash"
-		&& (integer)llJsonGetValue(_security, [_activePart, "canEscape"])
+		&& canEscape()
 		&& checkThrash()
 	) {
 		_actionMsg = "You think you've made some unexpected progress.";
@@ -640,6 +648,7 @@ executeFunction(string function, string json)
 	}
 	else if (function == "setEscapeDistraction") { _distraction = (integer)value; }
 	else if (function == "setEscapeStamina") { _stamina = (integer)value; }
+	else if (function == "setLockable") { _lockable = (integer)value; }
 	else if (function == "setRestraints") { setRestraints(value); }
 	else if (function == "setSecurity") { setSecurity(value); }
 	else if (function == "setToucher") { _guiUser = value; }
