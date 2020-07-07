@@ -277,7 +277,8 @@ string action2String(integer action, string puzzleType)
 integer canEscape()
 {
 	return !_lockable
-		|| (isSet(llJsonGetValue(_security, [_activePart, "canEscape"])) && isSet(llJsonGetValue(_security, [_activePart, "canPick"])));
+		|| isSet(llJsonGetValue(_security, [_activePart, "canEscape"]))
+		|| (isPicking() && isSet(llJsonGetValue(_security, [_activePart, "canPick"])));
 }
 
 integer checkComplexity()

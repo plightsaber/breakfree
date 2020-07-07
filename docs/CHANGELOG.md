@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.1.1]
+### Fixed
+- Fixed bug that made all restraints inescapable o_o
+
 ## [4.1.0]
 ### Added
 - Alternate animations for avis with narrow shoulders (Kemono)
