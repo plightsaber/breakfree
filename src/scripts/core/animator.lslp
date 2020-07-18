@@ -40,22 +40,27 @@ setArmPose(string uid) {
 		return;	// Just keep on truckin'
 	}
 
-	if (isSet(_animation_arm_base)) { llStopAnimation(_animation_arm_base); }
-
 	if (uid == "free" || uid == "external") {
+		if (isSet(_animation_arm_base)) { llStopAnimation(_animation_arm_base); }
+
 		_armPose = JSON_NULL;
 		_animation_arm_base = JSON_NULL;
 		return;
 	}
 
 	_armPose = uid;
-	_animation_arm_base = llJsonGetValue(getPoses(), ["arm", uid, "base"]);
+
+	string animation_arm_base = llJsonGetValue(getPoses(), ["arm", uid, "base"]);
+	if (animation_arm_base != _animation_arm_base) {
+		if (isSet(_animation_arm_base)) { llStopAnimation(_animation_arm_base); }
+		_animation_arm_base = animation_arm_base;
+	}
 	//_animation_arm_success = llJsonGetValue(getPoses(), ["arm", "uid", "struggleSuccess"]);
 	//_animation_arm_failure = llJsonGetValue(getPoses(), ["arm", "uid", "struggleFailure"]);
 	_animation_arm_success = "animArm_struggle";
 	_animation_arm_failure = "animArm_struggle";
 
-	llStartAnimation(_animation_arm_base);
+	refreshAnimations();
 }
 
 setLegPose(string uid) {
@@ -65,10 +70,9 @@ setLegPose(string uid) {
 	}
 
 	string pose = llJsonGetValue(_poseLib, ["leg", _legPose]);
-
-	if (isSet(_animation_leg_base)) { llStopAnimation(_animation_leg_base); }
-
 	if (uid == "free" || uid == "external") {
+		if (isSet(_animation_leg_base)) { llStopAnimation(_animation_leg_base); }
+
 		_legPose = JSON_NULL;
 		_animation_leg_base = JSON_NULL;
 		llResetAnimationOverride("ALL");
@@ -76,7 +80,13 @@ setLegPose(string uid) {
 	}
 
 	_legPose = uid;
-	_animation_leg_base = llJsonGetValue(getPoses(), ["leg", uid, "base"]);
+
+	string animation_leg_base = llJsonGetValue(getPoses(), ["leg", uid, "base"]);
+	if (animation_leg_base != _animation_leg_base) {
+		if (isSet(_animation_leg_base)) { llStopAnimation(_animation_leg_base); }
+		_animation_leg_base = animation_leg_base;
+	}
+
 	_animation_leg_success = llJsonGetValue(getPoses(), ["leg", uid, "success"]);
 	_animation_leg_failure = llJsonGetValue(getPoses(), ["leg", uid, "failure"]);
 	_animation_leg_walk = llJsonGetValue(getPoses(), ["leg", uid, "walk"]);
@@ -86,7 +96,7 @@ setLegPose(string uid) {
 		llSetAnimationOverride("Walking", _animation_leg_walk);
 	}
 
-	if (isSet(_animation_leg_base)) { llStartAnimation(_animation_leg_base); }
+	refreshAnimations();
 }
 
 
@@ -111,15 +121,11 @@ setLegPoses(string prmPoses) {
 	}
 }
 
+// Sets non-standard animations
 setRestraints(string prmJson) {
-	// Gag animation
 	_mouthOpen = llJsonGetValue(prmJson, ["mouthOpen"]) == "1";
-	llRequestPermissions(llGetOwner(), PERMISSION_TRIGGER_ANIMATION);
-	if (_mouthOpen) {
-		llStartAnimation("express_open_mouth");
-		llStartAnimation("animOpenMouthBento");
-	} else {
-		llStopAnimation("express_open_mouth");
+	if (!_mouthOpen) {
+		llRequestPermissions(llGetOwner(), PERMISSION_TRIGGER_ANIMATION);
 		llStopAnimation("animOpenMouthBento");
 	}
 
@@ -138,8 +144,6 @@ setRestraints(string prmJson) {
 	for (index = 0; index < llGetListLength(stopAnimations); index++) {
 		llStopAnimation(llList2String(stopAnimations, index));
 	}
-
-	_animations = newAnimations;
 }
 
 // ===== Main Functions =====
@@ -153,6 +157,18 @@ animate(string prmAnimation) {
 	else if (prmAnimation == "animation_leg_failure") { animation = _animation_leg_failure; }
 
 	if (isSet(animation)) { llStartAnimation(animation); }
+}
+
+animateLoop(string animation)
+{
+	if (llGetInventoryKey(animation) == NULL_KEY) {
+		debug("Could not find animation: " + animation);
+		return;
+	}
+
+	llRequestPermissions(llGetOwner(), PERMISSION_TRIGGER_ANIMATION);
+	llStartAnimation(animation);
+	llSetTimerEvent(2.0);
 }
 
 animate_mover(string prmAnimation) {
@@ -180,11 +196,11 @@ refreshAnimations()
 	llRequestPermissions(llGetOwner(), PERMISSION_TRIGGER_ANIMATION);
 	if (_mouthOpen) {
 		llStartAnimation("express_open_mouth");
-		llStartAnimation("animOpenMouthBento");
+		animateLoop("animOpenMouthBento");
 	}
 
-	if (isSet(_animation_arm_base)) { llStartAnimation(_animation_arm_base); }
-	if (isSet(_animation_leg_base)) { llStartAnimation(_animation_leg_base); }
+	if (isSet(_animation_arm_base)) { animateLoop(_animation_arm_base); }
+	if (isSet(_animation_leg_base)) { animateLoop(_animation_leg_base); }
 }
 
 // ===== Event Controls =====
@@ -213,6 +229,7 @@ default {
   	}
 
   	timer() {
+		llSetTimerEvent(ANIM_REFRESH_INTERVAL);
 		refreshAnimations();
   	}
 }
