@@ -210,8 +210,8 @@ string defineRestraint(string prmName) {
 		list liPoses;
 		string wristRestraintId = llJsonGetValue(getCurrentRestraints(), ["wrist"]);
 		if (llJsonGetValue(getCurrentRestraints(), ["elbow"]) != JSON_NULL
-			|| wristRestraintId == "backCuff"
-			|| wristRestraintId == "backZip"
+			|| wristRestraintId == "back_cuff"
+			|| wristRestraintId == "back_zip"
 		) {
 			liAttachments += "arm_rope_backTight_harness";
 		} else if (llSubStringIndex(wristRestraintId, "back") != -1) {
