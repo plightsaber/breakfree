@@ -3,6 +3,7 @@
 ## [4.1.2]
 ### Fixed
 - Smooth bound animation transitions when fighting with avi AOs
+- Zips and cuffs back pose use incorrect harness
 
 ## [4.1.1]
 ### Fixed
