@@ -1,6 +1,10 @@
 # Changelog
 
 ## [4.1.2]
+### Changed
+- New rope mesh for arm back.  Old version added to alternates package
+- Swapped knee ropes with their alternates
+
 ### Fixed
 - Smooth bound animation transitions when fighting with avi AOs
 - Zips and cuffs back pose use incorrect harness
