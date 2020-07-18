@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.1.2]
+### Fixed
+- Smooth bound animation transitions when fighting with avi AOs
+
 ## [4.1.1]
 ### Fixed
 - Fixed bug that made all restraints inescapable o_o

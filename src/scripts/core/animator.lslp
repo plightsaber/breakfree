@@ -55,7 +55,7 @@ setArmPose(string uid) {
 	_animation_arm_success = "animArm_struggle";
 	_animation_arm_failure = "animArm_struggle";
 
-	llStartAnimation(_animation_arm_base);
+	refreshAnimations();
 }
 
 setLegPose(string uid) {
@@ -86,7 +86,7 @@ setLegPose(string uid) {
 		llSetAnimationOverride("Walking", _animation_leg_walk);
 	}
 
-	if (isSet(_animation_leg_base)) { llStartAnimation(_animation_leg_base); }
+	refreshAnimations();
 }
 
 
@@ -112,34 +112,8 @@ setLegPoses(string prmPoses) {
 }
 
 setRestraints(string prmJson) {
-	// Gag animation
 	_mouthOpen = llJsonGetValue(prmJson, ["mouthOpen"]) == "1";
-	llRequestPermissions(llGetOwner(), PERMISSION_TRIGGER_ANIMATION);
-	if (_mouthOpen) {
-		llStartAnimation("express_open_mouth");
-		llStartAnimation("animOpenMouthBento");
-	} else {
-		llStopAnimation("express_open_mouth");
-		llStopAnimation("animOpenMouthBento");
-	}
-
-	// Other animations
-	list newAnimations = llJson2List(llJsonGetValue(prmJson, ["animations"]));
-	list startAnimations = ListXnotY(newAnimations, _animations);
-	list stopAnimations = ListXnotY(_animations, newAnimations);
-	integer index;
-
-	// Start animations
-	for (index = 0; index < llGetListLength(startAnimations); index++) {
-		llStartAnimation(llList2String(startAnimations, index));
-	}
-
-	// Stop animations
-	for (index = 0; index < llGetListLength(stopAnimations); index++) {
-		llStopAnimation(llList2String(stopAnimations, index));
-	}
-
-	_animations = newAnimations;
+	refreshAnimations();
 }
 
 // ===== Main Functions =====
@@ -153,6 +127,18 @@ animate(string prmAnimation) {
 	else if (prmAnimation == "animation_leg_failure") { animation = _animation_leg_failure; }
 
 	if (isSet(animation)) { llStartAnimation(animation); }
+}
+
+animateLoop(string animation)
+{
+	if (llGetInventoryKey(animation) == NULL_KEY) {
+		debug("Could not find animation: " + animation);
+		return;
+	}
+
+	llRequestPermissions(llGetOwner(), PERMISSION_TRIGGER_ANIMATION);
+	llStartAnimation(animation);
+	llSetTimerEvent(2.0);
 }
 
 animate_mover(string prmAnimation) {
@@ -180,11 +166,11 @@ refreshAnimations()
 	llRequestPermissions(llGetOwner(), PERMISSION_TRIGGER_ANIMATION);
 	if (_mouthOpen) {
 		llStartAnimation("express_open_mouth");
-		llStartAnimation("animOpenMouthBento");
+		animateLoop("animOpenMouthBento");
 	}
 
-	if (isSet(_animation_arm_base)) { llStartAnimation(_animation_arm_base); }
-	if (isSet(_animation_leg_base)) { llStartAnimation(_animation_leg_base); }
+	if (isSet(_animation_arm_base)) { animateLoop(_animation_arm_base); }
+	if (isSet(_animation_leg_base)) { animateLoop(_animation_leg_base); }
 }
 
 // ===== Event Controls =====
@@ -213,6 +199,7 @@ default {
   	}
 
   	timer() {
+		llSetTimerEvent(ANIM_REFRESH_INTERVAL);
 		refreshAnimations();
   	}
 }
