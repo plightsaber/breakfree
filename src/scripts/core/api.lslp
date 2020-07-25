@@ -17,7 +17,10 @@ init() {
 
 	if (listenID) { llListenRemove(listenID); }
 	llListen(CHANNEL_API, "", NULL_KEY, "");
-	if (_owner == "") { _owner = getDefaultUser(llGetOwner()); }
+	if (_owner == "") {
+		_owner = getDefaultUser(llGetOwner());
+		simpleRequest("getOwnerFeats", "");
+	}
 }
 
 // ===== Primary Functions ====

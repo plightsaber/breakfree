@@ -267,6 +267,7 @@ execute_function(string prmFunction, string prmJson) {
 	else if (prmFunction == "setVillainKey") { _villainID = value; }
 	else if (prmFunction == "setPoses") { setAvailablePoses(llJsonGetValue(value, ["leg"])); }
 	else if (prmFunction == "addExp") { addExp(value); }
+	else if (prmFunction == "getOwnerFeats") { setFeats(_ownerFeats); }
 	else if (prmFunction == "setRestraints") { setRestraints(value); }
 	else if (prmFunction == "resetGUI") {
 		exit("");
