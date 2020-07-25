@@ -88,13 +88,19 @@ gui(integer prmScreen) {
 		// reset previous screen
 		guiScreenLast = GUI_HOME;
 
-		if (_armsTetherable) { btn7 = "Tether Arms"; }
-		if (_legsTetherable) { btn8 = "Tether Legs"; }
-
-		if (!_armBoundExternal) { btn4 = "Bind Arms"; }
-		btn5 = "Bind Legs";
-		btn6 = "Gag";
 		if (_legsBound) { btn3 = "Pose"; }
+
+		list homeButtons;
+		if (!_armBoundExternal) { homeButtons += "Bind Arms"; }
+		else { homeButtons += " "; }
+		homeButtons += "Bind Legs";
+		homeButtons += "Gag";
+
+		if (_armsTetherable) { homeButtons += "Tether Arms"; }
+		if (_legsTetherable) { homeButtons += "Tether Legs"; }
+		if (_armsBound && guiUserID == llGetOwner()) { homeButtons += "Secure";	}
+
+		mpButtons = multipageGui(homeButtons, 3, multipageIndex);
 	}
 
 	// GUI: Bind Arms
@@ -235,6 +241,10 @@ default {
 				else if (prmText == "Bind Legs") { gui(GUI_LEG); }
 				else if (prmText == "Gag") { gui(GUI_GAG); }
 				else if (prmText == "Pose") { gui(GUI_POSE); }
+				else if (prmText == "Secure") {
+					simpleRequest("setVillainKey", NULL_KEY);
+					exit("");
+				}
 				else if (prmText == "Tether Arms") { guiRequest("gui_tether_arm", FALSE, guiUserID, 0); return; }
 				else if (prmText == "Tether Legs") { guiRequest("gui_tether_leg", FALSE, guiUserID, 0); return; }
 				else if (prmText == "<<Back>>") {

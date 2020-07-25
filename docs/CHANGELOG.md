@@ -1,6 +1,9 @@
 # Changelog
 
 ## [4.1.2]
+### Added
+- Self-bondage SECURE button to remove quick release options when performing self-bondage
+
 ### Changed
 - New rope mesh for arm back.  Old version added to alternates package
 - Swapped knee ropes with their alternates

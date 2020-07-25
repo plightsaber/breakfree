@@ -68,6 +68,7 @@ This dialog appears when you touch a different avi's BreakFree object and:
 * Clicking through these menus, you then choose a material to bind with.
 * After choosing an area and a material, you can choose the position or slot to bind the avi in.  Certain slots or positions block others, or occasionally open new binding possibilities.  Mix and match and explore the options to make your victim secure.
 * You also may have a dialog option to STYLE the active area / material.  Click and select from a few colors or textures to customize the look of the restraints.
+* If performing self-bondage, you have the ability to SECURE the restraints, meaning you lose access to the BIND menu and are locked into the escape game.
 
 #### Tether
 Certain positions allow you to tether the avi.  While tethered, an avi has a limited radius of movement from the origin of the tether.
