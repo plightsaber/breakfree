@@ -89,7 +89,7 @@ gui(integer prmScreen) {
 		guiScreenLast = GUI_HOME;
 
 		if (_armsTetherable) { btn7 = "Tether Arms"; }
-		if (_legsTetherable) { btn7 = "Tether Legs"; }
+		if (_legsTetherable) { btn8 = "Tether Legs"; }
 
 		if (!_armBoundExternal) { btn4 = "Bind Arms"; }
 		btn5 = "Bind Legs";

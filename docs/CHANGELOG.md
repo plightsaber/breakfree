@@ -6,6 +6,7 @@
 - Swapped knee ropes with their alternates
 
 ### Fixed
+- Arm tether no longer blocked by leg tether
 - Feats now properly apply when being used on another user
 - Smooth bound animation transitions when fighting with avi AOs
 - Zips and cuffs back pose use incorrect harness
