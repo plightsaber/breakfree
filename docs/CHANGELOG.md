@@ -2,12 +2,13 @@
 
 ## [4.1.3]
 ### Added
-- New Feat: Steadfast - recover stamina while you struggle.
+- New Feat: Steadfast - recover stamina while you struggle
+- Current version is displayed in the owner dialog
 
 ### Fixed
 - Do not recover stamina while you struggle (unless you take the new feat: Steadfast)
 - Fix issue where you sometimes do not recover stamina after log in, making escape impossible
-- Fix issue where dialog control never times out.
+- Fix issue where dialog control never times out
 
 ## [4.1.2]
 ### Added

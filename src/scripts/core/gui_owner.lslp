@@ -105,6 +105,8 @@ gui(integer prmScreen) {
 
 	// GUI: Main
 	if (prmScreen == GUI_HOME) {
+		guiText = "v4.1.3";
+
 		if (rpMode || (!_isArmsBound && !_isLegsBound && !_isGagged) || _villainID == _ownerID) {
 			btn1 = "Options";
 			btn4 = "Bind";
