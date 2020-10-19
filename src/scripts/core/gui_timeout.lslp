@@ -1,6 +1,6 @@
 $import Modules.GeneralTools.lslm();
 
-integer GUI_TIMEOUT = 10;
+integer GUI_TIMEOUT = 30;
 
 key _activeKey;
 
