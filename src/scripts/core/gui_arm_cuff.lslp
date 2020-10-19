@@ -103,7 +103,7 @@ setColor(vector color, string component) {
 gui(integer screen)
 {
 	// Reset Busy Clock
-	llSetTimerEvent(guiTimeout);
+	simpleRequest("resetGuiTimer", "1");
 
 	string btn10 = " ";			string btn11 = " ";			string btn12 = " ";
 	string btn7 = " ";			string btn8 = " ";			string btn9 = " ";
@@ -251,10 +251,5 @@ default {
 				return;
 			}
 		}
-	}
-
-	timer()
-	{
-		exit("timeout");
 	}
 }

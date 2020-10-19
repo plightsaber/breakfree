@@ -20,8 +20,6 @@ string requestingAttachment;
 
 // ===== Initializer =====
 init() {
-	guiTimeout = 60;  // Extend timeout for leash
-
 	if (lockmeisterID) { llListenRemove(lockmeisterID); }
 	lockmeisterID = llListen(CHANNEL_LOCKMEISTER, "", NULL_KEY, "");
 }
@@ -71,7 +69,7 @@ setLegTetherLength(string prmLength) {
 // ===== GUI =====
 gui(integer prmScreen) {
 	// Reset Busy Clock
-	llSetTimerEvent(guiTimeout);
+	simpleRequest("resetGuiTimer", "1");
 
 	string btn10 = " ";     string btn11 = " ";     string btn12 = " ";
 	string btn7 = " ";      string btn8 = " ";      string btn9 = " ";
@@ -165,10 +163,5 @@ default {
 		} else if (function == "resetGUI") {
 			exit("");
 		}
-	}
-
-	timer() {
-		llListenControl(lockmeisterID, FALSE);
-		exit("timeout");
 	}
 }

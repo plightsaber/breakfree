@@ -1,8 +1,17 @@
 # Changelog
 
+## [4.1.3]
+### Added
+- New Feat: Steadfast - recover stamina while you struggle.
+
+### Fixed
+- Do not recover stamina while you struggle (unless you take the new feat: Steadfast)
+- Fix issue where you sometimes do not recover stamina after log in, making escape impossible
+- Fix issue where dialog control never times out.
+
 ## [4.1.2]
 ### Added
-- Self-bondage SECURE button to remove quick release options when performing self-bondage
+- Self-bondage SECURE button to remove bind options when performing self-bondage
 
 ### Changed
 - New rope mesh for arm back.  Old version added to alternates package

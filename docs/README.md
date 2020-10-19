@@ -124,6 +124,7 @@ Here are a list of feats you can learn:
 * Flexible+:  No regression penalty for choosing the wrong tightness action
 * Resolute:   Half the time to fully recover stamina
 * Resolute+:  Half the time to fully recover stamina
+* Steadfast:  Recover stamina while struggling
 
 * Anubis:     +2 tightness for every tape restraint. Additionally unlocks TAPE BOX TIE
 * Anubis+:    +2 tightness for every tape restraint. Additionally unlocks TAPE BALL TIE

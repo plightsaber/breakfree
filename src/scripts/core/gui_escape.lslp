@@ -5,7 +5,6 @@ $import Modules.RestraintTools.lslm();
 $import Modules.UserLib.lslm();
 
 string  CONFIG;
-integer REST_TIMER = 60;
 
 integer GUI_HOME = 0;
 integer GUI_ESCAPE = 100;
@@ -57,7 +56,16 @@ gui(integer prmScreen)
 		return;
 	}
 
-	simpleRequest("resetRecoveryTimer", (string)REST_TIMER);
+	simpleRequest("resetGuiTimer", "1");
+
+	// Stop or slow recovery timer while deciding on struggle.
+	if (llGetOwner() == guiUserID) {
+		if (hasFeat(_guiUser, "Steadfast")) {
+			simpleRequest("startRecoveryTimer", "Steadfast");
+		} else {
+			simpleRequest("stopRecoveryTimer", "0");
+		}
+	}
 
 	string btn10 = " ";	string btn11 = " ";			string btn12 = " ";
 	string btn7 = " ";	string btn8 = " ";			string btn9 = " ";
@@ -565,7 +573,6 @@ setOwner(string user)
 
 setRestraints(string restraints)
 {
-	simpleRequest("resetRecoveryTimer", (string)REST_TIMER);
 	_restraints = restraints;
 }
 

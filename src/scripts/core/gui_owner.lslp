@@ -47,6 +47,7 @@ list _feats = [
 	"Flexible+",
 	"Resolute",
 	"Resolute+",
+	"Steadfast",
 	"Anubis",
 	"Anubis+",
 	"Anubis++",
@@ -92,7 +93,7 @@ init_gui(key prmID, integer prmScreen) {
 // ===== GUI =====
 gui(integer prmScreen) {
 	// Reset Busy Clock
-	llSetTimerEvent(guiTimeout);
+	simpleRequest("resetGuiTimer", "1");
 
 	string btn10 = " ";	string btn11 = " ";			string btn12 = " ";
 	string btn7 = " ";	string btn8 = " ";			string btn9 = " ";
@@ -344,9 +345,5 @@ default {
 			_resumeFunction = "";
 			init_gui(guiUserID, guiScreen);
 		}
-	}
-
-	timer() {
-		exit("timeout");
 	}
 }
