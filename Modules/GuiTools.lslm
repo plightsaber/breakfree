@@ -14,12 +14,14 @@ integer guiChannel;
 integer guiScreen;
 integer guiScreenLast;
 string guiText;
-integer guiTimeout = 60;
 
-exit(string prmReason) {
-  llListenRemove(guiID);
-  llSetTimerEvent(0.0);
-  if (prmReason) { simpleRequest("resetGUI", prmReason); }
+exit(string prmReason)
+{
+	llListenRemove(guiID);
+	if (isSet(prmReason)) {
+		simpleRequest("setTimedOut", prmReason);
+		simpleRequest("startRecoveryTimer", prmReason);
+	}
 }
 
 guiRequest(string prmGUI, integer prmRestore, key prmUserID, integer prmScreen) {
