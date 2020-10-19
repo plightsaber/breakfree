@@ -4,6 +4,7 @@
 ### Added
 - New Feat: Steadfast - recover stamina while you struggle
 - Current version is displayed in the owner dialog
+- New vibrant colors for ropes
 
 ### Fixed
 - Do not recover stamina while you struggle (unless you take the new feat: Steadfast)
