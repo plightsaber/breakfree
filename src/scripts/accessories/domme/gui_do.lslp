@@ -90,8 +90,6 @@ init_gui(key prmID, integer prmScreen) {
 
 // ===== GUI =====
 gui(integer prmScreen) {
-	// Reset Busy Clock
-	llSetTimerEvent(guiTimeout);
 
 	string btn10 = " ";	string btn11 = " ";			string btn12 = " ";
 	string btn7 = " ";	string btn8 = " ";			string btn9 = " ";
@@ -319,9 +317,5 @@ default {
 			_resumeFunction = "";
 			init_gui(guiUserID, guiScreen);
 		}
-	}
-
-	timer() {
-		exit("timeout");
 	}
 }
