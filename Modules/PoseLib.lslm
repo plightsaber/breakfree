@@ -154,7 +154,7 @@ string getPoses() {
 	_poseLib = llJsonSetValue(_poseLib, ["leg", "hogFront", "poseLeft"], "hogLeft");
 	_poseLib = llJsonSetValue(_poseLib, ["leg", "hogFront", "poseRight"], "hogRight");
 	_poseLib = llJsonSetValue(_poseLib, ["leg", "hogFront", "poseFall"], JSON_NULL);
-	
+
 	_poseLib = llJsonSetValue(_poseLib, ["leg", "hogKneel", "base"], "animLeg_hogKneel");
 	_poseLib = llJsonSetValue(_poseLib, ["leg", "hogKneel", "failure"], "animLeg_hogKneel_struggle");
 	_poseLib = llJsonSetValue(_poseLib, ["leg", "hogKneel", "success"], "animLeg_hogKneel_struggle");

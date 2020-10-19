@@ -18,7 +18,7 @@ apiRequest(key toKey, key fromKey, string function, string value)
 	llRegionSayTo(toKey, CHANNEL_API, request);
 }
 
-simpleRequest(string function, string value) 
+simpleRequest(string function, string value)
 {
 	string request = "";
 	request = llJsonSetValue(request, ["function"], function);
@@ -26,12 +26,12 @@ simpleRequest(string function, string value)
 	llMessageLinked(LINK_THIS, 0, request, NULL_KEY);
 }
 
-integer isSet(string jsonValue) 
+integer isSet(string jsonValue)
 {
 	return (jsonValue != "" && jsonValue != JSON_NULL && jsonValue != JSON_INVALID && jsonValue != "0" && jsonValue != NULL_KEY);
 }
 
-integer roll(integer dice, integer sides) 
+integer roll(integer dice, integer sides)
 {
 	integer result = 0;
 	integer i;
