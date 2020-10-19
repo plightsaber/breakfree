@@ -171,7 +171,7 @@ default {
         }
 
         // BREAKFREE
-        if (channel = _listenID) {
+        if (channel == _listenID) {
 			string function = llJsonGetValue(msg, ["function"]);
 			string value = llJsonGetValue(msg, ["value"]);
 			if (!isSet(function)) {
